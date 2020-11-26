@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/c++ -std=c++11 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -dynamiclib -Wl,-headerpad_max_install_names -o libiWatch.dylib -install_name @rpath/libiWatch.dylib CMakeFiles/iWatch.dir/iwatch.cpp.o  /Users/habbyge/Library/Android/sdk/ndk-bundle/platforms/android-29/arch-arm/usr/lib/liblog.so 

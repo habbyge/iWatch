@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/habbyge/iWatch/app/src/main/cpp/iwatch.cpp
+util/log.h
+/Users/habbyge/iWatch/app/src/main/cpp/util/log.h
+
+/Users/habbyge/iWatch/app/src/main/cpp/util/log.h
+jni.h
+-
+android/log.h
+-
+cstring
+-
+
