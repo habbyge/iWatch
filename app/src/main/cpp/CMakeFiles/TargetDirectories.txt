@@ -1,3 +1,0 @@
-/Users/habbyge/iWatch/app/src/main/cpp/CMakeFiles/rebuild_cache.dir
-/Users/habbyge/iWatch/app/src/main/cpp/CMakeFiles/edit_cache.dir
-/Users/habbyge/iWatch/app/src/main/cpp/CMakeFiles/iWatch.dir
