@@ -7,6 +7,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.habbyge.iwatch.test.Fix0;
+import com.habbyge.iwatch.test.TestCase0;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -31,13 +34,16 @@ public class MainActivity extends AppCompatActivity {
         Button btnClick = findViewById(R.id.click);
         Button btnHookMethod = findViewById(R.id.method);
         Button btnHookField = findViewById(R.id.field);
+        Button btnHookClass = findViewById(R.id.clazz);
 
         btnClick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                printf("I love My family: Wifi Daught, Son !");
-                Log.d(TAG, "iStr = " + iStr);
-                Log.d(TAG, "iX = " + ix);
+//                printf("I love My family: Wifi Daught, Son !");
+//                Log.d(TAG, "iStr = " + iStr);
+//                Log.d(TAG, "iX = " + ix);
+
+                TestCase0.printf("This is not fix !");
             }
         });
 
@@ -45,11 +51,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    Method srcMethod = MainActivity.class.getDeclaredMethod(
-                            "printf", String.class);
-                    Method destMethod = MainActivity.class.getDeclaredMethod(
-                            "printf_Hook", String.class);
-                    HookManager.get().hookMethod(srcMethod, destMethod);
+                    Method sm = TestCase0.class.getDeclaredMethod("printf", String.class);
+                    Method dm = Fix0.class.getDeclaredMethod("printf_Hook", String.class);
+                    HookManager.get().hookMethod(sm, dm);
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
                 }
@@ -75,6 +79,13 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        });
+
+        btnHookClass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MethodHook.hookClass2(TestCase0.class.getCanonicalName());
             }
         });
     }

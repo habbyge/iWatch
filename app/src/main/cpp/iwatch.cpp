@@ -16,35 +16,37 @@ static struct {
     size_t methodSize;
 } methodHookClassInfo;
 
+/**
+ * 采用整体替换方法结构(art::mirror::ArtMethod)，忽略底层实现，从而解决兼容稳定性问题，
+ * 比AndFix稳定可靠.
+ */
 static jlong method_hook(JNIEnv* env, jclass,
-                         jobject srcMethodObj,
-                         jobject dstMethodObj) {
+                         jobject srcMethod,
+                         jobject dstMethod) {
 
     // art::mirror::ArtMethod
-    void* srcMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethodObj));
-    void* dstMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethodObj));
+    void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
+    void* dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
 
-    int* backupMethod = new int[methodHookClassInfo.methodSize];
+    int* backupArtMethod = new int[methodHookClassInfo.methodSize];
     // 备份原方法
-    memcpy(backupMethod, srcMethod, methodHookClassInfo.methodSize);
+    memcpy(backupArtMethod, srcArtMethod, methodHookClassInfo.methodSize);
     // 替换成新方法
-    memcpy(srcMethod, dstMethod, methodHookClassInfo.methodSize);
+    memcpy(srcArtMethod, dstArtMethod, methodHookClassInfo.methodSize);
 
-    LOGV("methodHook: Success !");
+    LOGI("methodHook: Success !");
 
     // 返回原方法地址
-    return reinterpret_cast<jlong>(backupMethod);
+    return reinterpret_cast<jlong>(backupArtMethod);
 }
 
 static jobject restore_method(JNIEnv* env, jclass,
                               jobject srcMethod, jlong methodPtr) {
 
-    LOGV("methodRestore: start !!!");
-
-    void* backupMethod = reinterpret_cast<void*>(methodPtr);
-    void* artMethodSrc = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
-    memcpy(artMethodSrc, backupMethod, methodHookClassInfo.methodSize);
-    delete[] reinterpret_cast<int*>(backupMethod);
+    void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
+    void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
+    memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
+    delete[] reinterpret_cast<int*>(backupArtMethod);
 
     LOGV("methodRestore: Success !");
 
@@ -61,17 +63,26 @@ static struct {
     size_t fieldSize;
 } fieldHookClassInfo;
 
-static jlong hook_field(JNIEnv* env, jclass,
-                        jobject srcFieldObj, jobject dstFieldObj) {
+static jlong hook_field(JNIEnv* env, jclass,jobject
+                        srcField, jobject dstField) {
 
     // art::mirror::ArtField
-    void* srcField = reinterpret_cast<void*>(env->FromReflectedField(srcFieldObj));
-    void* dstField = reinterpret_cast<void*>(env->FromReflectedField(dstFieldObj));
-    int* backupField = new int[fieldHookClassInfo.fieldSize];
-    memcpy(backupField, srcField, fieldHookClassInfo.fieldSize);
-    memcpy(srcField, dstField, fieldHookClassInfo.fieldSize);
+    void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
+    void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
+    int* backupArtField = new int[fieldHookClassInfo.fieldSize];
+    memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
+    memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
     LOGV("hook_field: Success !");
-    return reinterpret_cast<jlong>(backupField);
+    return reinterpret_cast<jlong>(backupArtField);
+}
+
+static jlong hook_class(JNIEnv* env, jclass clazz, jstring clazzName) {
+    jboolean isCopy;
+    const char* className = env->GetStringUTFChars(clazzName, &isCopy);
+    LOGD("hookClass, className=%s", className);
+    jclass jclazz = env->FindClass(className);
+    env->ReleaseStringUTFChars(clazzName, className);
+    return reinterpret_cast<jlong>(jclazz);
 }
 
 static JNINativeMethod gMethods[] = {
@@ -89,6 +100,11 @@ static JNINativeMethod gMethods[] = {
         "hookField",
         "(Ljava/lang/reflect/Field;Ljava/lang/reflect/Field;)J",
         (void*) hook_field
+    },
+    {
+        "hookClass",
+        "(Ljava/lang/String;)J",
+        (void*) hook_class
     }
 };
 
@@ -98,8 +114,8 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
         return JNI_FALSE;
     }
     jclass classEvaluateUtil = env->FindClass(kClassMethodHookChar);
-    if (env->RegisterNatives(classEvaluateUtil, gMethods,
-                             sizeof(gMethods) / sizeof(gMethods[0])) < 0) {
+    size_t count = sizeof(gMethods) / sizeof(gMethods[0]);
+    if (env->RegisterNatives(classEvaluateUtil, gMethods, count) < 0) {
         return JNI_FALSE;
     }
     methodHookClassInfo.m1 = env->GetStaticMethodID(classEvaluateUtil, "m1", "()V");
