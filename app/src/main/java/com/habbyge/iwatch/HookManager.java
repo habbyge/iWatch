@@ -13,7 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class HookManager {
 
-    private HookManager(){}
+    private HookManager(){
+    }
 
     public static HookManager get() {
         return InstanceHolder.sInstance;
@@ -28,6 +29,18 @@ public final class HookManager {
 
     public void hookField(Field src, Field dst) {
         MethodHook.hookField2(src, dst);
+    }
+
+    public void fixMethod(Class<?> clazz1, String methodName1, Class<?>[] parameterTypes1,
+                          Class<?> clazz2, String methodName2, Class<?>[] parameterTypes2) {
+
+        try {
+            Method sm = clazz1.getDeclaredMethod(methodName1, parameterTypes1);
+            Method dm = clazz2.getDeclaredMethod(methodName2, parameterTypes2);
+            HookManager.get().hookMethod(sm, dm);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     public void hookMethod(Method originMethod, Method hookMethod) {

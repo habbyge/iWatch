@@ -19,6 +19,7 @@ static struct {
 /**
  * 采用整体替换方法结构(art::mirror::ArtMethod)，忽略底层实现，从而解决兼容稳定性问题，
  * 比AndFix稳定可靠.
+ * 旧的方案ArtMethod中的
  */
 static jlong method_hook(JNIEnv* env, jclass,
                          jobject srcMethod,

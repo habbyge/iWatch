@@ -2,16 +2,17 @@ package com.habbyge.iwatch;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.habbyge.iwatch.test.Fix0;
+import com.habbyge.iwatch.test.MainActivity2;
+import com.habbyge.iwatch.test.MainActivity2Fix;
 import com.habbyge.iwatch.test.TestCase0;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * Created by habbyge on 2020/11/24.
@@ -43,20 +44,24 @@ public class MainActivity extends AppCompatActivity {
 //                Log.d(TAG, "iStr = " + iStr);
 //                Log.d(TAG, "iX = " + ix);
 
-                TestCase0.printf("This is not fix !");
+//                TestCase0.printf("This is not fix !");
+
+
+                startActivity(new Intent(MainActivity.this, MainActivity2.class));
             }
         });
 
         btnHookMethod.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
-                try {
-                    Method sm = TestCase0.class.getDeclaredMethod("printf", String.class);
-                    Method dm = Fix0.class.getDeclaredMethod("printf_Hook", String.class);
-                    HookManager.get().hookMethod(sm, dm);
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                }
+//                HookManager.get().fixMethod(
+//                        TestCase0.class, "printf", new Class<?>[] {String.class},
+//                        Fix0.class, "printf_Hook", new Class<?>[] {String.class});
+
+                HookManager.get().fixMethod(
+                        MainActivity2.class, "onResume", null,
+                        MainActivity2Fix.class, "onResume", null);
             }
         });
 
