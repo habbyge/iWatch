@@ -11,7 +11,6 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.habbyge.iwatch.MainActivity;
 import com.habbyge.iwatch.R;
 
 import java.lang.reflect.Field;

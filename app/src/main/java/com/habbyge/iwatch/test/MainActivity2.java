@@ -21,7 +21,6 @@ public class MainActivity2 extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
 
     private int testCaseField = 100;
-    private static int testCaseStaticField = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

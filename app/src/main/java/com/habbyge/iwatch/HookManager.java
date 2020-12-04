@@ -1,5 +1,6 @@
 package com.habbyge.iwatch;
 
+import android.util.Log;
 import android.util.Pair;
 
 import java.lang.reflect.Field;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by habbyge on 2020/11/24.
  */
 public final class HookManager {
+    private static final String TAG = "iWatch.HookManager";
 
     private HookManager(){
     }
@@ -24,8 +26,7 @@ public final class HookManager {
         private static final HookManager sInstance = new HookManager();
     }
 
-    private final Map<Pair<String, String>, MethodHook> methodHookMap
-            = new ConcurrentHashMap<>();
+    private final Map<Pair<String, String>, MethodHook> methodHookMap = new ConcurrentHashMap<>();
 
     public void hookField(Field src, Field dst) {
         MethodHook.hookField2(src, dst);
@@ -33,6 +34,11 @@ public final class HookManager {
 
     public void fixMethod(Class<?> clazz1, String methodName1, Class<?>[] parameterTypes1,
                           Class<?> clazz2, String methodName2, Class<?>[] parameterTypes2) {
+
+        if (clazz1 == null || methodName1 == null  || clazz2 == null || methodName2 == null) {
+            Log.e(TAG, "fixMethod, error: params is NULL !");
+            return;
+        }
 
         try {
             Method sm = clazz1.getDeclaredMethod(methodName1, parameterTypes1);

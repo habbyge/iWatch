@@ -77,7 +77,7 @@ static jlong hook_field(JNIEnv* env, jclass,jobject
     return reinterpret_cast<jlong>(backupArtField);
 }
 
-static jlong hook_class(JNIEnv* env, jclass clazz, jstring clazzName) {
+static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
     jboolean isCopy;
     const char* className = env->GetStringUTFChars(clazzName, &isCopy);
     LOGD("hookClass, className=%s", className);
