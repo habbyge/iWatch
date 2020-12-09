@@ -11,10 +11,15 @@ import java.lang.reflect.Method;
  *
  * 为何选择 Native 层方案，而不是 tinker、robust 方案？
  * 1. Tinker，发补丁流程复杂，且申请复杂(其他组控制补丁版本节奏)，版本号数量有限，主要用于解决业务bug fix；
- * 2. robust，同理，数据统计补丁要想不影响tinker补丁的发布，就不能影响到Java代码层本身，试想，如果数据统计
- *    补丁先生效了，就会把当前的Java代码修改了，那么tinker补丁在下发下来后，在合成阶段，就会出坑。base版本
- *    的代码不同了.
- * 所以，这里不能对原始代码做修改，那么显而易见，就只能通过改变art虚拟机中的指针指向来指向统计补丁代码了.
+ * 2. nuwa等基于elements[dex]原理的方案：同理，数据统计补丁要想不影响tinker补丁的发布，就不能影响到Java代码层本身，
+ *    试想，如果数据统计补丁先生效了，就会把当前的Java代码修改了，那么tinker补丁在下发下来后，在合成阶段，就会出坑。
+ *    base版本的代码不同了.
+ * 3. Robust，基于 Instant Run 原理，使用 gradle plugin 向每个方法前插入一段逻辑代码，修复bug后的代码逻辑，通过
+ *    DexClassLoader 加载到内存中后，并反射创建对象，赋值给目标方法中的逻辑对象，即可替换为补丁包中的新方法.
+ *    按讲这个方案是对 DexClassloader 正常使用，兼容性也好，那么我何为没有选择呐？
+ *    我认为升级版的AndFix，即 iWatch 更简单、且没有负担，Robust在编译时对每个方法都预插桩了一段逻辑代码，这样的做法，
+ *    不是很优雅，且 iWatch 也没有版本兼容性问题，所以我认为更合适.
+ * 所以，这里不能对原始代码做修改，那么显而易见，就只能通过改变 art 虚拟机中的指针，来指向统计补丁代码.
  */
 public class MethodHook {
     private static final String TAG = "iWatch.MethodHook";
