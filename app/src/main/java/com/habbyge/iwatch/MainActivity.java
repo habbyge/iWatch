@@ -13,6 +13,7 @@ import com.habbyge.iwatch.test.MainActivity2Fix;
 import com.habbyge.iwatch.test.TestCase0;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 /**
  * Created by habbyge on 2020/11/24.
@@ -21,10 +22,14 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "iWatch.MainActivity";
 
     // 字符-测试样例
+    @SuppressWarnings("all")
     private static int ix = 10;
+    @SuppressWarnings("all")
     private static int ix_HOOK = 10000;
 
+    @SuppressWarnings("all")
     private String iStr = "iWatch";
+    @SuppressWarnings("all")
     private String iStr_HOOK = "iWatch.HOOK";
 
     @Override
@@ -36,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         Button btnHookMethod = findViewById(R.id.method);
         Button btnHookField = findViewById(R.id.field);
         Button btnHookClass = findViewById(R.id.clazz);
+        Button btnHookClickLsn = findViewById(R.id.clickListener);
 
         btnClick.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,15 +96,24 @@ public class MainActivity extends AppCompatActivity {
         btnHookClass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MethodHook.hookClass2(TestCase0.class.getCanonicalName());
+                MethodHook.hookClass2(Objects.requireNonNull(TestCase0.class.getCanonicalName()));
+            }
+        });
+
+        btnHookClickLsn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) { // 被替换 onClick() 函数的样例
+                Log.i(TAG, "onClick, this=" + this.getClass().getName());
             }
         });
     }
 
+    @SuppressWarnings("all")
     public void printf(String text) {
         Log.i(TAG, "printf: " + text);
     }
 
+    @SuppressWarnings("all")
     public void printf_Hook(String iStr) {
         Log.i(TAG, "printf-Hook: " + iStr);
         Log.i(TAG, "printf-Hook: 0");

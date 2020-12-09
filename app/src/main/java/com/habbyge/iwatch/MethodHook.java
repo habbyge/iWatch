@@ -8,6 +8,13 @@ import java.lang.reflect.Method;
 
 /**
  * Created by habbyge on 2020/11/25.
+ *
+ * 为何选择 Native 层方案，而不是 tinker、robust 方案？
+ * 1. Tinker，发补丁流程复杂，且申请复杂(其他组控制补丁版本节奏)，版本号数量有限，主要用于解决业务bug fix；
+ * 2. robust，同理，数据统计补丁要想不影响tinker补丁的发布，就不能影响到Java代码层本身，试想，如果数据统计
+ *    补丁先生效了，就会把当前的Java代码修改了，那么tinker补丁在下发下来后，在合成阶段，就会出坑。base版本
+ *    的代码不同了.
+ * 所以，这里不能对原始代码做修改，那么显而易见，就只能通过改变art虚拟机中的指针指向来指向统计补丁代码了.
  */
 public class MethodHook {
     private static final String TAG = "iWatch.MethodHook";

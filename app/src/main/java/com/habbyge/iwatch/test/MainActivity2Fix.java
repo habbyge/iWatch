@@ -53,15 +53,18 @@ public class MainActivity2Fix extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume");
+        // 验证当前对象是否 是旧的对象，期望是旧的对象，经过验证：YES.
+        Log.d(TAG, "onResume: class = " + this.getClass().getName());
 
         // 这里的例子是表示
         try {
             Field testCaseField = MainActivity2.class.getDeclaredField("testCaseField");
             testCaseField.setAccessible(true);
-            int testCaseFieldOb = (int) testCaseField.get(this);
-            Log.i(TAG, "testCaseFieldOb=" + testCaseFieldOb);
-
+            Object obj = testCaseField.get(this);
+            if (obj instanceof Integer) {
+                int testCaseFieldOb = (int) obj;
+                Log.i(TAG, "testCaseFieldOb=" + testCaseFieldOb);
+            }
             testCaseField.set(this, 1000);
         } catch (Exception e) {
             Log.e(TAG, "crash = " + e.getMessage());

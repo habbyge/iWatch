@@ -30,4 +30,10 @@
         android:layout_height="wrap_content"
         android:text="hook class"/>
 
+    <Button
+        android:id="@+id/clickListener"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="hook clickListener"/>
+
 </LinearLayout>

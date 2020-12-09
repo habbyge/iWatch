@@ -9,6 +9,7 @@ static const char* kClassMethodHookChar = "com/habbyge/iwatch/MethodHook";
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，
  * 这里 jmethodID 就是 ArtMethod.
+ * 比起 ArtFix， iWatch方案屏蔽细节、尽量通用，没有适配性。
  */
 static struct {
     jmethodID m1;
@@ -54,6 +55,20 @@ static jobject restore_method(JNIEnv* env, jclass,
     return srcMethod;
 }
 
+/*static void set_field_accFlags(JNIEnv* env, jobject fields[]) {
+    if (fields == nullptr) {
+        return;
+    }
+    size_t count = sizeof(fields) / sizeof(jfieldID);
+    if (count <= 0) {
+        return;
+    }
+    for (int i = 0; i < count; ++i) {
+        void* artField = env->FromReflectedField(fields[i]);
+        artField
+    }
+}*/
+
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtFiled 大小，
  * 这里 jfieldID 就是 ArtFiled.
@@ -64,8 +79,8 @@ static struct {
     size_t fieldSize;
 } fieldHookClassInfo;
 
-static jlong hook_field(JNIEnv* env, jclass,jobject
-                        srcField, jobject dstField) {
+static jlong hook_field(JNIEnv* env, jclass, jobject
+srcField, jobject dstField) {
 
     // art::mirror::ArtField
     void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
