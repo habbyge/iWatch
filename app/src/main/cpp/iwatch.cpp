@@ -11,21 +11,20 @@ static const char* kClassMethodHookChar = "com/habbyge/iwatch/MethodHook";
  * 这里 jmethodID 就是 ArtMethod.
  * 比起 ArtFix， iWatch方案屏蔽细节、尽量通用，没有适配性。
  */
-static struct {
+typedef struct {
     jmethodID m1;
     jmethodID m2;
     size_t methodSize;
-} methodHookClassInfo;
+} methodHookClassInfo_t;
+
+static methodHookClassInfo_t methodHookClassInfo;
 
 /**
  * 采用整体替换方法结构(art::mirror::ArtMethod)，忽略底层实现，从而解决兼容稳定性问题，
  * 比AndFix稳定可靠.
  * 旧的方案ArtMethod中的
  */
-static jlong method_hook(JNIEnv* env, jclass,
-                         jobject srcMethod,
-                         jobject dstMethod) {
-
+static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMethod) {
     // art::mirror::ArtMethod
     void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
     void* dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
@@ -73,15 +72,15 @@ static jobject restore_method(JNIEnv* env, jclass,
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtFiled 大小，
  * 这里 jfieldID 就是 ArtFiled.
  */
-static struct {
+typedef struct {
     jfieldID field1;
     jfieldID field2;
     size_t fieldSize;
-} fieldHookClassInfo;
+} fieldHookClassInfo_t;
 
-static jlong hook_field(JNIEnv* env, jclass, jobject
-srcField, jobject dstField) {
+static fieldHookClassInfo_t fieldHookClassInfo;
 
+static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
     // art::mirror::ArtField
     void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
     void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
