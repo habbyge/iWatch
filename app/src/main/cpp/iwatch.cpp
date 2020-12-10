@@ -14,6 +14,8 @@ static const char* kClassMethodHookChar = "com/habbyge/iwatch/MethodHook";
 //  仍旧需要对可能被 inline 的方法，尽量避免fix，以免失效不起作用.
 //  这篇文章对 inline 的影响有详尽研究(同时也收录到了我的有道云笔记中了)：
 //  https://cloud.tencent.com/developer/article/1005604
+//  内联的源代码位置：art/compiler/optimizing/inliner.cc 中的 HInliner::Run()函数中.
+//  实际上，针对 "数据统计补丁" 来说，一般很少有机会在 inline 方法中插桩，即使需要，也可以通过其他手段突破.
 
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，

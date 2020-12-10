@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * - odex 是个啥？
  * 将 APK 中的 classes.dex 文件通过 dex 优化过程，将其优化生成一个 ·odex 文件单独存放，原 apk 文件中的
  * classes.dex 文件可以保留，也可以删除.
- * 这样做可以加快软件的启动速度，预先提取，减少对RAM的占用，因为没有odex的话，系统要从apk包中提取dex再运行.
+ * 这样做可以加快软件的启动速度，预先提取，减少对RAM的占用，因为没有 odex 的话，系统要从apk包中提取dex再运行.
  *
  */
 public final class HookManager {
