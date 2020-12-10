@@ -65,6 +65,6 @@ public class MainActivity2 extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        testCaseField = 1000;
+        testCaseField = 10;
     }
 }

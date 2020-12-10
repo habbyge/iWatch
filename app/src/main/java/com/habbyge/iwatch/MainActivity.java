@@ -11,6 +11,7 @@ import android.widget.Button;
 import com.habbyge.iwatch.test.MainActivity2;
 import com.habbyge.iwatch.test.MainActivity2Fix;
 import com.habbyge.iwatch.test.TestCase0;
+import com.habbyge.iwatch.test.TestInlineCase;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
@@ -104,6 +105,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) { // 被替换 onClick() 函数的样例
                 Log.i(TAG, "onClick, this=" + this.getClass().getName());
+            }
+        });
+
+        findViewById(R.id.click_inline).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new TestInlineCase().getIx();
             }
         });
     }

@@ -36,4 +36,10 @@
         android:layout_height="wrap_content"
         android:text="hook clickListener"/>
 
+    <Button
+        android:id="@+id/click_inline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="hook inline func"/>
+
 </LinearLayout>

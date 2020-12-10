@@ -6,6 +6,13 @@
 
 static const char* kClassMethodHookChar = "com/habbyge/iwatch/MethodHook";
 
+// FIXME: 这里需要考虑，对 inline 函数的影响，内联函数是否有 Method 对象，是否能够被成功替换 ？
+//  需要研究：直接 ArtMethod 整体替换的方案，是否能够解决 inline 问题 ？
+//  我的理解是：即使目标方法 inline 了，但是 ArMethod 对象还存在，只是其中包括的汇编代码段被直接拷贝到了其函数调
+//  用处. 这里可能会失败......
+//  经源代码 review + 研究 + 测试用例验证，这里 inline 不会对 ArtMethod 有影响，但是，我们在实际使用过程中，
+//  仍旧需要对可能被 inline 的方法，尽量避免fix，以免失效不起作用.
+
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，
  * 这里 jmethodID 就是 ArtMethod.
@@ -41,9 +48,7 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
     return reinterpret_cast<jlong>(backupArtMethod);
 }
 
-static jobject restore_method(JNIEnv* env, jclass,
-                              jobject srcMethod, jlong methodPtr) {
-
+static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong methodPtr) {
     void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
     void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
     memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
