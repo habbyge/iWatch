@@ -12,6 +12,8 @@ static const char* kClassMethodHookChar = "com/habbyge/iwatch/MethodHook";
 //  用处. 这里可能会失败......
 //  经源代码 review + 研究 + 测试用例验证，这里 inline 不会对 ArtMethod 有影响，但是，我们在实际使用过程中，
 //  仍旧需要对可能被 inline 的方法，尽量避免fix，以免失效不起作用.
+//  这篇文章对 inline 的影响有详尽研究(同时也收录到了我的有道云笔记中了)：
+//  https://cloud.tencent.com/developer/article/1005604
 
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，
