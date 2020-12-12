@@ -1,0 +1,7 @@
+# ninja log v5
+2	103	1607522144	CMakeFiles/iWatch.dir/iwatch.cpp.o	8972cdb28c152e16
+103	249	1607522144	/Users/habbyge/iWatch/app/build/intermediates/cmake/release/obj/armeabi-v7a/libiWatch.so	48cb47c0585a0d1
+1	94	1607522761	CMakeFiles/iWatch.dir/iwatch.cpp.o	8972cdb28c152e16
+94	193	1607522761	/Users/habbyge/iWatch/app/build/intermediates/cmake/release/obj/armeabi-v7a/libiWatch.so	48cb47c0585a0d1
+2	91	1607566093	CMakeFiles/iWatch.dir/iwatch.cpp.o	8972cdb28c152e16
+91	168	1607566093	/Users/habbyge/iWatch/app/build/intermediates/cmake/release/obj/armeabi-v7a/libiWatch.so	48cb47c0585a0d1

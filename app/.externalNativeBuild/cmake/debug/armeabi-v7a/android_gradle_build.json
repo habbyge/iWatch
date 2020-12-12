@@ -1,0 +1,41 @@
+{
+  "stringTable": {
+    "0": "/Users/habbyge/iWatch/app/.externalNativeBuild/cmake/debug/armeabi-v7a",
+    "1": "--target=armv7-none-linux-androideabi21 --gcc-toolchain=/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -DiWatch_EXPORTS -I/Users/habbyge/iWatch/app/src/main/cpp/util/log.h -std=c++11 -O0 -fno-limit-debug-info -fPIC"
+  },
+  "buildFiles": [
+    "/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/build/cmake/android.toolchain.cmake",
+    "/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/build/cmake/platforms.cmake",
+    "/Users/habbyge/iWatch/app/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "/Users/habbyge/Library/Android/sdk/cmake/3.10.2.4988404/bin/cmake --build \"/Users/habbyge/iWatch/app/.externalNativeBuild/cmake/debug/armeabi-v7a\" --target clean"
+  ],
+  "libraries": {
+    "iWatch-Debug-armeabi-v7a": {
+      "buildCommand": "/Users/habbyge/Library/Android/sdk/cmake/3.10.2.4988404/bin/cmake --build \"/Users/habbyge/iWatch/app/.externalNativeBuild/cmake/debug/armeabi-v7a\" --target iWatch",
+      "buildType": "debug",
+      "toolchain": "1089207642",
+      "abi": "armeabi-v7a",
+      "artifactName": "iWatch",
+      "files": [
+        {
+          "src": "/Users/habbyge/iWatch/app/src/main/cpp/iwatch.cpp",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
+        }
+      ],
+      "headers": [],
+      "output": "/Users/habbyge/iWatch/app/build/intermediates/cmake/debug/obj/armeabi-v7a/libiWatch.so"
+    }
+  },
+  "toolchains": {
+    "1089207642": {
+      "cppCompilerExecutable": "/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

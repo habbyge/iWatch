@@ -1,0 +1,2 @@
+[1/2] Building CXX object CMakeFiles/iWatch.dir/iwatch.cpp.o
+[2/2] Linking CXX shared library /Users/habbyge/iWatch/app/build/intermediates/cmake/debug/obj/arm64-v8a/libiWatch.so

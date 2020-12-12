@@ -1,0 +1,18 @@
+{
+  "buildFiles": [
+    "/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/build/cmake/android.toolchain.cmake",
+    "/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/build/cmake/platforms.cmake",
+    "/Users/habbyge/iWatch/app/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "/Users/habbyge/Library/Android/sdk/cmake/3.10.2.4988404/bin/cmake --build \"/Users/habbyge/iWatch/app/.externalNativeBuild/cmake/release/x86_64\" --target clean"
+  ],
+  "libraries": {
+    "iWatch-Release-x86_64": {
+      "artifactName": "iWatch",
+      "buildCommand": "/Users/habbyge/Library/Android/sdk/cmake/3.10.2.4988404/bin/cmake --build \"/Users/habbyge/iWatch/app/.externalNativeBuild/cmake/release/x86_64\" --target iWatch",
+      "abi": "x86_64",
+      "output": "/Users/habbyge/iWatch/app/build/intermediates/cmake/release/obj/x86_64/libiWatch.so"
+    }
+  }
+}
