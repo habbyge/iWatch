@@ -4,18 +4,23 @@
 
 #include "util/log.h"
 
+//#include <exception> C/C++ 的 Exception
+
 static const char* kClassMethodHookChar = "com/habbyge/iwatch/MethodHook";
 
-// FIXME: 这里需要考虑，对 inline 函数的影响，内联函数是否有 Method 对象，是否能够被成功替换 ？
+// FIXME: 方案限制：inline 函数 fix 会失败.
+//  这里需要考虑，对 inline 函数的影响，内联函数是否有 Method 对象，是否能够被成功替换 ？
 //  需要研究：直接 ArtMethod 整体替换的方案，是否能够解决 inline 问题 ？
-//  我的理解是：即使目标方法 inline 了，但是 ArMethod 对象还存在，只是其中包括的汇编代码段被直接拷贝到了其函数调
-//  用处. 这里可能会失败......
-//  经源代码 review + 研究 + 测试用例验证，这里 inline 不会对 ArtMethod 有影响，但是，我们在实际使用过程中，
-//  仍旧需要对可能被 inline 的方法，尽量避免fix，以免失效不起作用.
 //  这篇文章对 inline 的影响有详尽研究(同时也收录到了我的有道云笔记中了)：
 //  https://cloud.tencent.com/developer/article/1005604
 //  内联的源代码位置：art/compiler/optimizing/inliner.cc 中的 HInliner::Run()函数中.
 //  实际上，针对 "数据统计补丁" 来说，一般很少有机会在 inline 方法中插桩，即使需要，也可以通过其他手段突破.
+//  因此，作为 局限性之一的 inline fix 失败，实际上对 数据统计补丁来说，影响并不大，凡是并不仅能尽善尽美，接收缺陷.
+//  我研究了一阵子，就replace inline函数来说，从native层来说，几乎无解。。。
+//  如果在 Java层给每一个函数插桩一个try-catch，来阻止编译期的inline，实际上是非常糟糕的做法。。不能被接受
+//  实际上所有的方案，都不能尽善尽美，做不到 inline 的话，统计上报需求来了后，我们自己评估下，如果需要在可能被
+//  inline 的方法中插桩的话，我们就通过发版本方式来统计。。其实也还好.
+//  我 review 了下，我之前的那么多统计上报代码，在可能被 inline 的地方添加上报的可能性几乎么有。
 
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，
@@ -46,7 +51,7 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
     // 替换成新方法
     memcpy(srcArtMethod, dstArtMethod, methodHookClassInfo.methodSize);
 
-    LOGI("methodHook: Success !");
+    logi("methodHook: Success !");
 
     // 返回原方法地址
     return reinterpret_cast<jlong>(backupArtMethod);
@@ -58,7 +63,7 @@ static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong meth
     memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
     delete[] reinterpret_cast<int*>(backupArtMethod);
 
-    LOGV("methodRestore: Success !");
+    logv("methodRestore: Success !");
 
     return srcMethod;
 }
@@ -96,17 +101,17 @@ static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField)
     int* backupArtField = new int[fieldHookClassInfo.fieldSize];
     memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
     memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
-    LOGV("hook_field: Success !");
+    logv("hook_field: Success !");
     return reinterpret_cast<jlong>(backupArtField);
 }
 
 static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
     jboolean isCopy;
-    const char* className = env->GetStringUTFChars(clazzName, &isCopy);
-    LOGD("hookClass, className=%s", className);
-    jclass jclazz = env->FindClass(className);
-    env->ReleaseStringUTFChars(clazzName, className);
-    return reinterpret_cast<jlong>(jclazz);
+    const char* kClassName = env->GetStringUTFChars(clazzName, &isCopy);
+    logd("hookClass, className=%s", kClassName);
+    jclass kClass = env->FindClass(kClassName);
+    env->ReleaseStringUTFChars(clazzName, kClassName);
+    return reinterpret_cast<jlong>(kClass);
 }
 
 static JNINativeMethod gMethods[] = {

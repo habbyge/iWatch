@@ -78,7 +78,7 @@ public final class HookManager {
             Method dm = clazz2.getDeclaredMethod(methodName2, parameterTypes2);
             HookManager.get().hookMethod(sm, dm);
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            Log.e(TAG, "fixMethod, e: " + e.getMessage());
         }
     }
 
@@ -89,17 +89,17 @@ public final class HookManager {
 //        if (!Modifier.isStatic(hookMethod.getModifiers())) {
 //            throw new IllegalArgumentException("hook method must be static");
 //        }
-        Pair<String, String> key = Pair.create(hookMethod.getDeclaringClass().getName(),
-                                               hookMethod.getName());
-
-        if (methodHookMap.containsKey(key)) {
-            MethodHook methodHook = methodHookMap.get(key);
-            if (methodHook != null) {
-                methodHook.restore();
-            }
-        }
+//        Pair<String, String> key = Pair.create(hookMethod.getDeclaringClass().getName(),
+//                                               hookMethod.getName());
+//
+//        if (methodHookMap.containsKey(key)) {
+//            MethodHook methodHook = methodHookMap.get(key);
+//            if (methodHook != null) {
+//                methodHook.restore();
+//            }
+//        }
         MethodHook methodHook = new MethodHook(originMethod, hookMethod);
-        methodHookMap.put(key, methodHook);
+//        methodHookMap.put(key, methodHook);
         methodHook.hook();
     }
 

@@ -49,9 +49,10 @@ public class MethodHook {
     }
 
     public void hook() {
-        if (backupMethodPtr == 0L) {
+//        if (backupMethodPtr == 0L) {
             backupMethodPtr = hookMethod(srcMethod, hookMethod);
-        }
+//        }
+        Log.i(TAG, "hook success: " + backupMethodPtr);
     }
 
     public void restore() {

@@ -560,3 +560,7 @@ LXYX: 研究发现、纠错能力；；；；；；；；；；；；；；；�
 // 突破1：目标 method 中访问了当前类中的 field：反射 or 继承并修改 acc_flags.
 // 突破2：目标 method 所属 class 是匿名内部类: 起始针对固定版本，匿名内部类是不存在的，即：编译后都对应同一个类名,
          例如：com.habbyge.iwatch.MainActivity$5.
+
+// 仍有两个大问题需要突破的: ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+1. dex diff
+2. inline 函数的 fix.

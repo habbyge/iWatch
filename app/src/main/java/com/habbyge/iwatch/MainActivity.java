@@ -2,14 +2,11 @@ package com.habbyge.iwatch;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.habbyge.iwatch.test.MainActivity2;
-import com.habbyge.iwatch.test.MainActivity2Fix;
 import com.habbyge.iwatch.test.TestCase0;
 import com.habbyge.iwatch.test.TestInlineCase;
 
@@ -54,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
 //                TestCase0.printf("This is not fix !");
 
 
-                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+//                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+                printf("Mali");
             }
         });
 
@@ -66,9 +64,19 @@ public class MainActivity extends AppCompatActivity {
 //                        TestCase0.class, "printf", new Class<?>[] {String.class},
 //                        Fix0.class, "printf_Hook", new Class<?>[] {String.class});
 
-                HookManager.get().fixMethod(
-                        MainActivity2.class, "onResume", null,
-                        MainActivity2Fix.class, "onResume", null);
+//                HookManager.get().fixMethod(
+//                        MainActivity2.class, "onResume", null,
+//                        MainActivity2Fix.class, "onResume", null);
+
+//                try {
+//                    Class<?> srcClass = Class.forName("com.habbyge.iwatch.MainActivity");
+//                    Class<?> dstClass = Class.forName("com.habbyge.iwatch.test.MainActivity2");
+//                    HookManager.get().fixMethod(
+//                            srcClass, "printf", new Class<?>[]{String.class},
+//                            dstClass, "printf_Hook", new Class<?>[]{String.class});
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
             }
         });
 
@@ -117,26 +125,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressWarnings("all")
-    public void printf(String text) {
+    private void printf(String text) {
         Log.i(TAG, "printf: " + text);
+        ix = 100;
     }
 
-    @SuppressWarnings("all")
-    public void printf_Hook(String iStr) {
-        Log.i(TAG, "printf-Hook: " + iStr);
-        Log.i(TAG, "printf-Hook: 0");
-        Log.i(TAG, "printf-Hook: 1");
-        Log.i(TAG, "printf-Hook: 2");
-        Log.i(TAG, "printf-Hook: 3");
-        Log.i(TAG, "printf-Hook: 4");
+//    @SuppressWarnings("all")
+//    public void printf_Hook(String iStr) {
+//        Log.i(TAG, "printf-Hook: " + iStr);
+//    }
 
-        int ix = 10000;
-        Log.i(TAG, "printf-Hook: " + ix + 0);
-        Log.i(TAG, "printf-Hook: " + ix + 1);
-        Log.i(TAG, "printf-Hook: " + ix + 2);
-        Log.i(TAG, "printf-Hook: " + ix + 3);
-        Log.i(TAG, "printf-Hook: " + ix + 4);
 
-        HookManager.get().callOrigin(this, "I love Mali");
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG, "onPause ix = " + ix);
     }
 }
