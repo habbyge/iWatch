@@ -1,11 +1,11 @@
 package com.habbyge.iwatch;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.habbyge.iwatch.test.TestCase0;
 import com.habbyge.iwatch.test.TestInlineCase;
@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //                startActivity(new Intent(MainActivity.this, MainActivity2.class));
+                Log.i(TAG, "btnClick click !");
                 printf("Mali");
             }
         });
@@ -76,6 +77,31 @@ public class MainActivity extends AppCompatActivity {
 //                            dstClass, "printf_Hook", new Class<?>[]{String.class});
 //                } catch (Exception e) {
 //                    e.printStackTrace();
+//                }
+
+//                try {
+//                    Class<?> srcClass = Class.forName(
+//                            "com.habbyge.iwatch.MainActivity",
+//                            true, getClassLoader());
+//                    Class<?> dstClass = Class.forName(
+//                            "com.habbyge.iwatch.test.MainActivity2",
+//                            true, getClassLoader());
+//                    HookManager.get().fixMethod(
+//                            srcClass, "printf", new Class<?>[]{String.class},
+//                            dstClass, "printf_hook", new Class<?>[]{String.class});
+//                } catch (Exception e) {
+//                    Log.e(TAG, "hook fail: " + e.getMessage());
+//                }
+
+//                try {
+//                    Class<?> srcClass = MainActivity.class;
+//                    Class<?> dstClass = MainActivity2.class;
+//
+//                    HookManager.get().fixMethod(
+//                            srcClass, "printf", new Class<?>[]{String.class},
+//                            dstClass, "printf_hook", new Class<?>[]{String.class});
+//                } catch (Exception e) {
+//                    Log.e(TAG, "hook fail: " + e.getMessage());
 //                }
             }
         });

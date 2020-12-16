@@ -3,10 +3,11 @@
 //
 
 #include "util/log.h"
+//#include "artmethod.h"
 
 //#include <exception> C/C++ 的 Exception
 
-static const char* kClassMethodHookChar = "com/habbyge/iwatch/MethodHook";
+static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
 
 // FIXME: 方案限制：inline 函数 fix 会失败.
 //  这里需要考虑，对 inline 函数的影响，内联函数是否有 Method 对象，是否能够被成功替换 ？
@@ -22,36 +23,71 @@ static const char* kClassMethodHookChar = "com/habbyge/iwatch/MethodHook";
 //  inline 的方法中插桩的话，我们就通过发版本方式来统计。。其实也还好.
 //  我 review 了下，我之前的那么多统计上报代码，在可能被 inline 的地方添加上报的可能性几乎么有。
 
+// TODO: Android-11适配问题
+// TODO: dex diff 问题
+
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，
  * 这里 jmethodID 就是 ArtMethod.
  * 比起 ArtFix， iWatch方案屏蔽细节、尽量通用，没有适配性。
  */
-typedef struct {
+static struct {
     jmethodID m1;
     jmethodID m2;
     size_t methodSize;
-} methodHookClassInfo_t;
+} methodHookClassInfo;
+//static methodHookClassInfo_t methodHookClassInfo;
 
-static methodHookClassInfo_t methodHookClassInfo;
+static size_t artMethodSize = 0;
+
+static void init(JNIEnv* env, jclass, jobject m1, jobject m2) {
+    // art::mirror::ArtMethod
+    auto artMethod1 = env->FromReflectedMethod(m1);
+    auto artMethod2 = env->FromReflectedMethod(m2);
+    artMethodSize = (size_t) artMethod2 - (size_t) artMethod1;
+    logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
+                                                            (size_t) artMethod2,
+                                                            (size_t) artMethod1);
+
+    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+    auto func1ArtMeth1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+    auto func1ArtMeth2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+    artMethodSize = reinterpret_cast<size_t>(func1ArtMeth2) - reinterpret_cast<size_t>(func1ArtMeth1);
+
+    // artMethodSize = sizeof(ArtMethod);
+    logi("methodHookClassInfo.methodSize = %zu, %zu, %zu", artMethodSize,
+                                                           reinterpret_cast<size_t>(func1ArtMeth2),
+                                                           reinterpret_cast<size_t>(func1ArtMeth1))
+}
 
 /**
  * 采用整体替换方法结构(art::mirror::ArtMethod)，忽略底层实现，从而解决兼容稳定性问题，
  * 比AndFix稳定可靠.
  * 旧的方案ArtMethod中的
+ *
+ * sizeof(ArtMethod) 的原理:
+ * https://developer.aliyun.com/article/74598
+ * https://cloud.tencent.com/developer/article/1329595
+ * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
+ * 逻辑在 ClassLinker::LoadClass 中.
  */
 static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMethod) {
+    logi("methodHook: method_hook begin: %zu", artMethodSize);
+
     // art::mirror::ArtMethod
     void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
     void* dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
+    logd("method_hook, srcArtMethod=%zu, dstArtMethod=%zu", (size_t) srcArtMethod,
+                                                            (size_t) dstArtMethod);
 
-    int* backupArtMethod = new int[methodHookClassInfo.methodSize];
+    // todo 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败
+    int* backupArtMethod = new int[artMethodSize];
     // 备份原方法
-    memcpy(backupArtMethod, srcArtMethod, methodHookClassInfo.methodSize);
+    memcpy(backupArtMethod, srcArtMethod, artMethodSize);
     // 替换成新方法
-    memcpy(srcArtMethod, dstArtMethod, methodHookClassInfo.methodSize);
+    memcpy(srcArtMethod, dstArtMethod, artMethodSize);
 
-    logi("methodHook: Success !");
+    logi("methodHook: method_hook Success !");
 
     // 返回原方法地址
     return reinterpret_cast<jlong>(backupArtMethod);
@@ -68,19 +104,19 @@ static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong meth
     return srcMethod;
 }
 
-/*static void set_field_accFlags(JNIEnv* env, jobject fields[]) {
-    if (fields == nullptr) {
-        return;
-    }
-    size_t count = sizeof(fields) / sizeof(jfieldID);
-    if (count <= 0) {
-        return;
-    }
-    for (int i = 0; i < count; ++i) {
-        void* artField = env->FromReflectedField(fields[i]);
-        artField
-    }
-}*/
+//static void set_field_accFlags(JNIEnv* env, jobject fields[]) {
+//    if (fields == nullptr) {
+//        return;
+//    }
+//    size_t count = sizeof(fields) / sizeof(jfieldID);
+//    if (count <= 0) {
+//        return;
+//    }
+//    for (int i = 0; i < count; ++i) {
+//        void* artField = env->FromReflectedField(fields[i]);
+//        artField
+//    }
+//}
 
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtFiled 大小，
@@ -116,6 +152,11 @@ static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
 
 static JNINativeMethod gMethods[] = {
     {
+        "init",
+        "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)V",
+        (void*) init
+    },
+    {
         "hookMethod",
         "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)J",
         (void*) method_hook
@@ -142,26 +183,10 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
         return JNI_FALSE;
     }
-    jclass classEvaluateUtil = env->FindClass(kClassMethodHookChar);
+    jclass classEvaluateUtil = env->FindClass(kClassMethodHook);
     size_t count = sizeof(gMethods) / sizeof(gMethods[0]);
     if (env->RegisterNatives(classEvaluateUtil, gMethods, count) < 0) {
         return JNI_FALSE;
     }
-    methodHookClassInfo.m1 = env->GetStaticMethodID(classEvaluateUtil, "m1", "()V");
-    methodHookClassInfo.m2 = env->GetStaticMethodID(classEvaluateUtil, "m2", "()V");
-    methodHookClassInfo.methodSize =
-            reinterpret_cast<size_t>(methodHookClassInfo.m2) -
-            reinterpret_cast<size_t>(methodHookClassInfo.m1);
-
-    fieldHookClassInfo.field1 = env->GetStaticFieldID(classEvaluateUtil,
-                                                      "field1",
-                                                      "Ljava/lang/Object;");
-    fieldHookClassInfo.field2 = env->GetStaticFieldID(classEvaluateUtil,
-                                                      "field2",
-                                                      "Ljava/lang/Object;");
-    fieldHookClassInfo.fieldSize =
-            reinterpret_cast<size_t>(fieldHookClassInfo.field2) -
-            reinterpret_cast<size_t>(fieldHookClassInfo.field1);
-
     return JNI_VERSION_1_4;
 }
