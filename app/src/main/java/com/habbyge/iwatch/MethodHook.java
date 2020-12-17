@@ -1,5 +1,6 @@
 package com.habbyge.iwatch;
 
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.Keep;
@@ -43,7 +44,7 @@ public final class MethodHook {
     private final Method hookMethod;
 
     static void init() {
-        ArtMethodSize.init();
+        ArtMethodSize.init(Build.VERSION.SDK_INT);
     }
 
     @Keep
@@ -98,7 +99,7 @@ public final class MethodHook {
     }
 
     @Keep
-    public static native void init(Method m1, Method m2);
+    public static native void init(int sdkVersionCode, Method m1, Method m2);
     @Keep
     public static native long hookMethod(Method src, Method dst);
     @Keep

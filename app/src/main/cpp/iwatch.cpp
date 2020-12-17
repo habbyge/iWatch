@@ -39,8 +39,11 @@ static struct {
 //static methodHookClassInfo_t methodHookClassInfo;
 
 static size_t artMethodSize = 0;
+static int sdkVersion = 0;
 
-static void init(JNIEnv* env, jclass, jobject m1, jobject m2) {
+static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m2) {
+    sdkVersion = sdkVersionCode;
+
     // art::mirror::ArtMethod
     auto artMethod1 = env->FromReflectedMethod(m1);
     auto artMethod2 = env->FromReflectedMethod(m2);
@@ -49,15 +52,22 @@ static void init(JNIEnv* env, jclass, jobject m1, jobject m2) {
                                                             (size_t) artMethod2,
                                                             (size_t) artMethod1);
 
-    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
-    auto func1ArtMeth1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
-    auto func1ArtMeth2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
-    artMethodSize = reinterpret_cast<size_t>(func1ArtMeth2) - reinterpret_cast<size_t>(func1ArtMeth1);
+    if (sdkVersionCode <= 29) { // <= Android-10
+        jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+        auto func1ArtMeth1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+        auto func1ArtMeth2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+        artMethodSize = reinterpret_cast<size_t>(func1ArtMeth2) -
+                        reinterpret_cast<size_t>(func1ArtMeth1);
 
-    // artMethodSize = sizeof(ArtMethod);
-    logi("methodHookClassInfo.methodSize = %zu, %zu, %zu", artMethodSize,
-                                                           reinterpret_cast<size_t>(func1ArtMeth2),
-                                                           reinterpret_cast<size_t>(func1ArtMeth1))
+        // artMethodSize = sizeof(ArtMethod);
+        logi("methodHookClassInfo.methodSize = %d, %zu, %zu, %zu", sdkVersionCode,
+                                                                artMethodSize,
+                                                                reinterpret_cast<size_t>(func1ArtMeth2),
+                                                                reinterpret_cast<size_t>(func1ArtMeth1));
+    } else { // >= Android-11
+        loge("iwatch init failure: sdk >= API-30(Android-11): %d", sdkVersionCode);
+        // TODO: >= Android-11的机器有待适配
+    }
 }
 
 /**
@@ -153,7 +163,7 @@ static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
 static JNINativeMethod gMethods[] = {
     {
         "init",
-        "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)V",
+        "(ILjava/lang/reflect/Method;Ljava/lang/reflect/Method;)V",
         (void*) init
     },
     {

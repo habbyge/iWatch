@@ -18,7 +18,7 @@ public class ArtMethodSize {
     @Keep
     public static void func2() {}
 
-    public static void init() {
+    public static void init(int sdkVersion) {
         try {
             Method method1 = ArtMethodSize.class.getDeclaredMethod("func1");
             method1.setAccessible(true);
@@ -26,7 +26,7 @@ public class ArtMethodSize {
             Method method2 = ArtMethodSize.class.getDeclaredMethod("func2");
             method2.setAccessible(true);
 
-            MethodHook.init(method1, method2);
+            MethodHook.init(sdkVersion, method1, method2);
         } catch (Exception e) {
             Log.i("iWatch.ArtMethodSize", "ArtMethodSize init crash: " + e.getMessage());
         }
