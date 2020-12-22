@@ -4,7 +4,7 @@
 
 #include "util/log.h"
 //#include "artmethod.h"
-
+#include <memory>
 //#include <exception> C/C++ 的 Exception
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
@@ -45,28 +45,35 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
     sdkVersion = sdkVersionCode;
 
     // art::mirror::ArtMethod
-    auto artMethod1 = env->FromReflectedMethod(m1);
-    auto artMethod2 = env->FromReflectedMethod(m2);
-    artMethodSize = (size_t) artMethod2 - (size_t) artMethod1;
+    auto artMethod11 = env->FromReflectedMethod(m1);
+    auto artMethod22 = env->FromReflectedMethod(m2);
+    artMethodSize = (size_t) artMethod22 - (size_t) artMethod11;
     logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
-                                                            (size_t) artMethod2,
-                                                            (size_t) artMethod1);
+                                                            (size_t) artMethod22,
+                                                            (size_t) artMethod11);
 
     if (sdkVersionCode <= 29) { // <= Android-10
         jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
-        auto func1ArtMeth1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
-        auto func1ArtMeth2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
-        artMethodSize = reinterpret_cast<size_t>(func1ArtMeth2) -
-                        reinterpret_cast<size_t>(func1ArtMeth1);
+        auto artMethod1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+        auto artMethod2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+        artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
 
         // artMethodSize = sizeof(ArtMethod);
-        logi("methodHookClassInfo.methodSize = %d, %zu, %zu, %zu", sdkVersionCode,
-                                                                artMethodSize,
-                                                                reinterpret_cast<size_t>(func1ArtMeth2),
-                                                                reinterpret_cast<size_t>(func1ArtMeth1));
+        logi("artMethodSize = %d, %zu, %zu, %zu", sdkVersionCode, artMethodSize,
+                                                  reinterpret_cast<size_t>(artMethod2),
+                                                  reinterpret_cast<size_t>(artMethod1));
     } else { // >= Android-11
-        loge("iwatch init failure: sdk >= API-30(Android-11): %d", sdkVersionCode);
+        loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
+
         // TODO: >= Android-11的机器有待适配
+        jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+        auto artMethod1 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+        auto artMethod2 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+        artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
+        // artMethodSize = sizeof(ArtMethod);
+        logi("artMethodSize = %zu, %zu, %zu", artMethodSize,
+                                              reinterpret_cast<size_t>(artMethod2),
+                                              reinterpret_cast<size_t>(artMethod1));
     }
 }
 
@@ -145,10 +152,11 @@ static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField)
     void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
     void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
     int* backupArtField = new int[fieldHookClassInfo.fieldSize];
+
     memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
     memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
     logv("hook_field: Success !");
-    return reinterpret_cast<jlong>(backupArtField);
+    return reinterpret_cast<jlong>(backupArtField); // 记得 free 掉
 }
 
 static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
