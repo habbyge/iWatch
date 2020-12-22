@@ -5,6 +5,7 @@
 #include "util/log.h"
 //#include "artmethod.h"
 #include <memory>
+#include "art/ArtMethod_11.h"
 //#include <exception> C/C++ 的 Exception
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
@@ -66,14 +67,17 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
         loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
 
         // TODO: >= Android-11的机器有待适配
-        jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
-        auto artMethod1 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
-        auto artMethod2 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
-        artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
-        // artMethodSize = sizeof(ArtMethod);
-        logi("artMethodSize = %zu, %zu, %zu", artMethodSize,
-                                              reinterpret_cast<size_t>(artMethod2),
-                                              reinterpret_cast<size_t>(artMethod1));
+//        jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+//        auto artMethod1 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+//        auto artMethod2 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+//        artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
+//        // artMethodSize = sizeof(ArtMethod);
+//        logi("artMethodSize = %zu, %zu, %zu", artMethodSize,
+//                                              reinterpret_cast<size_t>(artMethod2),
+//                                              reinterpret_cast<size_t>(artMethod1));
+
+        artMethodSize = sizeof(art::mirror::ArtMethod_11);
+        logi("artMethodSize = %zu", artMethodSize);
     }
 }
 
