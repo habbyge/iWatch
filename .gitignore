@@ -1,2 +1,7 @@
-/local.properties
-.gradle
+local.properties
+.gradle/
+
+app/src/main/cpp/CMakeFiles/
+app/src/main/cpp/Makefile
+app/src/main/cpp/cmake_install.cmake
+app/.externalNativeBuild/

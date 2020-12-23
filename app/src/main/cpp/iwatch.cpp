@@ -2,10 +2,10 @@
 // Created by 葛祥林 on 2020/11/24.
 //
 
+#include <jni.h>
 #include "util/log.h"
-//#include "artmethod.h"
-#include <memory>
-#include "art/ArtMethod_11.h"
+//#include <memory>
+#include "art/art_method_11.h"
 //#include <exception> C/C++ 的 Exception
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
@@ -33,52 +33,54 @@ static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
  * 比起 ArtFix， iWatch方案屏蔽细节、尽量通用，没有适配性。
  */
 static struct {
-    jmethodID m1;
-    jmethodID m2;
-    size_t methodSize;
+  jmethodID m1;
+  jmethodID m2;
+  size_t methodSize;
 } methodHookClassInfo;
 //static methodHookClassInfo_t methodHookClassInfo;
 
 static size_t artMethodSize = 0;
 static int sdkVersion = 0;
 
-static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m2) {
-    sdkVersion = sdkVersionCode;
+static void init(JNIEnv* env, jclass, jint sdkVersionCode,
+                 jobject m1, jobject m2) {
 
-    // art::mirror::ArtMethod
-    auto artMethod11 = env->FromReflectedMethod(m1);
-    auto artMethod22 = env->FromReflectedMethod(m2);
-    artMethodSize = (size_t) artMethod22 - (size_t) artMethod11;
-    logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
-                                                            (size_t) artMethod22,
-                                                            (size_t) artMethod11);
+  sdkVersion = sdkVersionCode;
 
-    if (sdkVersionCode <= 29) { // <= Android-10
-        jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
-        auto artMethod1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
-        auto artMethod2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
-        artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
+  // art::mirror::ArtMethod
+  auto artMethod11 = env->FromReflectedMethod(m1);
+  auto artMethod22 = env->FromReflectedMethod(m2);
+  artMethodSize = (size_t) artMethod22 - (size_t) artMethod11;
+  logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
+       (size_t) artMethod22,
+       (size_t) artMethod11);
 
-        // artMethodSize = sizeof(ArtMethod);
-        logi("artMethodSize = %d, %zu, %zu, %zu", sdkVersionCode, artMethodSize,
-                                                  reinterpret_cast<size_t>(artMethod2),
-                                                  reinterpret_cast<size_t>(artMethod1));
-    } else { // >= Android-11
-        loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
+  if (sdkVersionCode <= 29) { // <= Android-10
+    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+    auto artMethod1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+    auto artMethod2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+    artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
 
-        // TODO: >= Android-11的机器有待适配
-//        jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
-//        auto artMethod1 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
-//        auto artMethod2 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
-//        artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
-//        // artMethodSize = sizeof(ArtMethod);
-//        logi("artMethodSize = %zu, %zu, %zu", artMethodSize,
-//                                              reinterpret_cast<size_t>(artMethod2),
-//                                              reinterpret_cast<size_t>(artMethod1));
+    // artMethodSize = sizeof(ArtMethod);
+    logi("artMethodSize = %d, %zu, %zu, %zu", sdkVersionCode, artMethodSize,
+         reinterpret_cast<size_t>(artMethod2),
+         reinterpret_cast<size_t>(artMethod1));
+  } else { // >= Android-11
+    loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
 
-        artMethodSize = sizeof(art::mirror::ArtMethod_11);
-        logi("artMethodSize = %zu", artMethodSize);
-    }
+    // TODO: >= Android-11的机器有待适配
+//    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+//    auto artMethod1 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+//    auto artMethod2 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+//    artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
+//    // artMethodSize = sizeof(ArtMethod);
+//    logi("artMethodSize = %zu, %zu, %zu", artMethodSize,
+//                                          reinterpret_cast<size_t>(artMethod2),
+//                                          reinterpret_cast<size_t>(artMethod1));
+
+    artMethodSize = sizeof(art::mirror::art_method_11);
+    logi("artMethodSize = %zu", artMethodSize);
+  }
 }
 
 /**
@@ -92,37 +94,44 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
  * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
  * 逻辑在 ClassLinker::LoadClass 中.
  */
-static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMethod) {
-    logi("methodHook: method_hook begin: %zu", artMethodSize);
+static jlong method_hook(JNIEnv* env, jclass,
+                         jobject srcMethod,
+                         jobject dstMethod) {
 
-    // art::mirror::ArtMethod
-    void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
-    void* dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
-    logd("method_hook, srcArtMethod=%zu, dstArtMethod=%zu", (size_t) srcArtMethod,
-                                                            (size_t) dstArtMethod);
+  logi("methodHook: method_hook begin: %zu", artMethodSize);
 
-    // todo 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败
-    int* backupArtMethod = new int[artMethodSize];
-    // 备份原方法
-    memcpy(backupArtMethod, srcArtMethod, artMethodSize);
-    // 替换成新方法
-    memcpy(srcArtMethod, dstArtMethod, artMethodSize);
+  // art::mirror::ArtMethod
+  void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
+  void* dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
+  logd("method_hook, srcArtMethod=%zu, dstArtMethod=%zu", (size_t)srcArtMethod, (size_t)dstArtMethod);
 
-    logi("methodHook: method_hook Success !");
+  // TODO: 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败，错误！！！！！！
+  //  经过研究 android-11.0.0_r17(http://aosp.opersys.com/) 源代码，class类中的ArtMethod
+  //  排布依旧是线性分配的，这里没问题，问题是：从 FromReflectedMethod 这里获取地址是错误的(是个52/53很小的数值，
+  //  一看就不是地址).
+  int* backupArtMethod = new int[artMethodSize];
+  // 备份原方法
+  memcpy(backupArtMethod, srcArtMethod, artMethodSize);
+  // 替换成新方法
+  memcpy(srcArtMethod, dstArtMethod, artMethodSize);
 
-    // 返回原方法地址
-    return reinterpret_cast<jlong>(backupArtMethod);
+  logi("methodHook: method_hook Success !");
+
+  // 返回原方法地址
+  return reinterpret_cast<jlong>(backupArtMethod);
 }
 
-static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong methodPtr) {
-    void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
-    void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
-    memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
-    delete[] reinterpret_cast<int*>(backupArtMethod);
+static jobject restore_method(JNIEnv* env, jclass,
+                                     jobject srcMethod, jlong methodPtr) {
 
-    logv("methodRestore: Success !");
+  void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
+  void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
+  memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
+  delete[] reinterpret_cast<int*>(backupArtMethod);
 
-    return srcMethod;
+  logv("methodRestore: Success !");
+
+  return srcMethod;
 }
 
 //static void set_field_accFlags(JNIEnv* env, jobject fields[]) {
@@ -144,71 +153,73 @@ static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong meth
  * 这里 jfieldID 就是 ArtFiled.
  */
 typedef struct {
-    jfieldID field1;
-    jfieldID field2;
-    size_t fieldSize;
+  jfieldID field1;
+  jfieldID field2;
+  size_t fieldSize;
 } fieldHookClassInfo_t;
 
 static fieldHookClassInfo_t fieldHookClassInfo;
 
-static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
-    // art::mirror::ArtField
-    void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
-    void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
-    int* backupArtField = new int[fieldHookClassInfo.fieldSize];
+static jlong hook_field(JNIEnv* env, jclass, jobject
+                        srcField, jobject dstField) {
 
-    memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
-    memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
-    logv("hook_field: Success !");
-    return reinterpret_cast<jlong>(backupArtField); // 记得 free 掉
+  // art::mirror::ArtField
+  void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
+  void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
+  int* backupArtField = new int[fieldHookClassInfo.fieldSize];
+
+  memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
+  memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
+  logv("hook_field: Success !");
+  return reinterpret_cast<jlong>(backupArtField); // 记得 free 掉
 }
 
 static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
-    jboolean isCopy;
-    const char* kClassName = env->GetStringUTFChars(clazzName, &isCopy);
-    logd("hookClass, className=%s", kClassName);
-    jclass kClass = env->FindClass(kClassName);
-    env->ReleaseStringUTFChars(clazzName, kClassName);
-    return reinterpret_cast<jlong>(kClass);
+  jboolean isCopy;
+  const char* kClassName = env->GetStringUTFChars(clazzName, &isCopy);
+  logd("hookClass, className=%s", kClassName);
+  jclass kClass = env->FindClass(kClassName);
+  env->ReleaseStringUTFChars(clazzName, kClassName);
+  return reinterpret_cast<jlong>(kClass);
 }
 
 static JNINativeMethod gMethods[] = {
-    {
-        "init",
-        "(ILjava/lang/reflect/Method;Ljava/lang/reflect/Method;)V",
-        (void*) init
-    },
-    {
-        "hookMethod",
-        "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)J",
-        (void*) method_hook
-    },
-    {
-        "restoreMethod",
-        "(Ljava/lang/reflect/Method;J)Ljava/lang/reflect/Method;",
-        (void*) restore_method
-    },
-    {
-        "hookField",
-        "(Ljava/lang/reflect/Field;Ljava/lang/reflect/Field;)J",
-        (void*) hook_field
-    },
-    {
-        "hookClass",
-        "(Ljava/lang/String;)J",
-        (void*) hook_class
-    }
+  {
+    "init",
+    "(ILjava/lang/reflect/Method;Ljava/lang/reflect/Method;)V",
+    (void*) init
+  },
+  {
+    "hookMethod",
+    "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)J",
+    (void*) method_hook
+  },
+  {
+    "restoreMethod",
+    "(Ljava/lang/reflect/Method;J)Ljava/lang/reflect/Method;",
+    (void*) restore_method
+  },
+  {
+    "hookField",
+    "(Ljava/lang/reflect/Field;Ljava/lang/reflect/Field;)J",
+    (void*) hook_field
+  },
+  {
+    "hookClass",
+    "(Ljava/lang/String;)J",
+    (void*) hook_class
+  }
 };
 
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
-    JNIEnv* env = nullptr;
-    if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
-        return JNI_FALSE;
-    }
-    jclass classEvaluateUtil = env->FindClass(kClassMethodHook);
-    size_t count = sizeof(gMethods) / sizeof(gMethods[0]);
-    if (env->RegisterNatives(classEvaluateUtil, gMethods, count) < 0) {
-        return JNI_FALSE;
-    }
-    return JNI_VERSION_1_4;
+  JNIEnv* env = nullptr;
+  if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
+    return JNI_FALSE;
+  }
+  jclass classEvaluateUtil = env->FindClass(kClassMethodHook);
+  size_t count = sizeof(gMethods) / sizeof(gMethods[0]);
+  if (env->RegisterNatives(classEvaluateUtil, gMethods, count) < 0) {
+    return JNI_FALSE;
+  }
+  return JNI_VERSION_1_4;
 }

@@ -5,9 +5,7 @@
 #ifndef METHODHOOK_LOG_H
 #define METHODHOOK_LOG_H
 
-#include <jni.h>
 #include <android/log.h>
-#include <cstring>
 
 #define logv(...)  ((void)__android_log_print(ANDROID_LOG_VERBOSE, "iWatch", __VA_ARGS__))
 #define logi(...)  ((void)__android_log_print(ANDROID_LOG_INFO, "iWatch", __VA_ARGS__))
