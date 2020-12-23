@@ -121,13 +121,11 @@ static jlong method_hook(JNIEnv* env, jclass,
   return reinterpret_cast<jlong>(backupArtMethod);
 }
 
-static jobject restore_method(JNIEnv* env, jclass,
-                                     jobject srcMethod, jlong methodPtr) {
-
+static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong methodPtr) {
   void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
   void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
   memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
-  delete[] reinterpret_cast<int*>(backupArtMethod);
+  delete[] reinterpret_cast<int*>(backupArtMethod); // 还原时卸载
 
   logv("methodRestore: Success !");
 
