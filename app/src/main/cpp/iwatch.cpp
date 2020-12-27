@@ -42,9 +42,7 @@ static struct {
 static size_t artMethodSize = 0;
 static int sdkVersion = 0;
 
-static void init(JNIEnv* env, jclass, jint sdkVersionCode,
-                 jobject m1, jobject m2) {
-
+static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m2) {
   sdkVersion = sdkVersionCode;
 
   // art::mirror::ArtMethod
@@ -94,10 +92,7 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode,
  * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
  * 逻辑在 ClassLinker::LoadClass 中.
  */
-static jlong method_hook(JNIEnv* env, jclass,
-                         jobject srcMethod,
-                         jobject dstMethod) {
-
+static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMethod) {
   logi("methodHook: method_hook begin: %zu", artMethodSize);
 
   // art::mirror::ArtMethod
