@@ -6,7 +6,17 @@
 #include "util/log.h"
 //#include <memory>
 #include "art/art_method_11.h"
+#include <iostream>
+//#include <art/runtime/jni/jni_internal.h>
 //#include <exception> C/C++ 的 Exception
+
+// -----------------------------------------------------------------------------------------------
+// 查看 art 虚拟机代码技巧：
+// 1. Java中的class全名(例如：java/lang/reflect/Method)，对应 Art 中的源文件是：
+// art/runtime/native/java_lang_reflect_Method.h
+// art/runtime/native/java_lang_reflect_Method.cc
+// 即标准的 JNI 接口协议.
+// -----------------------------------------------------------------------------------------------
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
 
@@ -15,29 +25,29 @@ static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
 //  需要研究：直接 ArtMethod 整体替换的方案，是否能够解决 inline 问题 ？
 //  这篇文章对 inline 的影响有详尽研究(同时也收录到了我的有道云笔记中了)：
 //  https://cloud.tencent.com/developer/article/1005604
-//  内联的源代码位置：art/compiler/optimizing/inliner.cc 中的 HInliner::Run()函数中.
+//  内联的源代码位置: art/compiler/optimizing/inliner.cc 中的 HInliner::Run() 函数中.
 //  实际上，针对 "数据统计补丁" 来说，一般很少有机会在 inline 方法中插桩，即使需要，也可以通过其他手段突破.
 //  因此，作为 局限性之一的 inline fix 失败，实际上对 数据统计补丁来说，影响并不大，凡是并不仅能尽善尽美，接收缺陷.
-//  我研究了一阵子，就replace inline函数来说，从native层来说，几乎无解。。。
-//  如果在 Java层给每一个函数插桩一个try-catch，来阻止编译期的inline，实际上是非常糟糕的做法。。不能被接受
+//  我研究了一阵子，就 replace inline 函数来说，从 native 层来说，几乎无解。。。
+//  如果在 Java 层给每一个函数插桩一个 try-catch，来阻止编译期的 inline，实际上是非常糟糕的做法。。不能被接受
 //  实际上所有的方案，都不能尽善尽美，做不到 inline 的话，统计上报需求来了后，我们自己评估下，如果需要在可能被
 //  inline 的方法中插桩的话，我们就通过发版本方式来统计。。其实也还好.
 //  我 review 了下，我之前的那么多统计上报代码，在可能被 inline 的地方添加上报的可能性几乎么有。
 
-// TODO: Android-11适配问题
+// TODO: Android-11 适配问题
 // TODO: dex diff 问题
 
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，
  * 这里 jmethodID 就是 ArtMethod.
- * 比起 ArtFix， iWatch方案屏蔽细节、尽量通用，没有适配性。
+ * 比起 ArtFix，iWatch 方案屏蔽细节、尽量通用，没有适配性。
  */
 static struct {
   jmethodID m1;
   jmethodID m2;
   size_t methodSize;
 } methodHookClassInfo;
-//static methodHookClassInfo_t methodHookClassInfo;
+// static methodHookClassInfo_t methodHookClassInfo;
 
 static size_t artMethodSize = 0;
 static int sdkVersion = 0;
@@ -48,12 +58,12 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode,
   sdkVersion = sdkVersionCode;
 
   // art::mirror::ArtMethod
-  auto artMethod11 = env->FromReflectedMethod(m1);
-  auto artMethod22 = env->FromReflectedMethod(m2);
-  artMethodSize = (size_t) artMethod22 - (size_t) artMethod11;
-  logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
-       (size_t) artMethod22,
-       (size_t) artMethod11);
+//  auto artMethod11 = env->FromReflectedMethod(m1);
+//  auto artMethod22 = env->FromReflectedMethod(m2);
+//  artMethodSize = (size_t) artMethod22 - (size_t) artMethod11;
+//  logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
+//       (size_t) artMethod22,
+//       (size_t) artMethod11);
 
   if (sdkVersionCode <= 29) { // <= Android-10
     jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
@@ -62,24 +72,61 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode,
     artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
 
     // artMethodSize = sizeof(ArtMethod);
-    logi("artMethodSize = %d, %zu, %zu, %zu", sdkVersionCode, artMethodSize,
-         reinterpret_cast<size_t>(artMethod2),
-         reinterpret_cast<size_t>(artMethod1));
+    logi("artMethodSize-1 = %d, %zu, %zu, %zu", sdkVersionCode, artMethodSize,
+                                              reinterpret_cast<size_t>(artMethod2),
+                                              reinterpret_cast<size_t>(artMethod1));
   } else { // >= Android-11
     loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
 
-    // TODO: >= Android-11的机器有待适配
-//    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
-//    auto artMethod1 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
-//    auto artMethod2 = (void**) env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
-//    artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
-//    // artMethodSize = sizeof(ArtMethod);
-//    logi("artMethodSize = %zu, %zu, %zu", artMethodSize,
-//                                          reinterpret_cast<size_t>(artMethod2),
-//                                          reinterpret_cast<size_t>(artMethod1));
+    // [技术方案原理]:
+    // review 代码发现这里与之前不同：
+    // 代码路径：art/runtime/jni/jni_internal.h
+    // - Android-11
+    // template <bool kEnableIndexIds = true>
+    // ALWAYS_INLINE
+    // static inline ArtMethod* DecodeArtMethod(jmethodID method_id) {
+    //   if (IsIndexId<kEnableIndexIds>(method_id)) {
+    //     return Runtime::Current()->GetJniIdManager()->DecodeMethodId(method_id);
+    //   } else {
+    //     return reinterpret_cast<ArtMethod*>(method_id);
+    //   }
+    // }
+    // - Android-10
+    // ALWAYS_INLINE
+    // static inline ArtMethod* DecodeArtMethod(jmethodID method_id) {
+    //   return reinterpret_cast<ArtMethod*>(method_id);
+    // }
+    // 很明显可以看到，Android-10 中的 jmethodID 与 ArtMethod* 相等；Android-11 中的就不一定了
+    // TODO: ......
 
-    artMethodSize = sizeof(art::mirror::art_method_11);
-    logi("artMethodSize = %zu", artMethodSize);
+    // art/runtime/jni/jni_id_manager.h/cc 中:
+    // ArtMethod* DecodeMethodId(jmethodID method) REQUIRES(!Locks::jni_id_lock_);
+    //
+
+    // TODO: >= Android-11 的机器有待适配
+    // 方案1:
+    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+    auto methodid1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+    auto methodid2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+//    artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
+    // artMethodSize = sizeof(ArtMethod);
+    auto IsIndexId1 = (reinterpret_cast<uintptr_t>(methodid1) % 2) != 0;
+    auto IsIndexId2 = (reinterpret_cast<uintptr_t>(methodid2) % 2) != 0;
+    logi("artMethodSize-2 = %zu, %zu, %zu, %zu, %d, %d", artMethodSize,
+                                                    reinterpret_cast<uintptr_t>(ArtMethodSizeClass),
+                                                    reinterpret_cast<uintptr_t>(methodid1),
+                                                    reinterpret_cast<uintptr_t>(methodid2),
+                                                    IsIndexId1, IsIndexId2);
+
+//    void* artMethod1 = art::jni::DecodeArtMethod(methodid1);
+//    void* artMethod2 = art::jni::DecodeArtMethod(methodid2);
+//    logi("artMethodSize-2 = %zu, %zu, %zu", artMethodSize,
+//                                            reinterpret_cast<size_t>(artMethod1),
+//                                            reinterpret_cast<size_t>(artMethod2));
+
+      // 方案2:
+//    artMethodSize = sizeof(art::mirror::art_method_11);
+//    logi("artMethodSize = %zu", artMethodSize);
   }
 }
 
@@ -103,13 +150,14 @@ static jlong method_hook(JNIEnv* env, jclass,
   // art::mirror::ArtMethod
   void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
   void* dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
-  logd("method_hook, srcArtMethod=%zu, dstArtMethod=%zu", (size_t)srcArtMethod, (size_t)dstArtMethod);
+  logd("method_hook, srcArtMethod=%lld, dstArtMethod=%lld",
+      (int64_t) srcArtMethod, (int64_t) dstArtMethod);
 
   // TODO: 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败，错误！！！！！！
   //  经过研究 android-11.0.0_r17(http://aosp.opersys.com/) 源代码，class类中的ArtMethod
   //  排布依旧是线性分配的，这里没问题，问题是：从 FromReflectedMethod 这里获取地址是错误的(是个52/53很小的数值，
   //  一看就不是地址).
-  int* backupArtMethod = new int[artMethodSize];
+  char* backupArtMethod = new char[artMethodSize];
   // 备份原方法
   memcpy(backupArtMethod, srcArtMethod, artMethodSize);
   // 替换成新方法
@@ -121,11 +169,13 @@ static jlong method_hook(JNIEnv* env, jclass,
   return reinterpret_cast<jlong>(backupArtMethod);
 }
 
-static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong methodPtr) {
+static jobject restore_method(JNIEnv* env, jclass,
+                                     jobject srcMethod, jlong methodPtr) {
+
   void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
   void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
   memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
-  delete[] reinterpret_cast<int*>(backupArtMethod); // 还原时卸载
+  delete[] reinterpret_cast<char*>(backupArtMethod); // 还原时卸载
 
   logv("methodRestore: Success !");
 
