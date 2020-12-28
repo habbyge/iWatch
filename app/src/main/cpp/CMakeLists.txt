@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.10.2)
 project("iWatch")
 
 set(CMAKE_CXX_FLAGS "-std=c++11")
-set(SRC_LIST iwatch.cpp)
+set(SRC_LIST iwatch.cpp common/elfop.cpp)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -29,7 +29,9 @@ add_library(
 )
 
 include_directories(
-    util/log.h
+    common/log.h
+    common/elfop.h
+    art/art_method_11.h
 )
 
 # Searches for a specified prebuilt library and stores the path as a

@@ -60,9 +60,16 @@ build CMakeFiles/iWatch.dir/iwatch.cpp.o: CXX_COMPILER__iWatch /Users/habbyge/iW
   DEFINES = -DiWatch_EXPORTS
   DEP_FILE = CMakeFiles/iWatch.dir/iwatch.cpp.o.d
   FLAGS = -std=c++11 -Oz -DNDEBUG  -fPIC
-  INCLUDES = -I/Users/habbyge/iWatch/app/src/main/cpp/util/log.h
+  INCLUDES = -I/Users/habbyge/iWatch/app/src/main/cpp/common/log.h -I/Users/habbyge/iWatch/app/src/main/cpp/common/elfop.h -I/Users/habbyge/iWatch/app/src/main/cpp/art/art_method_11.h
   OBJECT_DIR = CMakeFiles/iWatch.dir
   OBJECT_FILE_DIR = CMakeFiles/iWatch.dir
+build CMakeFiles/iWatch.dir/common/elfop.cpp.o: CXX_COMPILER__iWatch /Users/habbyge/iWatch/app/src/main/cpp/common/elfop.cpp || cmake_object_order_depends_target_iWatch
+  DEFINES = -DiWatch_EXPORTS
+  DEP_FILE = CMakeFiles/iWatch.dir/common/elfop.cpp.o.d
+  FLAGS = -std=c++11 -Oz -DNDEBUG  -fPIC
+  INCLUDES = -I/Users/habbyge/iWatch/app/src/main/cpp/common/log.h -I/Users/habbyge/iWatch/app/src/main/cpp/common/elfop.h -I/Users/habbyge/iWatch/app/src/main/cpp/art/art_method_11.h
+  OBJECT_DIR = CMakeFiles/iWatch.dir
+  OBJECT_FILE_DIR = CMakeFiles/iWatch.dir/common
 
 # =============================================================================
 # Link build statements for SHARED_LIBRARY target iWatch
@@ -71,7 +78,7 @@ build CMakeFiles/iWatch.dir/iwatch.cpp.o: CXX_COMPILER__iWatch /Users/habbyge/iW
 #############################################
 # Link the shared library /Users/habbyge/iWatch/app/build/intermediates/cmake/release/obj/armeabi-v7a/libiWatch.so
 
-build /Users/habbyge/iWatch/app/build/intermediates/cmake/release/obj/armeabi-v7a/libiWatch.so: CXX_SHARED_LIBRARY_LINKER__iWatch CMakeFiles/iWatch.dir/iwatch.cpp.o | /Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/arm-linux-androideabi/21/liblog.so
+build /Users/habbyge/iWatch/app/build/intermediates/cmake/release/obj/armeabi-v7a/libiWatch.so: CXX_SHARED_LIBRARY_LINKER__iWatch CMakeFiles/iWatch.dir/iwatch.cpp.o CMakeFiles/iWatch.dir/common/elfop.cpp.o | /Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/arm-linux-androideabi/21/liblog.so
   LANGUAGE_COMPILE_FLAGS = -std=c++11 -Oz -DNDEBUG
   LINK_FLAGS = -Wl,--exclude-libs,libgcc.a -Wl,--exclude-libs,libgcc_real.a -Wl,--exclude-libs,libatomic.a -static-libstdc++ -Wl,--build-id -Wl,--fatal-warnings -Wl,--exclude-libs,libunwind.a -Wl,--no-undefined -Qunused-arguments
   LINK_LIBRARIES = -llog -latomic -lm

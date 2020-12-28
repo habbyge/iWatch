@@ -3,10 +3,12 @@
 //
 
 #include <jni.h>
-#include "util/log.h"
+#include "common/log.h"
 //#include <memory>
 #include "art/art_method_11.h"
 #include <iostream>
+#include "common/elfop.h"
+
 //#include <art/runtime/jni/jni_internal.h>
 //#include <exception> C/C++ 的 Exception
 
@@ -71,10 +73,17 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
 
     // artMethodSize = sizeof(ArtMethod);
     logi("artMethodSize-1 = %d, %zu, %zu, %zu", sdkVersionCode, artMethodSize,
-                                              reinterpret_cast<size_t>(artMethod2),
-                                              reinterpret_cast<size_t>(artMethod1));
+                                                reinterpret_cast<size_t>(artMethod2),
+                                                reinterpret_cast<size_t>(artMethod1));
   } else { // >= Android-11
     loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
+
+    // todo
+    void* handle = open_elf("libart.so", RTLD_NOW);
+    logi("open_elf: %p", handle);
+    if (handle == 0x00) {
+      return;
+    }
 
     // [技术方案原理]:
     // review 代码发现这里与之前不同：

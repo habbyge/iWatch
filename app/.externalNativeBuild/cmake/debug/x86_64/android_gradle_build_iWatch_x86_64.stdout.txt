@@ -1,15 +1,16 @@
-[1/2] Building CXX object CMakeFiles/iWatch.dir/iwatch.cpp.o
-/Users/habbyge/iWatch/app/src/main/cpp/iwatch.cpp:154:7: warning: format specifies type 'long long' but the argument has type 'int64_t' (aka 'long') [-Wformat]
+[1/3] Building CXX object CMakeFiles/iWatch.dir/common/elfop.cpp.o
+[2/3] Building CXX object CMakeFiles/iWatch.dir/iwatch.cpp.o
+/Users/habbyge/iWatch/app/src/main/cpp/iwatch.cpp:155:7: warning: format specifies type 'long long' but the argument has type 'int64_t' (aka 'long') [-Wformat]
       (int64_t) srcArtMethod, (int64_t) dstArtMethod);
       ^~~~~~~~~~~~~~~~~~~~~~
-/Users/habbyge/iWatch/app/src/main/cpp/util/log.h:12:76: note: expanded from macro 'logd'
-#define logd(...)  ((void)__android_log_print(ANDROID_LOG_DEBUG, "iWatch", __VA_ARGS__))
-                                                                           ^~~~~~~~~~~
-/Users/habbyge/iWatch/app/src/main/cpp/iwatch.cpp:154:31: warning: format specifies type 'long long' but the argument has type 'int64_t' (aka 'long') [-Wformat]
+/Users/habbyge/iWatch/app/src/main/cpp/common/log.h:27:71: note: expanded from macro 'logd'
+#define logd(...)  ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
+                                                                      ^~~~~~~~~~~
+/Users/habbyge/iWatch/app/src/main/cpp/iwatch.cpp:155:31: warning: format specifies type 'long long' but the argument has type 'int64_t' (aka 'long') [-Wformat]
       (int64_t) srcArtMethod, (int64_t) dstArtMethod);
                               ^~~~~~~~~~~~~~~~~~~~~~
-/Users/habbyge/iWatch/app/src/main/cpp/util/log.h:12:76: note: expanded from macro 'logd'
-#define logd(...)  ((void)__android_log_print(ANDROID_LOG_DEBUG, "iWatch", __VA_ARGS__))
-                                                                           ^~~~~~~~~~~
+/Users/habbyge/iWatch/app/src/main/cpp/common/log.h:27:71: note: expanded from macro 'logd'
+#define logd(...)  ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
+                                                                      ^~~~~~~~~~~
 2 warnings generated.
-[2/2] Linking CXX shared library /Users/habbyge/iWatch/app/build/intermediates/cmake/debug/obj/x86_64/libiWatch.so
+[3/3] Linking CXX shared library /Users/habbyge/iWatch/app/build/intermediates/cmake/debug/obj/x86_64/libiWatch.so

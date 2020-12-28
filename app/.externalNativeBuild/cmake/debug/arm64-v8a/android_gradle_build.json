@@ -1,7 +1,7 @@
 {
   "stringTable": {
     "0": "/Users/habbyge/iWatch/app/.externalNativeBuild/cmake/debug/arm64-v8a",
-    "1": "--target=aarch64-none-linux-android21 --gcc-toolchain=/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -DiWatch_EXPORTS -I/Users/habbyge/iWatch/app/src/main/cpp/util/log.h -std=c++11 -O0 -fno-limit-debug-info -fPIC"
+    "1": "--target=aarch64-none-linux-android21 --gcc-toolchain=/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -DiWatch_EXPORTS -I/Users/habbyge/iWatch/app/src/main/cpp/common/log.h -I/Users/habbyge/iWatch/app/src/main/cpp/common/elfop.h -I/Users/habbyge/iWatch/app/src/main/cpp/art/art_method_11.h -std=c++11 -O0 -fno-limit-debug-info -fPIC"
   },
   "buildFiles": [
     "/Users/habbyge/Library/Android/sdk/ndk/21.3.6528147/build/cmake/android.toolchain.cmake",
@@ -21,6 +21,11 @@
       "files": [
         {
           "src": "/Users/habbyge/iWatch/app/src/main/cpp/iwatch.cpp",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
+        },
+        {
+          "src": "/Users/habbyge/iWatch/app/src/main/cpp/common/elfop.cpp",
           "flagsOrdinal": 1,
           "workingDirectoryOrdinal": 0
         }
