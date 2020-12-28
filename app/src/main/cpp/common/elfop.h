@@ -13,27 +13,27 @@
 #include "log.h"
 
 #ifdef __LP64__
-#define Elf_Ehdr Elf64_Ehdr
-#define Elf_Shdr Elf64_Shdr
-#define Elf_Sym  Elf64_Sym
+  #define Elf_Ehdr Elf64_Ehdr
+  #define Elf_Shdr Elf64_Shdr
+  #define Elf_Sym  Elf64_Sym
 #else
-#define Elf_Ehdr Elf32_Ehdr
-#define Elf_Shdr Elf32_Shdr
-#define Elf_Sym  Elf32_Sym
+  #define Elf_Ehdr Elf32_Ehdr
+  #define Elf_Shdr Elf32_Shdr
+  #define Elf_Sym  Elf32_Sym
 #endif
 
 #if defined(__LP64__)
-static const char* const kSystemLibDir = "/system/lib64/";
-static const char* const kOdmLibDir = "/odm/lib64/";
-static const char* const kVendorLibDir = "/vendor/lib64/";
-static const char* const kApexLibDir = "/apex/com.android.runtime/lib64/"; // Android-10
-static const char* const kApexLibDir_11 = "/apex/com.android.art/lib64/"; // Android-11
+  static const char* const kSystemLibDir = "/system/lib64/";
+  static const char* const kOdmLibDir = "/odm/lib64/";
+  static const char* const kVendorLibDir = "/vendor/lib64/";
+  static const char* const kApexLibDir = "/apex/com.android.runtime/lib64/"; // Android-10
+  static const char* const kApexLibDir_11 = "/apex/com.android.art/lib64/"; // Android-11
 #else
-static const char* const kSystemLibDir = "/system/lib/";
-static const char* const kOdmLibDir = "/odm/lib/";
-static const char* const kVendorLibDir = "/vendor/lib/";
-static const char* const kApexLibDir = "/apex/com.android.runtime/lib/"; // // Android-10
-static const char* const kApexLibDir_11 = "/apex/com.android.art/lib/"; // Android-11
+  static const char* const kSystemLibDir = "/system/lib/";
+  static const char* const kOdmLibDir = "/odm/lib/";
+  static const char* const kVendorLibDir = "/vendor/lib/";
+  static const char* const kApexLibDir = "/apex/com.android.runtime/lib/"; // // Android-10
+  static const char* const kApexLibDir_11 = "/apex/com.android.art/lib/"; // Android-11
 #endif
 
 /**
