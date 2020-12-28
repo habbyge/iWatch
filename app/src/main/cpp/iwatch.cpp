@@ -79,9 +79,9 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
     loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
 
     // todo
-    void* handle = open_elf("libart.so", RTLD_NOW);
-    logi("open_elf: %p", handle);
-    if (handle == 0x00) {
+    void* context = dlopen_elf("libart.so", RTLD_NOW);
+    logi("dlopen_elf: %p", context);
+    if (context == nullptr) {
       return;
     }
 

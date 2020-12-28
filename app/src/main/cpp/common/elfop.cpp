@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-static int do_close_elf(void* handle) {
+static int _dlclose(void* handle) {
   if (handle) {
     auto* ctx = (ctx_t*) handle;
     if (ctx->dynsym) {
@@ -31,15 +31,17 @@ static int do_close_elf(void* handle) {
 /** 
  * 缺点: flags are ignored
  * 
- * API>=24的Android系统，Goole限制不能使用dl库，那么可以通过 /proc/pid/maps 文件，
- * 来查找到对应so库文件，被加载到该进程中的基地址，从而把该文件使用mmap()映射到内存中，
- * 再进行解析，获取so库(ELF)中的符号表类型的节、字符串类型的节，打包成 struct ctx 返回
+ * API>=24 的 Android 系统，Google 限制不能使用dl库，那么可以通过 /proc/pid/maps 文件，
+ * 来查找到对应so库文件，被加载到该进程中的基地址，从而把该文件使用 mmap() 映射到内存中，这里
+ * 是为了获取 elf 文件中每个符号的相对偏移量，再加上 基地址，就是在进程地址空间中真正的地址;
+ * 再进行解析，获取 so库(ELF) 中的符号表类型的节、字符串类型的节，打包成 struct ctx 返回
  */
 static void* open_with_path(const char* libpath, int flags) {
   FILE* maps;
   char buff[256];
   ctx_t* ctx = nullptr;
-  off_t load_addr, size;
+  off_t load_addr;
+  off_t size;
   int i;
   int fd = -1;
   bool found = false;
@@ -54,7 +56,7 @@ static void* open_with_path(const char* libpath, int flags) {
         } while(0)
 
   maps = fopen("/proc/self/maps", "r");
-  if (!maps) {
+  if (maps == nullptr) {
     fatal("failed to open maps");
   }
 
@@ -65,6 +67,8 @@ static void* open_with_path(const char* libpath, int flags) {
     }
   }
   fclose(maps);
+
+  // FIXME: 前面是为了获取 libart.so 加载到进程中地址空间的内存起始地址和结束地址
 
   if (!found) {
     fatal("%s not found in my userspace", libpath);
@@ -123,6 +127,7 @@ static void* open_with_path(const char* libpath, int flags) {
   if (elf == MAP_FAILED) {
     fatal("mmap() failed for %s", libpath);
   }
+  // FIXME：这里使用 mmap 的目的是为了获取到 libart.so 这个 elf 文件内各个符号的偏移量(基地址不同，但偏移量相同)
 
   ctx = (ctx_t*) calloc(1, sizeof(ctx_t));
   if (!ctx) {
@@ -138,44 +143,43 @@ static void* open_with_path(const char* libpath, int flags) {
     log_dbg("%s: i=%d shdr=%p type=%x", __func__, i, sh, sh->sh_type);
 
     switch (sh->sh_type) {
-      case SHT_DYNSYM: { // 符号表 .dynsym
-        if (ctx->dynsym) {
-          fatal("%s: duplicate DYNSYM sections", libpath); /* .dynsym */
-        }
-        ctx->dynsym = malloc(sh->sh_size);
-        if (!ctx->dynsym) {
-          fatal("%s: no memory for .dynsym", libpath);
-        }
-        memcpy(ctx->dynsym, ((char*) elf) + sh->sh_offset, sh->sh_size);
-        ctx->nsyms = sh->sh_size / sizeof(Elf_Sym);
+    case SHT_DYNSYM: { // 符号表 .dynsym
+      if (ctx->dynsym) {
+        fatal("%s: duplicate DYNSYM sections", libpath); /* .dynsym */
       }
-        break;
-
-      case SHT_STRTAB: { // 字符串(名字)表 .dynstr
-        if (ctx->dynstr) {
-          break;    /* .dynstr is guaranteed to be the first STRTAB */
-        }
-        ctx->dynstr = malloc(sh->sh_size);
-        if (!ctx->dynstr) {
-          fatal("%s: no memory for .dynstr", libpath);
-        }
-        memcpy(ctx->dynstr, ((char*) elf) + sh->sh_offset, sh->sh_size);
+      ctx->dynsym = malloc(sh->sh_size);
+      if (!ctx->dynsym) {
+        fatal("%s: no memory for .dynsym", libpath);
       }
-        break;
+      memcpy(ctx->dynsym, ((char*) elf) + sh->sh_offset, sh->sh_size);
+      ctx->nsyms = sh->sh_size / sizeof(Elf_Sym);
+    }
+    break;
 
-      case SHT_PROGBITS: {
-        if (!ctx->dynstr || !ctx->dynsym) {
-          break;
-        }
-        // won't even bother checking against the section name
-        // - sh_addr: 该节在ELF文件被加载到进程地址空间中后的偏移量，其在进程中的真实地址是:
-        // load_addr+sh->sh_addr.
-        // - sh_offset 在elf文件中的偏移量
-        ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset;
-        i = elf->e_shnum;  /* exit for */
+    case SHT_STRTAB: { // 字符串(名字)表 .dynstr
+      if (ctx->dynstr) {
+        break;    /* .dynstr is guaranteed to be the first STRTAB */
       }
-        break;
+      ctx->dynstr = malloc(sh->sh_size);
+      if (!ctx->dynstr) {
+        fatal("%s: no memory for .dynstr", libpath);
+      }
+      memcpy(ctx->dynstr, ((char*) elf) + sh->sh_offset, sh->sh_size);
+    }
+    break;
 
+    case SHT_PROGBITS: {
+      if (!ctx->dynstr || !ctx->dynsym) {
+        break;
+      }
+      // won't even bother checking against the section name
+      // - sh_addr: 该节在ELF文件被加载到进程地址空间中后的偏移量，其在进程中的真实地址是:
+      // load_addr+sh->sh_addr.
+      // - sh_offset 在elf文件中的偏移量
+      ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset;
+      i = elf->e_shnum;  /* exit for */
+    }
+    break;
     }
   }
 
@@ -190,7 +194,7 @@ static void* open_with_path(const char* libpath, int flags) {
   log_dbg("%s: ok, dynsym = %p, dynstr = %p", libpath, ctx->dynsym, ctx->dynstr);
   return ctx;
 
-  err_exit:
+err_exit:
   if (fd >= 0) {
     close(fd);
   }
@@ -204,7 +208,7 @@ static void* open_with_path(const char* libpath, int flags) {
 /**
  * 由于google限制了 api>=24 以上的Android系统使用dlfcn.h库，所以这里做特殊处理
  */
-static void* do_open_elf(const char* filename, int flags) {
+static void* _dlopen(const char* filename, int flags) {
   if (strlen(filename) > 0 && filename[0] == '/') { // so库的完整路径
     return open_with_path(filename, flags);
   } else { // so库的非完整路径
@@ -215,9 +219,9 @@ static void* do_open_elf(const char* filename, int flags) {
     strcpy(buf, kApexLibDir_11);
     strcat(buf, filename); // 生成so库完整路径
     logi("kApexLibDir_11=%s", buf);
-    void* handle = open_with_path(buf, flags);
-    if (handle) {
-      return handle;
+    void* context = open_with_path(buf, flags);
+    if (context) {
+      return context;
     }
 
     // sysmtem
@@ -225,9 +229,9 @@ static void* do_open_elf(const char* filename, int flags) {
     strcpy(buf, kSystemLibDir);
     strcat(buf, filename); // 生成so库完整路径
     logi("kSystemLibDir=%s", buf);
-    handle = open_with_path(buf, flags);
-    if (handle) {
-      return handle;
+    context = open_with_path(buf, flags);
+    if (context) {
+      return context;
     }
 
     // apex
@@ -235,27 +239,27 @@ static void* do_open_elf(const char* filename, int flags) {
     strcpy(buf, kApexLibDir);
     strcat(buf, filename);
     logi("kApexLibDir=%s", buf);
-    handle = open_with_path(buf, flags);
-    if (handle) {
-      return handle;
+    context = open_with_path(buf, flags);
+    if (context) {
+      return context;
     }
 
     // odm
     memset(buf, 0, sizeof(buf));
     strcpy(buf, kOdmLibDir);
     strcat(buf, filename);
-    handle = open_with_path(buf, flags);
-    if (handle) {
-      return handle;
+    context = open_with_path(buf, flags);
+    if (context) {
+      return context;
     }
 
     // vendor
     memset(buf, 0, sizeof(buf));
     strcpy(buf, kVendorLibDir);
     strcat(buf, filename);
-    handle = open_with_path(buf, flags);
-    if (handle) {
-      return handle;
+    context = open_with_path(buf, flags);
+    if (context) {
+      return context;
     }
 
     return open_with_path(filename, flags);
@@ -267,7 +271,7 @@ static void* do_open_elf(const char* filename, int flags) {
  * 1. 符号表中的 sym->st_name 字段不仅仅是一个字符串名称，还是一个index，该位置对应的就是符号名称.
  * 2. sym->st_value 字段表示的是该字符对应的地址偏移.
  */
-static void* do_sym_elf(void* handle, const char* name) {
+static void* _dlsym(void* handle, const char* name) {
   int i;
   auto* ctx = reinterpret_cast<ctx_t*>(handle);
   auto* sym = reinterpret_cast<Elf_Sym*>(ctx->dynsym);
@@ -288,7 +292,7 @@ static void* do_sym_elf(void* handle, const char* name) {
   return nullptr;
 }
 
-static const char* do_error_elf() {
+static const char* _dlerror() {
   return nullptr;
 }
 
@@ -309,38 +313,38 @@ static int get_sdk_level() {
  * 返回的是 struct ctx 结构体
  */
 __unused
-void* open_elf(const char* filename, int flags) {
+void* dlopen_elf(const char* filename, int flags) {
   log_info("dlopen: %s", filename);
 
   if (get_sdk_level() >= 24) {
-    return do_open_elf(filename, flags);
+    return _dlopen(filename, flags);
   } else {
     return dlopen(filename, flags);
   }
 }
 
 __unused
-void* sym_elf(void* handle, const char* symbol) {
+void* dlsym_elf(void* handle, const char* symbol) {
   if (get_sdk_level() >= 24) {
-    return do_sym_elf(handle, symbol);
+    return _dlsym(handle, symbol);
   } else {
     return dlsym(handle, symbol);
   }
 }
 
 __unused
-int close_elf(void* handle) {
+int dlclose_elf(void* handle) {
   if (get_sdk_level() >= 24) {
-    return do_close_elf(handle);
+    return _dlclose(handle);
   } else {
     return dlclose(handle);
   }
 }
 
 __unused
-const char* error_elf() {
+const char* dlerror_elf() {
   if (get_sdk_level() >= 24) {
-    return do_error_elf();
+    return _dlerror();
   } else {
     return dlerror();
   }

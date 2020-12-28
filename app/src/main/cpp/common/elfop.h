@@ -59,13 +59,13 @@ extern "C" {
 #endif
 
 __unused
-void* open_elf(const char* filename, int flags);
+void* dlopen_elf(const char* filename, int flags);
 __unused
-void* sym_elf(void* handle, const char* symbol);
+void* dlsym_elf(void* handle, const char* symbol);
 __unused
-int close_elf(void* handle);
+int dlclose_elf(void* handle);
 __unused
-const char* error_elf();
+const char* dlerror_elf();
 
 #ifdef __cplusplus
 }
