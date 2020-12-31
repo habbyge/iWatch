@@ -16,14 +16,14 @@ extern "C" {
 
 static int _dlclose(void* handle) {
   if (handle) {
-    auto* ctx = (ctx_t*) handle;
-    if (ctx->dynsym) {
-      free(ctx->dynsym);    /* we're saving dynsym and dynstr */
+    auto* elf_ctx = reinterpret_cast<elf_ctx_t*>(handle);
+    if (elf_ctx->dynsym) {
+      free(elf_ctx->dynsym);    /* we're saving dynsym and dynstr */
     }
-    if (ctx->dynstr) {
-      free(ctx->dynstr);    /* from library file just in case */
+    if (elf_ctx->dynstr) {
+      free(elf_ctx->dynstr);    /* from library file just in case */
     }
-    free(ctx);
+    free(elf_ctx);
   }
   return 0;
 }
@@ -36,10 +36,10 @@ static int _dlclose(void* handle) {
  * 是为了获取 elf 文件中每个符号的相对偏移量，再加上 基地址，就是在进程地址空间中真正的地址;
  * 再进行解析，获取 so库(ELF) 中的符号表类型的节、字符串类型的节，打包成 struct ctx 返回
  */
-static void* open_with_path(const char* libpath, int flags) {
+static void* getArtCtx(const char* libpath, int flags) {
   FILE* maps;
   char buff[256];
-  ctx_t* ctx = nullptr;
+  elf_ctx_t* ctx = nullptr;
   off_t load_addr;
   off_t size;
   int i;
@@ -129,7 +129,7 @@ static void* open_with_path(const char* libpath, int flags) {
   }
   // FIXME：这里使用 mmap 的目的是为了获取到 libart.so 这个 elf 文件内各个符号的偏移量(基地址不同，但偏移量相同)
 
-  ctx = (ctx_t*) calloc(1, sizeof(ctx_t));
+  ctx = reinterpret_cast<elf_ctx_t*>(calloc(1, sizeof(elf_ctx_t)));
   if (!ctx) {
     fatal("no memory for %s", libpath);
   }
@@ -201,7 +201,7 @@ err_exit:
   if (elf != MAP_FAILED) {
     munmap(elf, size);
   }
-  do_close_elf(ctx);
+  dlclose_elf(ctx);
   return nullptr;
 }
 
@@ -210,7 +210,7 @@ err_exit:
  */
 static void* _dlopen(const char* filename, int flags) {
   if (strlen(filename) > 0 && filename[0] == '/') { // so库的完整路径
-    return open_with_path(filename, flags);
+    return getArtCtx(filename, flags);
   } else { // so库的非完整路径
     char buf[512] = {0};
 
@@ -219,7 +219,7 @@ static void* _dlopen(const char* filename, int flags) {
     strcpy(buf, kApexLibDir_11);
     strcat(buf, filename); // 生成so库完整路径
     logi("kApexLibDir_11=%s", buf);
-    void* context = open_with_path(buf, flags);
+    void* context = getArtCtx(buf, flags);
     if (context) {
       return context;
     }
@@ -229,7 +229,7 @@ static void* _dlopen(const char* filename, int flags) {
     strcpy(buf, kSystemLibDir);
     strcat(buf, filename); // 生成so库完整路径
     logi("kSystemLibDir=%s", buf);
-    context = open_with_path(buf, flags);
+    context = getArtCtx(buf, flags);
     if (context) {
       return context;
     }
@@ -239,7 +239,7 @@ static void* _dlopen(const char* filename, int flags) {
     strcpy(buf, kApexLibDir);
     strcat(buf, filename);
     logi("kApexLibDir=%s", buf);
-    context = open_with_path(buf, flags);
+    context = getArtCtx(buf, flags);
     if (context) {
       return context;
     }
@@ -248,7 +248,7 @@ static void* _dlopen(const char* filename, int flags) {
     memset(buf, 0, sizeof(buf));
     strcpy(buf, kOdmLibDir);
     strcat(buf, filename);
-    context = open_with_path(buf, flags);
+    context = getArtCtx(buf, flags);
     if (context) {
       return context;
     }
@@ -257,12 +257,12 @@ static void* _dlopen(const char* filename, int flags) {
     memset(buf, 0, sizeof(buf));
     strcpy(buf, kVendorLibDir);
     strcat(buf, filename);
-    context = open_with_path(buf, flags);
+    context = getArtCtx(buf, flags);
     if (context) {
       return context;
     }
 
-    return open_with_path(filename, flags);
+    return getArtCtx(filename, flags);
   }
 }
 
@@ -273,7 +273,7 @@ static void* _dlopen(const char* filename, int flags) {
  */
 static void* _dlsym(void* handle, const char* name) {
   int i;
-  auto* ctx = reinterpret_cast<ctx_t*>(handle);
+  auto* ctx = reinterpret_cast<elf_ctx_t*>(handle);
   auto* sym = reinterpret_cast<Elf_Sym*>(ctx->dynsym);
   char* strings = reinterpret_cast<char*>(ctx->dynstr);
 

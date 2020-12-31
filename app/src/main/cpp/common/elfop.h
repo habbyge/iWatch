@@ -40,10 +40,13 @@
   static const char* const kApexLibDir_11 = "/apex/com.android.art/lib/"; // Android-11
 #endif
 
+// 定义需要获取的符号
+using
+
 /**
  * 加载 Elf 文件到mmap后，解析后的结果
  */
-typedef struct ctx {
+typedef struct elf_ctx {
   void* load_addr; // so库文件加载到进程中的基地址，来自 /proc/pid/maps
 
   void* dynstr;    // 名称字符串表(Section)
@@ -51,8 +54,8 @@ typedef struct ctx {
   void* dynsym;    // 符号表(Section)
   unsigned int nsyms;       // 符号表中的符号item条数
 
-  off_t bias;      // 是节头表在进程地址空间中的基地址(偏移地址) TODO: 这个字段是啥?
-} ctx_t;
+  off_t bias;      // 是节头表在进程地址空间中的基地址(偏移地址) TODO:
+} elf_ctx_t;
 
 #ifdef __cplusplus
 extern "C" {
