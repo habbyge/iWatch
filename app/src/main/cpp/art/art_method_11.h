@@ -10,6 +10,8 @@
 #include <atomic>
 #include <string>
 
+#include "JNIEnvExt.h"
+
 //#define DISALLOW_ALLOCATION() \
 //  public: \
 //    void operator delete(void*, size_t) { UNREACHABLE(); } \
@@ -21,6 +23,12 @@
 class Class; // 声明
 
 namespace art {
+
+// Quickly access the current thread from a JNIEnv.
+static inline void* ThreadForEnv(JNIEnv* env) {
+    mirror::JNIEnvExt* full_env(static_cast<mirror::JNIEnvExt*>(env));
+  return full_env->GetSelf();
+}
 
 enum class PointerSize : size_t {
   k32 = 4,
@@ -91,8 +99,8 @@ protected:
                                                            vm_(reinterpret_cast<void*>(vm)) {}
 
   explicit ScopedObjectAccessAlreadyRunnable(JNIEnv* env) : self_(ThreadForEnv(env)),
-                                                            env_(down_cast<JNIEnvExt*>(env)),
-                                                            vm_(env_->GetVm()) {}
+                                                            env_(static_cast<mirror::JNIEnvExt*>(env)),
+                                                            vm_(static_cast<mirror::JNIEnvExt*>(env)->GetVm()) {}
 
   // Here purely to force inlining.
   //  ALWAYS_INLINE ~ScopedObjectAccessAlreadyRunnable() {}

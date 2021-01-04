@@ -95,3 +95,9 @@
 3	293	1609690473	CMakeFiles/iWatch.dir/common/elfop.cpp.o	85def445dfb21de0
 2	1180	1609690474	CMakeFiles/iWatch.dir/iwatch.cpp.o	5f642372709e5ffd
 1180	1431	1609690474	/Users/habbyge/iWatch/app/build/intermediates/cmake/debug/obj/arm64-v8a/libiWatch.so	f6cccb0303ffecd7
+5	123	1609760703	CMakeFiles/iWatch.dir/common/elfop.cpp.o	85def445dfb21de0
+4	440	1609760704	CMakeFiles/iWatch.dir/iwatch.cpp.o	5f642372709e5ffd
+440	549	1609760704	/Users/habbyge/iWatch/app/build/intermediates/cmake/debug/obj/arm64-v8a/libiWatch.so	f6cccb0303ffecd7
+2	138	1609762620	CMakeFiles/iWatch.dir/common/elfop.cpp.o	85def445dfb21de0
+1	1037	1609762621	CMakeFiles/iWatch.dir/iwatch.cpp.o	5f642372709e5ffd
+1037	1244	1609762621	/Users/habbyge/iWatch/app/build/intermediates/cmake/debug/obj/arm64-v8a/libiWatch.so	f6cccb0303ffecd7

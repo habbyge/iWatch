@@ -23,21 +23,21 @@
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
 
-// FIXME: 方案限制：inline 函数 fix 会失败.
-//  这里需要考虑，对 inline 函数的影响，内联函数是否有 Method 对象，是否能够被成功替换 ？
-//  需要研究：直接 ArtMethod 整体替换的方案，是否能够解决 inline 问题 ？
-//  这篇文章对 inline 的影响有详尽研究(同时也收录到了我的有道云笔记中了)：
-//  https://cloud.tencent.com/developer/article/1005604
-//  内联的源代码位置: art/compiler/optimizing/inliner.cc 中的 HInliner::Run() 函数中.
-//  实际上，针对 "数据统计补丁" 来说，一般很少有机会在 inline 方法中插桩，即使需要，也可以通过其他手段突破.
-//  因此，作为 局限性之一的 inline fix 失败，实际上对 数据统计补丁来说，影响并不大，凡是并不仅能尽善尽美，接收缺陷.
-//  我研究了一阵子，就 replace inline 函数来说，从 native 层来说，几乎无解。。。
-//  如果在 Java 层给每一个函数插桩一个 try-catch，来阻止编译期的 inline，实际上是非常糟糕的做法。。不能被接受
-//  实际上所有的方案，都不能尽善尽美，做不到 inline 的话，统计上报需求来了后，我们自己评估下，如果需要在可能被
-//  inline 的方法中插桩的话，我们就通过发版本方式来统计。。其实也还好.
-//  我 review 了下，我之前的那么多统计上报代码，在可能被 inline 的地方添加上报的可能性几乎么有。
+// 方案限制：inline 函数 fix 会失败.
+// 这里需要考虑，对 inline 函数的影响，内联函数是否有 Method 对象，是否能够被成功替换 ？
+// 需要研究：直接 ArtMethod 整体替换的方案，是否能够解决 inline 问题 ？
+// 这篇文章对 inline 的影响有详尽研究(同时也收录到了我的有道云笔记中了)：
+// https://cloud.tencent.com/developer/article/1005604x
+// 内联的源代码位置: art/compiler/optimizing/inliner.cc 中的 HInliner::Run() 函数中.
+// 实际上，针对 "数据统计补丁" 来说，一般很少有机会在 inline 方法中插桩，即使需要，也可以通过其他手段突破.
+// 因此，作为 局限性之一的 inline fix 失败，实际上对 数据统计补丁来说，影响并不大，凡是并不仅能尽善尽美，接收缺陷.
+// 我研究了一阵子，就 replace inline 函数来说，从 native 层来说，几乎无解。。。
+// 如果在 Java 层给每一个函数插桩一个 try-catch，来阻止编译期的 inline，实际上是非常糟糕的做法。。不能被接受
+// 实际上所有的方案，都不能尽善尽美，做不到 inline 的话，统计上报需求来了后，我们自己评估下，如果需要在可能被
+// inline 的方法中插桩的话，我们就通过发版本方式来统计。。其实也还好.
+// 我 review 了下，我之前的那么多统计上报代码，在可能被 inline 的地方添加上报的可能性几乎么有。
 
-// TODO: Android-11 适配问题
+// Android-11 适配问题 ------> fix
 // TODO: dex diff 问题
 
 /**
@@ -164,7 +164,6 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
 //    jweak weakRef2 = addWeakGlobalRef(vm, (void*) cur_thread, art::ObjPtr<art::mirror::Object>(m2));
 //    logi("init, weakRef=%p, weakRef2=%p", weakRef1, weakRef2);
 
-    // TODO: ing
 //    CheckMethodID = reinterpret_cast<CheckMethodID_t>(dlsym_elf(context, CheckMethodID_Sym));
 //    logi("init, CheckMethodID=%p", CheckMethodID);
 //    void* artMethod1 = CheckMethodID(jmethodID1);
@@ -181,17 +180,16 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
     FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(dlsym_elf(context, FromReflectedMethod_Sym));
     logi("init, FromReflectedMethod=%p", FromReflectedMethod);
     const art::ScopedFastNativeObjectAccess soa(env);
-//    void* artMethod1 = FromReflectedMethod(soa, jmethodID1);
-//    void* artMethod2 = FromReflectedMethod(soa, jmethodID2);
     void* artMethod1 = FromReflectedMethod(soa, m1);
     logi("init, method1=%p, %p", artMethod1, m1);
     void* artMethod2 = FromReflectedMethod(soa, m2);
     // jmethodID, jmethodID, ArtMethod*, ArtMethod*
     logi("init, method2=%p, %p", artMethod2, m2);
+    artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
     // TODO ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
     /*artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);*/
-//    artMethodSize = sizeof(art::mirror::ArtMethod_11); // 40-bytes TODO: ing 等方法地址搞定了再打开!!!
+//    artMethodSize = sizeof(art::mirror::ArtMethod_11); // 40-bytes
 
 //    void* artMethod1 = art::jni::DecodeArtMethod(methodid1);
 //    void* artMethod2 = art::jni::DecodeArtMethod(methodid2);
@@ -203,6 +201,12 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
 //    artMethodSize = sizeof(art::mirror::art_method_11);
 //    logi("artMethodSize = %zu", artMethodSize);
   }
+}
+
+static void* getArtMethod(JNIEnv* env, jobject method) {
+  const art::ScopedFastNativeObjectAccess soa(env);
+  void* artMethod = FromReflectedMethod(soa, method);
+  return artMethod;
 }
 
 /**
@@ -219,15 +223,24 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
 static jlong method_hook(JNIEnv* env, jclass,jobject srcMethod, jobject dstMethod) {
   logi("methodHook: method_hook begin: %zu", artMethodSize);
 
-  // art::mirror::ArtMethod
-  void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
-  void* dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
-  logd("method_hook, srcArtMethod=%lld, dstArtMethod=%lld", (int64_t) srcArtMethod, (int64_t) dstArtMethod);
+  void* srcArtMethod = nullptr;
+  void* dstArtMethod = nullptr;
 
-  // TODO: 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败，错误！！！！！！
-  //  经过研究 android-11.0.0_r17(http://aosp.opersys.com/) 源代码，class类中的ArtMethod
-  //  排布依旧是线性分配的，这里没问题，问题是：从 FromReflectedMethod 这里获取地址是错误的(是个52/53很小的数值，
-  //  一看就不是地址).
+  if (sdkVersion <= 29) { // <= Android-10
+    // art::mirror::ArtMethod
+    srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
+    dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
+    logd("method_hook(api<=29), srcArtMethod=%p, dstArtMethod=%p", srcArtMethod, dstArtMethod);
+    // 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败，错误！！！！！！
+    // 经过研究 android-11.0.0_r17(http://aosp.opersys.com/) 源代码，class类中的ArtMethod
+    // 排布依旧是线性分配的，这里没问题，问题是：从 FromReflectedMethod 这里获取地址是错误的(是个52/53很小的数值，
+    // 一看就不是地址).
+  } else {
+    srcArtMethod = getArtMethod(env, srcMethod);
+    dstArtMethod = getArtMethod(env, dstMethod);
+    logd("method_hook(api>=30), srcArtMethod=%p, dstArtMethod=%p", srcArtMethod, dstArtMethod);
+  }
+
   char* backupArtMethod = new char[artMethodSize];
   // 备份原方法
   memcpy(backupArtMethod, srcArtMethod, artMethodSize);

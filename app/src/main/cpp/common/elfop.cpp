@@ -276,12 +276,11 @@ static void* _dlopen(const char* filename, int flags) {
  * 2. sym->st_value 字段表示的是该字符对应的地址偏移.
  */
 static void* _dlsym(void* context, const char* symbol_name) {
-  int i;
   auto* ctx = reinterpret_cast<elf_ctx_t*>(context);
   auto* sym = reinterpret_cast<Elf_Sym*>(ctx->dynsym);
   char* strings = reinterpret_cast<char*>(ctx->dynstr);
 
-  for (i = 0; i < ctx->nsyms; ++i, ++sym) { // 遍历符号表
+  for (int i = 0; i < ctx->nsyms; ++i, ++sym) { // 遍历符号表
     if (strcmp(strings + sym->st_name, symbol_name) == 0) { // 找到该符号(函数符号)
       // NB: sym->st_value is an offset into the section for relocatables,
       // but a VMA for shared libs or exe files, so we have to subtract
@@ -310,6 +309,7 @@ static int get_sdk_level() {
   char sdk[PROP_VALUE_MAX] = {0};
   __system_property_get("ro.build.version.sdk", sdk);
   SDK_INT = std::atoi(sdk);
+  logd("get_sdk_level, SDK_INT=%d", SDK_INT);
   return SDK_INT;
 }
 
