@@ -266,26 +266,30 @@ static void* _dlopen(const char* filename, int flags) {
   }
 }
 
+//
+//
+//if ( idx != string::npos )
+
 /**
  * 从 符号表(节) 中获取 name 指定的符号，这里需要注意的是：
  * 1. 符号表中的 sym->st_name 字段不仅仅是一个字符串名称，还是一个index，该位置对应的就是符号名称.
  * 2. sym->st_value 字段表示的是该字符对应的地址偏移.
  */
-static void* _dlsym(void* handle, const char* name) {
+static void* _dlsym(void* context, const char* symbol_name) {
   int i;
-  auto* ctx = reinterpret_cast<elf_ctx_t*>(handle);
+  auto* ctx = reinterpret_cast<elf_ctx_t*>(context);
   auto* sym = reinterpret_cast<Elf_Sym*>(ctx->dynsym);
   char* strings = reinterpret_cast<char*>(ctx->dynstr);
 
   for (i = 0; i < ctx->nsyms; ++i, ++sym) { // 遍历符号表
-    if (strcmp(strings + sym->st_name, name) == 0) { // 找到该符号(函数符号)
+    if (strcmp(strings + sym->st_name, symbol_name) == 0) { // 找到该符号(函数符号)
       // NB: sym->st_value is an offset into the section for relocatables,
       // but a VMA for shared libs or exe files, so we have to subtract
       // the bias.
       // 在so库或可执行文件中，sym->st_value 表示符号的地址
       // ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset
       void* ret = (char*) ctx->load_addr + sym->st_value - ctx->bias;
-      log_info("%s found at %p", name, ret);
+      log_info("%s found at %p", symbol_name, ret);
       return ret;
     }
   }

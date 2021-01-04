@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.habbyge.iwatch.test.TestCase0;
 import com.habbyge.iwatch.test.TestInlineCase;
+import com.habbyge.iwatch.util.ReflectUtil;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
@@ -54,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
 //                startActivity(new Intent(MainActivity.this, MainActivity2.class));
                 Log.i(TAG, "btnClick click !");
                 printf("Mali");
+
+                /*Log.i(TAG, "test object :" + ReflectUtil.getLongField(
+                        Thread.currentThread(), "nativePeer"));*/
             }
         });
 

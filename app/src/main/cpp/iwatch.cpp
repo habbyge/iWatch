@@ -7,6 +7,7 @@
 //#include <memory>
 #include "art/art_method_11.h"
 #include <iostream>
+#include <thread>
 #include "common/elfop.h"
 
 //#include <art/runtime/jni/jni_internal.h>
@@ -53,9 +54,40 @@ static struct {
 
 static size_t artMethodSize = 0;
 static int sdkVersion = 0;
+static size_t cur_thread = 0;
+static JavaVM* vm;
+
+using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
+addWeakGlobalRef_t addWeakGlobalRef;
+
+// Android-11：
+// art/runtime/jni/check_jni.cc
+// ArtMethod* CheckMethodID(jmethodID mid)
+using CheckMethodID_t = art::mirror::ArtMethod_11* (*)(jmethodID);
+CheckMethodID_t CheckMethodID;
+// TODO: 本来这个符号挺好的，但是 nm 一下发现是 t(小t) 类型的，这样的话，是没有导出的，不能使用，命令是：
+//  nm -extern-only libart.so | grep CheckMethodID
+//  一般情况下，写在 .h 文件中的 或 extern 声明的 函数才被导出.
+static const char* CheckMethodID_Sym = "_ZN3art12_GLOBAL__N_111ScopedCheck13CheckMethodIDEP10_jmethodID";
+
+// ==
+static const char* DecodeMethodId_sym = "_ZN3art3jni12JniIdManager14DecodeMethodIdEP10_jmethodID";
+using DecodeMethodId_t = void* (*)(jmethodID);
+DecodeMethodId_t DecodeMethodId;
+static const char* GetGenericMap_Sym =
+    "_ZN3art3jni12JniIdManager13GetGenericMapINS_9ArtMethodEEERNSt3__16vectorIPT_NS4_9allocatorIS7_EEEEv";
+
+static const char* FromReflectedMethod_Sym =
+    "_ZN3art9ArtMethod19FromReflectedMethodERKNS_33ScopedObjectAccessAlreadyRunnableEP8_jobject";
+using FromReflectedMethod_t = art::mirror::ArtMethod_11* (*)(const art::ScopedObjectAccessAlreadyRunnable& soa,
+                                                             jobject jlr_method);
+FromReflectedMethod_t FromReflectedMethod;
+
 
 static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m2) {
   sdkVersion = sdkVersionCode;
+
+  env->GetJavaVM(&vm);
 
   // art::mirror::ArtMethod
 //  auto artMethod11 = env->FromReflectedMethod(m1);
@@ -78,13 +110,6 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
   } else { // >= Android-11
     loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
 
-    // todo
-    void* context = dlopen_elf("libart.so", RTLD_NOW);
-    logi("dlopen_elf: %p", context);
-    if (context == nullptr) {
-      return;
-    }
-
     // [技术方案原理]:
     // review 代码发现这里与之前不同：
     // 代码路径：art/runtime/jni/jni_internal.h
@@ -104,26 +129,69 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
     //   return reinterpret_cast<ArtMethod*>(method_id);
     // }
     // 很明显可以看到，Android-10 中的 jmethodID 与 ArtMethod* 相等；Android-11 中的就不一定了
-    // TODO: ......
 
     // art/runtime/jni/jni_id_manager.h/cc 中:
     // ArtMethod* DecodeMethodId(jmethodID method) REQUIRES(!Locks::jni_id_lock_);
     //
-
-    // TODO: >= Android-11 的机器有待适配
     // 方案1:
     jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
-    auto methodid1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
-    auto methodid2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
-//    artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
-    // artMethodSize = sizeof(ArtMethod);
-    auto IsIndexId1 = (reinterpret_cast<uintptr_t>(methodid1) % 2) != 0;
-    auto IsIndexId2 = (reinterpret_cast<uintptr_t>(methodid2) % 2) != 0;
-    logi("artMethodSize-2 = %zu, %zu, %zu, %zu, %d, %d", artMethodSize,
-                                                    reinterpret_cast<uintptr_t>(ArtMethodSizeClass),
-                                                    reinterpret_cast<uintptr_t>(methodid1),
-                                                    reinterpret_cast<uintptr_t>(methodid2),
-                                                    IsIndexId1, IsIndexId2);
+    auto jmethodID1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
+    auto jmethodID2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+
+//    auto IsIndexId1 = (reinterpret_cast<uintptr_t>(methodid1) % 2) != 0;
+//    auto IsIndexId2 = (reinterpret_cast<uintptr_t>(methodid2) % 2) != 0;
+//    logi("artMethodSize-2 = %zu, %zu, %zu, %zu, %d, %d", artMethodSize,
+//                                                  reinterpret_cast<uintptr_t>(ArtMethodSizeClass),
+//                                                  reinterpret_cast<uintptr_t>(methodid1),
+//                                                  reinterpret_cast<uintptr_t>(methodid2),
+//                                                  IsIndexId1, IsIndexId2);
+
+    // TODO ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+    void* context = dlopen_elf("libart.so", RTLD_NOW);
+    logi("dlopen_elf: %p", context);
+    if (context == nullptr) {
+      return;
+    }
+
+    // 注意 libart.so 中的符号都是加过密的
+//    const char* addWeakGloablRef_Sym =
+//        sdkVersionCode <= 25 ? "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE"
+//          : "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEE"; // 这个也符合Android-11
+//    addWeakGlobalRef = reinterpret_cast<addWeakGlobalRef_t>(dlsym_elf(context, addWeakGloablRef_Sym));
+//    logi("init, addWeakGlobalRef=%p", addWeakGlobalRef);
+//
+//    jweak weakRef1 = addWeakGlobalRef(vm, (void*) cur_thread, art::ObjPtr<art::mirror::Object>(m1));
+//    jweak weakRef2 = addWeakGlobalRef(vm, (void*) cur_thread, art::ObjPtr<art::mirror::Object>(m2));
+//    logi("init, weakRef=%p, weakRef2=%p", weakRef1, weakRef2);
+
+    // TODO: ing
+//    CheckMethodID = reinterpret_cast<CheckMethodID_t>(dlsym_elf(context, CheckMethodID_Sym));
+//    logi("init, CheckMethodID=%p", CheckMethodID);
+//    void* artMethod1 = CheckMethodID(jmethodID1);
+//    void* artMethod2 = CheckMethodID(jmethodID2);
+//    logi("init, artMethod1=%p, artMethod2=%p", artMethod1, artMethod2);
+
+//    DecodeMethodId = reinterpret_cast<DecodeMethodId_t>(dlsym_elf(context, DecodeMethodId_sym));
+//    logi("init, DecodeMethodId=%p", DecodeMethodId);
+//    void* artMethod1 = DecodeMethodId(jmethodID1);
+//    void* artMethod2 = DecodeMethodId(jmethodID2);
+//    // jmethodID, jmethodID, ArtMethod*, ArtMethod*
+//    logi("init, method1=%p, %p, method2=%p, %p", jmethodID1, jmethodID2, artMethod1, artMethod2);
+
+    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(dlsym_elf(context, FromReflectedMethod_Sym));
+    logi("init, FromReflectedMethod=%p", FromReflectedMethod);
+    const art::ScopedFastNativeObjectAccess soa(env);
+//    void* artMethod1 = FromReflectedMethod(soa, jmethodID1);
+//    void* artMethod2 = FromReflectedMethod(soa, jmethodID2);
+    void* artMethod1 = FromReflectedMethod(soa, m1);
+    logi("init, method1=%p, %p", artMethod1, m1);
+    void* artMethod2 = FromReflectedMethod(soa, m2);
+    // jmethodID, jmethodID, ArtMethod*, ArtMethod*
+    logi("init, method2=%p, %p", artMethod2, m2);
+    // TODO ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+    /*artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);*/
+//    artMethodSize = sizeof(art::mirror::ArtMethod_11); // 40-bytes TODO: ing 等方法地址搞定了再打开!!!
 
 //    void* artMethod1 = art::jni::DecodeArtMethod(methodid1);
 //    void* artMethod2 = art::jni::DecodeArtMethod(methodid2);
@@ -148,14 +216,13 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
  * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
  * 逻辑在 ClassLinker::LoadClass 中.
  */
-static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMethod) {
+static jlong method_hook(JNIEnv* env, jclass,jobject srcMethod, jobject dstMethod) {
   logi("methodHook: method_hook begin: %zu", artMethodSize);
 
   // art::mirror::ArtMethod
   void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
   void* dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
-  logd("method_hook, srcArtMethod=%lld, dstArtMethod=%lld",
-      (int64_t) srcArtMethod, (int64_t) dstArtMethod);
+  logd("method_hook, srcArtMethod=%lld, dstArtMethod=%lld", (int64_t) srcArtMethod, (int64_t) dstArtMethod);
 
   // TODO: 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败，错误！！！！！！
   //  经过研究 android-11.0.0_r17(http://aosp.opersys.com/) 源代码，class类中的ArtMethod
@@ -173,9 +240,7 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
   return reinterpret_cast<jlong>(backupArtMethod);
 }
 
-static jobject restore_method(JNIEnv* env, jclass,
-                                     jobject srcMethod, jlong methodPtr) {
-
+static jobject restore_method(JNIEnv* env, jclass,jobject srcMethod, jlong methodPtr) {
   void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
   void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
   memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
@@ -212,9 +277,7 @@ typedef struct {
 
 static fieldHookClassInfo_t fieldHookClassInfo;
 
-static jlong hook_field(JNIEnv* env, jclass, jobject
-                        srcField, jobject dstField) {
-
+static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
   // art::mirror::ArtField
   void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
   void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
@@ -233,6 +296,11 @@ static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
   jclass kClass = env->FindClass(kClassName);
   env->ReleaseStringUTFChars(clazzName, kClassName);
   return reinterpret_cast<jlong>(kClass);
+}
+
+static void set_cur_thread(JNIEnv* env, jclass, jlong threadAddr) {
+  cur_thread = threadAddr;
+  logi("set_cur_thread, cur_thread=%zu", cur_thread);
 }
 
 static JNINativeMethod gMethods[] = {
@@ -260,6 +328,11 @@ static JNINativeMethod gMethods[] = {
     "hookClass",
     "(Ljava/lang/String;)J",
     (void*) hook_class
+  },
+  {
+      "setCurThread",
+      "(J)V",
+      (void*) set_cur_thread
   }
 };
 
@@ -274,4 +347,8 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
     return JNI_FALSE;
   }
   return JNI_VERSION_1_4;
+}
+
+uint32_t art::mirror::Object::ClassSize(art::PointerSize pointer_size) {
+  return 0;
 }

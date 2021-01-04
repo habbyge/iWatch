@@ -5,6 +5,8 @@ import android.util.Log;
 
 import androidx.annotation.Keep;
 
+import com.habbyge.iwatch.util.ReflectUtil;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -44,6 +46,7 @@ public final class MethodHook {
     private final Method hookMethod;
 
     static void init() {
+        setCurThread();
         ArtMethodSize.init(Build.VERSION.SDK_INT);
     }
 
@@ -99,6 +102,13 @@ public final class MethodHook {
     }
 
     @Keep
+    public static void setCurThread() {
+        long threadNativeAddr = ReflectUtil.getLongField(Thread.currentThread(), "nativePeer");
+        Log.i(TAG, "threadNativeAddr=" + threadNativeAddr);
+        setCurThread(threadNativeAddr);
+    }
+
+    @Keep
     public static native void init(int sdkVersionCode, Method m1, Method m2);
     @Keep
     public static native long hookMethod(Method src, Method dst);
@@ -108,6 +118,8 @@ public final class MethodHook {
     private static native long hookField(Field src, Field dst);
     @Keep
     private static native long hookClass(String className);
+    @Keep
+    private static native void setCurThread(long threadAddr);
 
     static {
         System.loadLibrary("iWatch");
