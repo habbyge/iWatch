@@ -29,24 +29,24 @@ android {
 //        }
 //    }
 
-//    signingConfigs {
-//        configDebug {
-//            keyAlias 'androiddebugkey'
-//            keyPassword 'android'
-//            storeFile rootProject.file('app/debug.keystore')
-//            storePassword 'android'
-//        }
-//    }
+    signingConfigs {
+        configDebug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile rootProject.file('app/debug.keystore')
+            storePassword 'android'
+        }
+    }
 
-//    buildTypes {
-//        release {
-//            minifyEnabled false
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-//
-////            signingConfig signingConfigs.config // 需要配置这行代码
-//            signingConfig signingConfigs.configDebug
-//        }
-//    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+//            signingConfig signingConfigs.config // 需要配置这行代码
+            signingConfig signingConfigs.configDebug
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

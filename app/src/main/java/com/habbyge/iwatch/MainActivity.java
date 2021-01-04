@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.habbyge.iwatch.test.TestCase0;
 import com.habbyge.iwatch.test.TestInlineCase;
-import com.habbyge.iwatch.util.ReflectUtil;
 
 import java.lang.reflect.Field;
 import java.util.Objects;
@@ -165,6 +164,12 @@ public class MainActivity extends AppCompatActivity {
 //        Log.i(TAG, "printf-Hook: " + iStr);
 //    }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume ix = " + ix);
+    }
 
     @Override
     protected void onPause() {

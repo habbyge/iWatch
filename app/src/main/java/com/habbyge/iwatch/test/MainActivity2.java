@@ -49,12 +49,11 @@ public class MainActivity2 extends Activity {
 //        Log.d(TAG, "onPause, testCaseField: " + testCaseField);
 //    }
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        Log.d(TAG, "onResume");
-//        testCaseField = 10;
-//    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume......");
+    }
 
     @SuppressWarnings("all")
     public void printf_hook(String iStr) {
