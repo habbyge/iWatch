@@ -16,7 +16,7 @@ class ValueObject {
 
 // Quickly access the current thread from a JNIEnv.
 static inline void* ThreadForEnv(JNIEnv* env) {
-  mirror::JNIEnvExt* full_env(static_cast<mirror::JNIEnvExt*>(env));
+  mirror::JNIEnvExt* full_env(static_cast<mirror::JNIEnvExt*>(env)); // copy-constructor
   return full_env->GetSelf();
 }
 
