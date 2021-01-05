@@ -113,6 +113,19 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
   } else { // >= Android-11
     loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
 
+    // 在 <= Android-10之前的版本，jni id 都是kPointer类型的，在 Andorid-11 之后都是 kIndices 类型了，
+    // 所以，>= Android-11 的版本中，jmethodID != ArtMethod*了，art源码中是：art/runtime/jni_id_type.h
+    // enum class JniIdType {
+    //  // All Jni method/field IDs are pointers to the corresponding Art{Field,Method} type
+    //  kPointer,
+    //  // All Jni method/field IDs are indices into a table.
+    //  kIndices, // here !!!!!!
+    //  // All Jni method/field IDs are pointers to the corresponding Art{Field,Method} type but we
+    //  // keep around extra information support changing modes to either kPointer or kIndices later.
+    //  kSwapablePointer,
+    //  kDefault = kPointer,
+    //};
+
     // [技术方案原理]:
     // review 代码发现这里与之前不同：
     // 代码路径：art/runtime/jni/jni_internal.h
