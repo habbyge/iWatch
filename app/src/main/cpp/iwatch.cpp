@@ -3,13 +3,15 @@
 //
 
 #include <jni.h>
-#include "common/log.h"
+#include <iostream>
 //#include <memory>
+#include <thread>
+
+#include "common/log.h"
+#include "common/elfop.h"
 #include "art/art_method_11.h"
 #include "art/ScopedFastNativeObjectAccess.h"
-#include <iostream>
-#include <thread>
-#include "common/elfop.h"
+
 
 //#include <art/runtime/jni/jni_internal.h>
 //#include <exception> C/C++ 的 Exception
@@ -55,7 +57,7 @@ static struct {
 
 static size_t artMethodSize = 0;
 static int sdkVersion = 0;
-static size_t cur_thread = 0;
+static void* cur_thread = 0;
 static JavaVM* vm;
 
 //using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
@@ -147,7 +149,6 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
 //                                                  reinterpret_cast<uintptr_t>(methodid2),
 //                                                  IsIndexId1, IsIndexId2);
 
-    // TODO ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
     void* context = dlopen_elf("libart.so", RTLD_NOW);
     logi("dlopen_elf: %p", context);
     if (context == nullptr) {
@@ -192,7 +193,6 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
     // jmethodID, jmethodID, ArtMethod*, ArtMethod*
     logi("init, method2=%p, %p", artMethod2, m2);
     artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
-    // TODO ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
     /*artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);*/
 //    artMethodSize = sizeof(art::mirror::ArtMethod_11); // 40-bytes
@@ -318,8 +318,8 @@ static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
 }
 
 static void set_cur_thread(JNIEnv* env, jclass, jlong threadAddr) {
-  cur_thread = threadAddr;
-  logi("set_cur_thread, cur_thread=%zu", cur_thread);
+  cur_thread = reinterpret_cast<void*>(threadAddr);
+  logi("set_cur_thread, cur_thread=%p", cur_thread);
 }
 
 static JNINativeMethod gMethods[] = {
@@ -349,9 +349,9 @@ static JNINativeMethod gMethods[] = {
     (void*) hook_class
   },
   {
-      "setCurThread",
-      "(J)V",
-      (void*) set_cur_thread
+    "setCurThread",
+    "(J)V",
+    (void*) set_cur_thread
   }
 };
 
