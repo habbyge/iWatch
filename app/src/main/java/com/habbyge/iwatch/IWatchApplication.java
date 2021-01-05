@@ -13,10 +13,8 @@ public class IWatchApplication extends Application {
 //        TestInlineCase_Fix.fix();
 
         try {
-            Class<?> srcClass = Class.forName("com.habbyge.iwatch.MainActivity",
-                                              true, this.getClassLoader());
-            Class<?> dstClass = Class.forName("com.habbyge.iwatch.test.MainActivity2",
-                                              true, this.getClassLoader());
+            Class<?> srcClass = Class.forName("com.habbyge.iwatch.MainActivity", true, this.getClassLoader());
+            Class<?> dstClass = Class.forName("com.habbyge.iwatch.test.MainActivity2", true, this.getClassLoader());
 
             // 测试用例1:
 //            HookManager.get().fixMethod(

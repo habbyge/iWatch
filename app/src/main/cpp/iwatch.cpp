@@ -6,6 +6,7 @@
 #include "common/log.h"
 //#include <memory>
 #include "art/art_method_11.h"
+#include "art/ScopedFastNativeObjectAccess.h"
 #include <iostream>
 #include <thread>
 #include "common/elfop.h"
@@ -57,30 +58,30 @@ static int sdkVersion = 0;
 static size_t cur_thread = 0;
 static JavaVM* vm;
 
-using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
-addWeakGlobalRef_t addWeakGlobalRef;
+//using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
+//addWeakGlobalRef_t addWeakGlobalRef;
 
 // Android-11：
 // art/runtime/jni/check_jni.cc
 // ArtMethod* CheckMethodID(jmethodID mid)
-using CheckMethodID_t = art::mirror::ArtMethod_11* (*)(jmethodID);
-CheckMethodID_t CheckMethodID;
-// TODO: 本来这个符号挺好的，但是 nm 一下发现是 t(小t) 类型的，这样的话，是没有导出的，不能使用，命令是：
-//  nm -extern-only libart.so | grep CheckMethodID
-//  一般情况下，写在 .h 文件中的 或 extern 声明的 函数才被导出.
-static const char* CheckMethodID_Sym = "_ZN3art12_GLOBAL__N_111ScopedCheck13CheckMethodIDEP10_jmethodID";
+//using CheckMethodID_t = art::mirror::ArtMethod_11* (*)(jmethodID);
+//CheckMethodID_t CheckMethodID;
+// 本来这个符号挺好的，但是 nm 一下发现是 t(小t) 类型的，这样的话，是没有导出的，不能使用，命令是：
+// nm -extern-only libart.so | grep CheckMethodID 或 nm -g libart.so | grep CheckMethodID
+// 一般情况下，写在 .h 文件中的 或 extern 声明的 函数才被导出.
+//static const char* CheckMethodID_Sym = "_ZN3art12_GLOBAL__N_111ScopedCheck13CheckMethodIDEP10_jmethodID";
 
 // ==
-static const char* DecodeMethodId_sym = "_ZN3art3jni12JniIdManager14DecodeMethodIdEP10_jmethodID";
-using DecodeMethodId_t = void* (*)(jmethodID);
-DecodeMethodId_t DecodeMethodId;
-static const char* GetGenericMap_Sym =
-    "_ZN3art3jni12JniIdManager13GetGenericMapINS_9ArtMethodEEERNSt3__16vectorIPT_NS4_9allocatorIS7_EEEEv";
+//static const char* DecodeMethodId_sym = "_ZN3art3jni12JniIdManager14DecodeMethodIdEP10_jmethodID";
+//using DecodeMethodId_t = void* (*)(jmethodID);
+//DecodeMethodId_t DecodeMethodId;
+//static const char* GetGenericMap_Sym =
+//    "_ZN3art3jni12JniIdManager13GetGenericMapINS_9ArtMethodEEERNSt3__16vectorIPT_NS4_9allocatorIS7_EEEEv";
 
 static const char* FromReflectedMethod_Sym =
     "_ZN3art9ArtMethod19FromReflectedMethodERKNS_33ScopedObjectAccessAlreadyRunnableEP8_jobject";
-using FromReflectedMethod_t = art::mirror::ArtMethod_11* (*)(const art::ScopedObjectAccessAlreadyRunnable& soa,
-                                                             jobject jlr_method);
+// 真实返回值是：/*art::mirror::ArtMethod_11*/
+using FromReflectedMethod_t = void* (*)(const art::ScopedObjectAccessAlreadyRunnable& soa, jobject jlr_method);
 FromReflectedMethod_t FromReflectedMethod;
 
 
@@ -177,6 +178,11 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
 //    // jmethodID, jmethodID, ArtMethod*, ArtMethod*
 //    logi("init, method1=%p, %p, method2=%p, %p", jmethodID1, jmethodID2, artMethod1, artMethod2);
 
+    // 实际上该函数(方法)符号，本质上在art虚拟机的二进制文件(libart.so)中的一个地址，更进一步说，我们传入该函数
+    // 符号地址对应的该类型的参数即可，这里的参数类型在libart.so中是二进制形式存在，即不关心这个参数类型是art虚拟
+    // 机目录中的，还是我们在外部工程中自己定义的，只要二进制表现形式一致，且参数值正确即可，所以这里的技术点之一即
+    // 是：自己以 "从简的方式" 定义其对应的参数类型在art目录中的形式即可，再直白点就是：查看art虚拟机源代码，根据
+    // 需要抄过来其实现即可。
     FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(dlsym_elf(context, FromReflectedMethod_Sym));
     logi("init, FromReflectedMethod=%p", FromReflectedMethod);
     const art::ScopedFastNativeObjectAccess soa(env);
