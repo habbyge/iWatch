@@ -99,6 +99,13 @@ public final class HookManager {
         methodHook.hook();
     }
 
+    public void hookMethod(String className1, String funcName1, String funcSig1, boolean isStatic1,
+                           String className2, String funcName2, String funcSig2, boolean isStatic2) {
+
+        MethodHook.hookv2(className1, funcName1, funcSig1, isStatic1,
+                          className2, funcName2, funcSig2, isStatic2);
+    }
+
 //    public void callOrigin(Object receiver, Object... args) {
 //        StackTraceElement stackTrace = Thread.currentThread().getStackTrace()[3];
 //        String className = stackTrace.getClassName();

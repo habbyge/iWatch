@@ -50,10 +50,16 @@ public class MainActivity extends AppCompatActivity {
 
 //                TestCase0.printf("This is not fix !");
 
-
 //                startActivity(new Intent(MainActivity.this, MainActivity2.class));
                 Log.i(TAG, "btnClick click !");
-                printf("Mali");
+
+                HookManager.get().hookMethod(
+                        "com/habbyge/iwatch/MainActivity", "printf", "(Ljava/lang/String;)V", false,
+                        "com/habbyge/iwatch/test/MainActivity2", "printf_hook", "(Ljava/lang/String;)V", false);
+                // 测试用例1:
+//            HookManager.get().fixMethod(
+//                    srcClass, "printf", new Class<?>[]{String.class},
+//                    dstClass, "printf_hook", new Class<?>[]{String.class});
 
                 /*Log.i(TAG, "test object :" + ReflectUtil.getLongField(
                         Thread.currentThread(), "nativePeer"));*/
@@ -64,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
+                printf("Mali");
+
 //                HookManager.get().fixMethod(
 //                        TestCase0.class, "printf", new Class<?>[] {String.class},
 //                        Fix0.class, "printf_Hook", new Class<?>[] {String.class});
@@ -154,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressWarnings("all")
-    private void printf(String text) {
+    public void printf(String text) {
         Log.i(TAG, "printf: " + text);
         ix = 100;
     }

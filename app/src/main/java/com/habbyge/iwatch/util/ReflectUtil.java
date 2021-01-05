@@ -1,13 +1,14 @@
 package com.habbyge.iwatch.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.NoSuchElementException;
 
 public final class ReflectUtil {
     private static final String TAG = "ReflectUtil";
 
     private ReflectUtil() {
     }
-
 
     public static Field findField(Class<?> clazz, String fieldName) {
         try {
@@ -27,8 +28,28 @@ public final class ReflectUtil {
         }
     }
 
+    public static Method findMethod(String className, String methodName, Class<?>... parameterTypes) {
+        try {
+            Class<?> _class = Class.forName(className);
+            return findMethod(_class, methodName, parameterTypes);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Method findMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        try {
+            Method method = clazz.getDeclaredMethod(methodName, parameterTypes);
+            method.setAccessible(true);
+            return method;
+        } catch (NoSuchMethodException e) {
+            throw new NoSuchMethodError(methodName);
+        }
+    }
+
     private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName)
-            throws NoSuchFieldException {
+                                                throws NoSuchFieldException {
 
         try {
             return clazz.getDeclaredField(fieldName);
@@ -37,10 +58,10 @@ public final class ReflectUtil {
                 clazz = clazz.getSuperclass();
                 if (clazz == null || clazz.equals(Object.class))
                     break;
+
                 try {
                     return clazz.getDeclaredField(fieldName);
-                } catch (NoSuchFieldException ignored) {
-                }
+                } catch (NoSuchFieldException ignored) {}
             }
             throw e;
         }

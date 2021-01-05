@@ -19,5 +19,7 @@ public final class Util {
         return new BigInteger(seq).longValue();
     }
 
-
+    public String getQualityName(String className) {
+        return className == null ? className : className.replaceAll("\\.", "/");
+    }
 }

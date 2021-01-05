@@ -32,43 +32,26 @@ import java.lang.reflect.Method;
 public final class MethodHook {
     private static final String TAG = "iWatch.MethodHook";
 
-    @Keep
-    private long backupMethodPtr = 0L; // 原方法地址
-
-    // field1、field2 两个字段必须是相邻的，用于计算 ArtField 大小
-    @Keep
-    public static Object field1;
-    @Keep
-    public static Object field2;
-    @Keep
-    private final Method srcMethod;
-    @Keep
-    private final Method hookMethod;
+    private MethodHook() {
+    }
 
     static void init() {
         setCurThread();
         ArtMethodSize.init(Build.VERSION.SDK_INT);
     }
 
-    @Keep
-    public MethodHook(Method src, Method dest) {
-        srcMethod = src;
-        srcMethod.setAccessible(true);
+    public static void hook(String className1, String funcName1, String funcSig1, boolean isStatic1,
+                            String className2, String funcName2, String funcSig2, boolean isStatic2) {
 
-        hookMethod = dest;
-        hookMethod.setAccessible(true);
-    }
-
-    @Keep
-    public void hook() {
-        if (backupMethodPtr == 0L) {
-            backupMethodPtr = hookMethod(srcMethod, hookMethod);
+        backupMethodPtr = hookMethod(className1, funcName1, funcSig1, isStatic1,
+                                     className2, funcName2, funcSig2, isStatic2);
+        if (backupMethodPtr <= 0L) {
+            // TODO: 1/5/21
+            hookMethod();
         }
-        Log.i(TAG, "hook success: " + backupMethodPtr);
     }
 
-    @Keep
-    public void restore() {
+    public static void restore() {
         if (backupMethodPtr != 0L) {
             Log.i(TAG, "restore  begin");
             restoreMethod(srcMethod, backupMethodPtr);
@@ -77,9 +60,8 @@ public final class MethodHook {
         }
     }
 
-    @Keep
-    public void callOrigin(Object receiver, Object... args) throws InvocationTargetException,
-                                                                   IllegalAccessException {
+    public static void callOrigin(Object receiver, Object... args) throws InvocationTargetException,
+                                                                          IllegalAccessException {
 
         if (backupMethodPtr != 0L) {
             restore();
@@ -90,18 +72,15 @@ public final class MethodHook {
         }
     }
 
-    @Keep
     public static void hookField2(Field src, Field dst) {
         hookField(src, dst);
     }
 
-    @Keep
     public static void hookClass2(String clazzName) {
         long addr = hookClass(clazzName.replace(".", "/"));
         Log.i(TAG, "hookClass2, addr=" + addr);
     }
 
-    @Keep
     public static void setCurThread() {
         long threadNativeAddr = ReflectUtil.getLongField(Thread.currentThread(), "nativePeer");
         Log.i(TAG, "threadNativeAddr=" + threadNativeAddr);
@@ -111,7 +90,11 @@ public final class MethodHook {
     @Keep
     public static native void init(int sdkVersionCode, Method m1, Method m2);
     @Keep
-    public static native long hookMethod(Method src, Method dst);
+    private static native long hookMethod(Method src, Method dst);
+    @Keep
+    private static native long hookMethod(String className1, String funcName1, String funcSig1,
+                                          boolean isStatic1, String className2, String funcName2,
+                                          String funcSig2, boolean isStatic2);
     @Keep
     private static native Method restoreMethod(Method src, long methodPtr);
     @Keep
