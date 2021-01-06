@@ -255,6 +255,10 @@ private:
   // class is where they are (logically) declared as far as the virtual dispatch is concerned.
   //
   // Note that this field is used by the native debugger as the unique identifier for the type.
+  // FiXME: 这里是存储该 Class 中的所有包含的 ArtMethod 对象，包括：virtual、satic、final以及集成的方法，
+  //  从这个字段的初始化可以看出，ArtMethod 对象是按照从上到下顺序依次紧挨着存储的，所以 iWwatch 项目中的计算
+  //  同一个 class 中两个相邻的方法相减，是可以计算出 ArtMethod 大小的. Android-11 中的 index 索引其实就是
+  //  这里每一个 ArtMethod 对象在 这个字段中排列的顺序.
   uint64_t methods_;
 
   // Static fields length-prefixed array.

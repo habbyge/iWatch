@@ -46,10 +46,10 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "btnClick click !");
 
                 // 测试用例:
-                MethodHandler.hook("com.habbyge.iwatch.MainActivity",
-                        "printf", new Class<?>[] {String.class}, void.class, false,
-                        "com.habbyge.iwatch.test.MainActivity2",
-                        "printf_hook", new Class<?>[] {String.class}, void.class, false);
+                IWatch.hook("com.habbyge.iwatch.MainActivity",
+                            "printf", new Class<?>[] {String.class}, void.class, false,
+                            "com.habbyge.iwatch.test.MainActivity2",
+                            "printf_hook", new Class<?>[] {String.class}, void.class, false);
             }
         });
 

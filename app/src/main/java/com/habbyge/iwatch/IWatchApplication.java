@@ -9,10 +9,10 @@ public class IWatchApplication extends Application {
         super.onCreate();
 
         // 必须最先执行
-        MethodHandler.init();
+        IWatch.init();
 
         // 测试用例:
-        MethodHandler.hook("com.habbyge.iwatch.MainActivity", "onResume", null, void.class, false,
-                           "com.habbyge.iwatch.test.MainActivity2", "onResume", null, void.class, false);
+        IWatch.hook("com.habbyge.iwatch.MainActivity", "onResume", null, void.class, false,
+                    "com.habbyge.iwatch.test.MainActivity2", "onResume", null, void.class, false);
     }
 }
