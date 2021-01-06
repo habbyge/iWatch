@@ -340,6 +340,7 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
     dstArtMethod = getArtMethod(env, dstMethod);
     logd("method_hook(api>=30), srcArtMethod=%p, dstArtMethod=%p", srcArtMethod, dstArtMethod);
     if (srcArtMethod == nullptr || dstArtMethod == nullptr) {
+      loge("method_hook dstArtMethod/dstArtMethod is nullptr !");
       return -1L;
     }
   }
@@ -369,7 +370,8 @@ static jlong method_hookv2(JNIEnv* env, jclass,
       || name1 == nullptr || name2 == nullptr
       || sig1 == nullptr || sig2 == nullptr) {
 
-    return 0L;
+    loge("method_hookv2 input params are nullptr !");
+    return -1L;
   }
 
   jboolean isCopy;

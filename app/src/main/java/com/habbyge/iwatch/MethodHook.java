@@ -32,44 +32,51 @@ import java.lang.reflect.Method;
 public final class MethodHook {
     private static final String TAG = "iWatch.MethodHook";
 
+//    private long backupOriMethod = -1L;
+//    private Method oriMethod = null;
+
     private MethodHook() {
     }
 
-    static void init() {
+    public static void init() {
         setCurThread();
         ArtMethodSize.init(Build.VERSION.SDK_INT);
     }
 
-    public static void hook(String className1, String funcName1, String funcSig1, boolean isStatic1,
-                            String className2, String funcName2, String funcSig2, boolean isStatic2) {
+    public static boolean hookMethod1(Method method1, Method method2) {
+        final long backupOriMethod = hookMethod(method1, method2);
+        return backupOriMethod != 0L && backupOriMethod != -1L;
+    }
 
-        backupMethodPtr = hookMethod(className1, funcName1, funcSig1, isStatic1,
-                                     className2, funcName2, funcSig2, isStatic2);
-        if (backupMethodPtr <= 0L) {
-            // TODO: 1/5/21
-            hookMethod();
-        }
+    public static boolean hookMethod2(String className1, String funcName1, String funcSig1,
+                                      boolean isStatic1, String className2, String funcName2,
+                                      String funcSig2, boolean isStatic2) {
+
+        final long backupOriMethod = hookMethod(className1, funcName1, funcSig1, isStatic1,
+                                                className2, funcName2, funcSig2, isStatic2);
+
+        return backupOriMethod != 0L && backupOriMethod != -1L;
     }
 
     public static void restore() {
-        if (backupMethodPtr != 0L) {
+        /*if (backupMethodPtr != 0L) {
             Log.i(TAG, "restore  begin");
             restoreMethod(srcMethod, backupMethodPtr);
             Log.i(TAG, "restore  success");
             backupMethodPtr = 0L;
-        }
+        }*/
     }
 
     public static void callOrigin(Object receiver, Object... args) throws InvocationTargetException,
                                                                           IllegalAccessException {
 
-        if (backupMethodPtr != 0L) {
+        /*if (backupMethodPtr != 0L) {
             restore();
             srcMethod.invoke(receiver, args);
             hook();
         } else {
             srcMethod.invoke(receiver, args);
-        }
+        }*/
     }
 
     public static void hookField2(Field src, Field dst) {

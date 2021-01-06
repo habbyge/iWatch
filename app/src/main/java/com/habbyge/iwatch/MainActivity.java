@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.habbyge.iwatch.test.TestCase0;
 import com.habbyge.iwatch.test.TestInlineCase;
 
-import java.lang.reflect.Field;
 import java.util.Objects;
 
 /**
@@ -44,25 +43,13 @@ public class MainActivity extends AppCompatActivity {
         btnClick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                printf("I love My family: Wifi Daught, Son !");
-//                Log.d(TAG, "iStr = " + iStr);
-//                Log.d(TAG, "iX = " + ix);
-
-//                TestCase0.printf("This is not fix !");
-
-//                startActivity(new Intent(MainActivity.this, MainActivity2.class));
                 Log.i(TAG, "btnClick click !");
 
-                HookManager.get().hookMethod(
-                        "com/habbyge/iwatch/MainActivity", "printf", "(Ljava/lang/String;)V", false,
-                        "com/habbyge/iwatch/test/MainActivity2", "printf_hook", "(Ljava/lang/String;)V", false);
-                // 测试用例1:
-//            HookManager.get().fixMethod(
-//                    srcClass, "printf", new Class<?>[]{String.class},
-//                    dstClass, "printf_hook", new Class<?>[]{String.class});
-
-                /*Log.i(TAG, "test object :" + ReflectUtil.getLongField(
-                        Thread.currentThread(), "nativePeer"));*/
+                // 测试用例:
+                MethodHandler.hook("com.habbyge.iwatch.MainActivity",
+                        "printf", new Class<?>[] {String.class}, void.class, false,
+                        "com.habbyge.iwatch.test.MainActivity2",
+                        "printf_hook", new Class<?>[] {String.class}, void.class, false);
             }
         });
 
@@ -121,21 +108,21 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                try {
-                    Field srcField = MainActivity.class.getDeclaredField("iStr");
-                    srcField.setAccessible(true);
-                    Field dstField = MainActivity.class.getDeclaredField("iStr_HOOK");
-                    dstField.setAccessible(true);
-                    HookManager.get().hookField(srcField, dstField);
-
-                    Field srcField1 = MainActivity.class.getDeclaredField("ix");
-                    srcField1.setAccessible(true);
-                    Field dstField1 = MainActivity.class.getDeclaredField("ix_HOOK");
-                    dstField1.setAccessible(true);
-                    HookManager.get().hookField(srcField1, dstField1);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Field srcField = MainActivity.class.getDeclaredField("iStr");
+//                    srcField.setAccessible(true);
+//                    Field dstField = MainActivity.class.getDeclaredField("iStr_HOOK");
+//                    dstField.setAccessible(true);
+//                    HookManager.get().hookField(srcField, dstField);
+//
+//                    Field srcField1 = MainActivity.class.getDeclaredField("ix");
+//                    srcField1.setAccessible(true);
+//                    Field dstField1 = MainActivity.class.getDeclaredField("ix_HOOK");
+//                    dstField1.setAccessible(true);
+//                    HookManager.get().hookField(srcField1, dstField1);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
             }
         });
 

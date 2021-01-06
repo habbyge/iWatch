@@ -1,8 +1,12 @@
 package com.habbyge.iwatch;
 
+import android.util.Log;
+
 import androidx.annotation.Keep;
 
 import com.habbyge.iwatch.util.ReflectUtil;
+import com.habbyge.iwatch.util.StringUtil;
+import com.habbyge.iwatch.util.Type;
 
 import java.lang.reflect.Method;
 
@@ -11,19 +15,36 @@ import java.lang.reflect.Method;
  */
 @Keep
 final class MethodHandler {
+    private static final String TAG = "iWatch.MethodHandler";
 
-    @Keep
-    private static long backupMethodPtr = -1L; // 原方法地址
-    @Keep
-    private static Method srcMethod = null;
+    static void init() {
+        MethodHook.init();
+    }
 
-    void hook(String className1, String funcName1, Class<?>[] paramTypes1, boolean isStatic1,
-              String className2, String funcName2, Class<?>[] paramTypes2, boolean isStatic2) {
+    static void hook(String className1, String funcName1, Class<?>[] paramTypes1,
+                     Class<?> returnType1, boolean isStatic1,
+                     String className2, String funcName2, Class<?>[] paramTypes2,
+                     Class<?> returnType2, boolean isStatic2) {
 
-        ReflectUtil.findMethod(className1, funcName1, );
+        if (StringUtil.isEmpty(className1) || StringUtil.isEmpty(funcName1)
+                || StringUtil.isEmpty(className2) || StringUtil.isEmpty(funcName2)
+                || returnType1 == null || returnType2 == null) {
 
-        srcMethod = method1;
+            throw new NullPointerException("MethodHandler.hook, param is null");
+        }
 
-        MethodHook.hook();
+        Method method1 = ReflectUtil.findMethod(className1, funcName1, paramTypes1);
+        Method method2 = ReflectUtil.findMethod(className2, funcName2, paramTypes2);
+        boolean success = MethodHook.hookMethod1(method1, method2);
+        Log.i(TAG, "hookMethod1 success=" + success);
+        if (success) {
+            return;
+        }
+
+        String decriptor1 = Type.getMethodDescriptor(returnType1, paramTypes1);
+        String decriptor2 = Type.getMethodDescriptor(returnType2, paramTypes2);
+        success = MethodHook.hookMethod2(className1, funcName1, decriptor1, isStatic1,
+                                         className2, funcName2, decriptor2, isStatic2);
+        Log.i(TAG, "hookMethod2 success=" + success);
     }
 }
