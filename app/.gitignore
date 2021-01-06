@@ -1,0 +1,8 @@
+/build
+.cxx
+.externalNativeBuild
+build/
+
+/src/main/cpp/CMakeFiles
+/src/main/cpp/Makefile
+/src/main/cpp/cmake_install.cmake
