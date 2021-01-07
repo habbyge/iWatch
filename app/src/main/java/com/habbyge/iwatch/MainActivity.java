@@ -7,6 +7,7 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.habbyge.iwatch.patch.PatchManager;
 import com.habbyge.iwatch.test.TestCase0;
 import com.habbyge.iwatch.test.TestInlineCase;
 
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "btnClick click !");
 
                 // 测试用例:
-                IWatch.hook("com.habbyge.iwatch.MainActivity",
+                PatchManager.getInstance().testFix("com.habbyge.iwatch.MainActivity",
                             "printf", new Class<?>[] {String.class}, void.class, false,
                             "com.habbyge.iwatch.test.MainActivity2",
                             "printf_hook", new Class<?>[] {String.class}, void.class, false);

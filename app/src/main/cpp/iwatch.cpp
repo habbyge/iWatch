@@ -154,6 +154,9 @@ static void initArtMethod1(JNIEnv* env, void* context, jobject m1, jobject m2) {
     void* artMethod2 = getArtMethod(env, m2);
     // jmethodID, jmethodID, ArtMethod*, ArtMethod*
     logi("initArtMethod1, method2=%p, %p", artMethod2, m2);
+
+    // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的：
+    // ArtMethod按照类中方法声明顺序依次紧密的排列在 methods_ 字段表示的内存中.
     artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
     logi("initArtMethod1, artMethodSizeV1 = %zu", artMethodSizeV1);
   } catch (std::exception e) {
@@ -172,6 +175,8 @@ static void initArtMethod2(JNIEnv* env, void* context) {
     void* artMethod12 = getArtMethod(env, ArtMethodSizeClass, "func2", "()V", true);
     // jmethodID, jmethodID, ArtMethod*, ArtMethod*
     logi("initArtMethod2, artMethod22=%p", artMethod12);
+
+    // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的
     artMethodSizeV2 = reinterpret_cast<size_t>(artMethod12) - reinterpret_cast<size_t>(artMethod11);
     logi("initArtMethod2, artMethodSizeV2 = %zu", artMethodSizeV2);
   } catch (std::exception e) {
