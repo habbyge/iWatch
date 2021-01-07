@@ -397,9 +397,10 @@ static jlong method_hookv2(JNIEnv* env, jclass,
                            jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
                            jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
-  /*if (sdkVersion <= 29) { // <= Android-10
+  if (sdkVersion <= 29) { // <= Android-10
+    loge("method_hookv2 sdkVersion NOT >= 30: %d", sdkVersion);
     return -1L;
-  }*/
+  }
 
   if (java_class1 == nullptr || java_class2 == nullptr
       || name1 == nullptr || name2 == nullptr
