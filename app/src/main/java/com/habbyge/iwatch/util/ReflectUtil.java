@@ -35,7 +35,8 @@ public final class ReflectUtil {
         try {
             return getClass(classLoader, className, false);
         } catch (ClassNotFoundException e) {
-            throw new ClassNotFoundError(e);
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -110,7 +111,8 @@ public final class ReflectUtil {
             method.setAccessible(true);
             return method;
         } catch (NoSuchMethodException e) {
-            throw new NoSuchMethodError(methodName);
+            e.printStackTrace();
+            return null;
         }
     }
 

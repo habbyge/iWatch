@@ -44,6 +44,9 @@ public final class MethodHook {
     }
 
     public static boolean hookMethod1(Method method1, Method method2) {
+        if (method1 == null || method2 == null) {
+            return false;
+        }
         final long backupOriMethod = hookMethod(method1, method2);
         return backupOriMethod != 0L && backupOriMethod != -1L;
     }

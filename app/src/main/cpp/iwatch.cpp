@@ -61,7 +61,7 @@ static size_t artMethodSizeV1 = -1;
 static size_t artMethodSizeV2 = -1;
 
 static int sdkVersion = 0;
-static void* cur_thread = 0;
+static void* cur_thread = nullptr;
 static JavaVM* vm;
 
 //using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
@@ -120,14 +120,25 @@ FindMethodJNI_t FindMethodJNI;
 // 同时使用 方案1 和 方案2，哪个生效用哪里，双保险!!!!!!
 
 /**
+ * 这里在 C/C++(jni/naitve) 层发生的 exception，如果被jni方法(在java层声明的Native方法)直接或间接调用，
+ * 即使是 catch 住了，也需要 clear 掉该 exception，否则会继续向上炮 exception 到 Java 层，这里需要注意.
+ */
+static void clear_exception(JNIEnv* env) {
+  if (env->ExceptionCheck()) {
+    env->ExceptionClear(); // 清除异常，避免 jni 函数的异常抛到 Java 层
+  }
+}
+
+/**
  * 方案1
  */
 static void* getArtMethod(JNIEnv* env, jobject method) {
   try {
     const art::ScopedFastNativeObjectAccess soa(env);
     return FromReflectedMethod(soa, method);
-  } catch (std::exception e) {
+  } catch (std::exception& e) {
     loge("getArtMethod1, eception: %s", e.what());
+    clear_exception(env);
     return nullptr;
   }
 }
@@ -139,8 +150,9 @@ static void* getArtMethod(JNIEnv* env, jclass java_class, const char* name, cons
   try {
     art::ScopedObjectAccess soa(env);
     return FindMethodJNI(soa, java_class, name, sig, is_static);
-  } catch (std::exception e) {
+  } catch (std::exception& e) {
     loge("getArtMethod2, eception: %s", e.what());
+    clear_exception(env);
     return nullptr;
   }
 }
@@ -159,8 +171,9 @@ static void initArtMethod1(JNIEnv* env, void* context, jobject m1, jobject m2) {
     // ArtMethod按照类中方法声明顺序依次紧密的排列在 methods_ 字段表示的内存中.
     artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
     logi("initArtMethod1, artMethodSizeV1 = %zu", artMethodSizeV1);
-  } catch (std::exception e) {
+  } catch (std::exception& e) {
     loge("initArtMethod1, eception: %s", e.what());
+    clear_exception(env);
     artMethodSizeV1 = -1;
   }
 }
@@ -179,8 +192,9 @@ static void initArtMethod2(JNIEnv* env, void* context) {
     // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的
     artMethodSizeV2 = reinterpret_cast<size_t>(artMethod12) - reinterpret_cast<size_t>(artMethod11);
     logi("initArtMethod2, artMethodSizeV2 = %zu", artMethodSizeV2);
-  } catch (std::exception e) {
+  } catch (std::exception& e) {
     loge("initArtMethod2, eception: %s", e.what());
+    clear_exception(env);
     artMethodSizeV2 = -1;
   }
 }
@@ -346,6 +360,7 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
     logd("method_hook(api>=30), srcArtMethod=%p, dstArtMethod=%p", srcArtMethod, dstArtMethod);
     if (srcArtMethod == nullptr || dstArtMethod == nullptr) {
       loge("method_hook dstArtMethod/dstArtMethod is nullptr !");
+      clear_exception(env);
       return -1L;
     }
   }
@@ -357,8 +372,9 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
     memcpy(backupArtMethod, srcArtMethod, artMethodSizeV1);
     // 替换成新方法
     memcpy(srcArtMethod, dstArtMethod, artMethodSizeV1);
-  } catch (std::exception e) {
+  } catch (std::exception& e) {
     loge("method_hook copy: eception: %s", e.what());
+    clear_exception(env);
     return -1L;
   }
 
@@ -381,32 +397,57 @@ static jlong method_hookv2(JNIEnv* env, jclass,
 
   jboolean isCopy;
   const char* class1 = env->GetStringUTFChars(java_class1, &isCopy);
-  auto jclass1 = env->FindClass(class1);
+  jclass jclass1;
+  try {
+    jclass1 = env->FindClass(class1);
+  } catch (std::exception& e) {
+    loge("method_hookv2 FindClass-1: %s", e.what());
+    clear_exception(env);
+    return -1L;
+  }
+
   const char* name_str1 = env->GetStringUTFChars(name1, &isCopy);
   const char* sig_str1 = env->GetStringUTFChars(sig1, &isCopy);
   auto artMethod1 = getArtMethod(env, jclass1, name_str1, sig_str1, is_static1);
-  logi("method_hookv2, artMethod1=%p", artMethod1);
   env->ReleaseStringUTFChars(java_class1, class1);
   env->ReleaseStringUTFChars(name1, name_str1);
   env->ReleaseStringUTFChars(sig1, sig_str1);
+  logi("method_hookv2, artMethod1=%p", artMethod1);
+  if (artMethod1 == nullptr) {
+    clear_exception(env);
+    return -1L;
+  }
 
   const char* class2 = env->GetStringUTFChars(java_class2, &isCopy);
-  auto jclass2 = env->FindClass(class2);
+  jclass jclass2;
+  try {
+    jclass2 = env->FindClass(class2);
+  } catch (std::exception& e) {
+    loge("method_hookv2 FindClass-2: %s", e.what());
+    clear_exception(env);
+    return -1L;
+  }
+
   const char* name_str2 = env->GetStringUTFChars(name2, &isCopy);
   const char* sig_str2 = env->GetStringUTFChars(sig2, &isCopy);
   auto artMethod2 = getArtMethod(env, jclass2, name_str2, sig_str2, is_static2);
-  logi("method_hookv2, artMethod2=%p", artMethod2);
   env->ReleaseStringUTFChars(java_class2, class2);
   env->ReleaseStringUTFChars(name2, name_str2);
   env->ReleaseStringUTFChars(sig2, sig_str2);
+  logi("method_hookv2, artMethod2=%p", artMethod2);
+  if (artMethod2 == nullptr) {
+    clear_exception(env);
+    return -1L;
+  }
 
   char* backupArtMethod = nullptr;
   try {
     backupArtMethod = new char[artMethodSizeV2];
     memcpy(backupArtMethod, artMethod1, artMethodSizeV2);
     memcpy(artMethod1, artMethod2, artMethodSizeV2);
-  } catch (std::exception e) {
+  } catch (std::exception& e) {
     loge("method_hookv2 copy: eception: %s", e.what());
+    clear_exception(env);
     return -1L;
   }
 
@@ -461,6 +502,9 @@ static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField)
 
   memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
   memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
+
+  clear_exception(env);
+
   logv("hook_field: Success !");
   return reinterpret_cast<jlong>(backupArtField); // 记得 free 掉
 }
@@ -471,12 +515,19 @@ static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
   logd("hookClass, className=%s", kClassName);
   jclass kClass = env->FindClass(kClassName);
   env->ReleaseStringUTFChars(clazzName, kClassName);
+
+  clear_exception(env);
+
   return reinterpret_cast<jlong>(kClass);
 }
 
 static void set_cur_thread(JNIEnv* env, jclass, jlong threadAddr) {
   cur_thread = reinterpret_cast<void*>(threadAddr);
   logi("set_cur_thread, cur_thread=%p", cur_thread);
+}
+
+uint32_t art::mirror::Object::ClassSize(art::PointerSize pointer_size) {
+  return 0;
 }
 
 static JNINativeMethod gMethods[] = {
@@ -528,8 +579,4 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
     return JNI_FALSE;
   }
   return JNI_VERSION_1_4;
-}
-
-uint32_t art::mirror::Object::ClassSize(art::PointerSize pointer_size) {
-  return 0;
 }
