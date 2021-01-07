@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         Button btnHookClickLsn = findViewById(R.id.clickListener);
 
         btnClick.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "btnClick click !");

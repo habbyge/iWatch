@@ -111,4 +111,3 @@ public class Patch implements Comparable<Patch> {
         return mTime.compareTo(another.getTime());
     }
 }
-

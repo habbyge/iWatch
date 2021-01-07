@@ -36,14 +36,8 @@ public final class PatchManager {
 
     private Context mContext; // 这里必须是 Application 的 Context
 
-    /**
-     * patch directory
-     */
-    private File mPatchDir;
-    /**
-     * patchs
-     */
-    private SortedSet<Patch> mPatchs; // TODO: 1/7/21 ing
+    private File mPatchDir; // patch 目录
+    private SortedSet<Patch> mPatchs; // TODO: 1/7/21 保存了所有补丁
     /**
      * classloaders
      */
@@ -69,7 +63,7 @@ public final class PatchManager {
     }
 
     /**
-     * 初始化入口
+     * 初始化入口(越早初始化越好)
      *
      * @param context 必须是全局的 Application 的 Context
      * @param appReversion App 打包粒度的 version
@@ -103,32 +97,33 @@ public final class PatchManager {
         initIWatch(context);
     }
 
-    private void initPatchs() {
-        File[] files = mPatchDir.listFiles();
-        if (files == null) {
-            return;
+    /**
+     * load all patch, call when application start
+     */
+    public void loadPatch() {
+        mClassLoaderMap.put("*", mContext.getClassLoader()); // wildcard
+        Set<String> patchNames;
+        List<String> classes;
+        for (Patch patch : mPatchs) {
+            patchNames = patch.getPatchNames();
+            for (String patchName : patchNames) {
+                classes = patch.getClasses(patchName);
+                iWatch.fix(patch.getFile(), mContext.getClassLoader(), classes);
+            }
         }
-        for (File file : files) {
-            addPatch(file);
-        }
-        Log.i(TAG, "initPatchs success");
-    }
-
-    private void initIWatch(Context context) {
-        iWatch = new IWatch(context);
-        iWatch.init();
     }
 
     /**
-     * 实时打补丁的接口函数
-     * add patch at runtime
+     * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
+     * When a new patch file has been downloaded, it will become effective immediately by addPatch.
      * @param path patch path
      */
     public void addPatch(String path) throws IOException {
         File src = new File(path);
         File dest = new File(mPatchDir, src.getName());
         if (!src.exists()) {
-            throw new FileNotFoundException(path);
+            Log.e(TAG, "addPath, FileNotFoundException", new FileNotFoundException(path));
+            return;
         }
         if (dest.exists()) {
             Log.d(TAG, "patch [" + path + "] has be loaded.");
@@ -139,15 +134,6 @@ public final class PatchManager {
         if (patch != null) {
             loadPatch(patch);
         }
-    }
-
-    /**
-     * remove all patchs
-     */
-    public void removeAllPatch() {
-        cleanPatch();
-        SharedPreferences sp = mContext.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
-        sp.edit().clear().apply();
     }
 
     /**
@@ -172,19 +158,28 @@ public final class PatchManager {
     }
 
     /**
-     * load patch, call when application start
+     * remove all patchs
      */
-    public void loadPatch() {
-        mClassLoaderMap.put("*", mContext.getClassLoader()); // wildcard
-        Set<String> patchNames;
-        List<String> classes;
-        for (Patch patch : mPatchs) {
-            patchNames = patch.getPatchNames();
-            for (String patchName : patchNames) {
-                classes = patch.getClasses(patchName);
-                iWatch.fix(patch.getFile(), mContext.getClassLoader(), classes);
-            }
+    public void removeAllPatch() {
+        cleanPatch();
+        SharedPreferences sp = mContext.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
+        sp.edit().clear().apply();
+    }
+
+    private void initPatchs() {
+        File[] files = mPatchDir.listFiles();
+        if (files == null) {
+            return;
         }
+        for (File file : files) {
+            addPatch(file);
+        }
+        Log.i(TAG, "initPatchs success");
+    }
+
+    private void initIWatch(Context context) {
+        iWatch = new IWatch(context);
+        iWatch.init();
     }
 
     /**
