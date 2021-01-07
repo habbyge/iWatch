@@ -3,6 +3,8 @@ package com.habbyge.iwatch.test;
 import android.app.Activity;
 import android.util.Log;
 
+import androidx.annotation.Keep;
+
 public class MainActivity2 extends Activity {
     private static final String TAG = "iWatch.MainActivity2";
 
@@ -55,16 +57,31 @@ public class MainActivity2 extends Activity {
         Log.d(TAG, "onResume......");
     }
 
-    @SuppressWarnings("all")
+    /*@SuppressWarnings("all")
+    @Keep
     public void printf_hook(String iStr) {
         Log.i(TAG, "printf-Hook: " + iStr);
 
-//        try {
-//            Field field = this.getClass().getDeclaredField("ix");
-//            field.setAccessible(true);
-//            field.set(this, 10000);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            Field field = this.getClass().getDeclaredField("ix");
+            field.setAccessible(true);
+            field.set(this, 10000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    @Keep
+    @SuppressWarnings("all")
+    public void printf_hook(String text) {
+        Log.d(TAG, "printf_hook: " + "l love my family !! "+ ", " + text);
+
+        /*try {
+            Field field = this.getClass().getDeclaredField("ix");
+            field.setAccessible(true);
+            field.set(this, 10000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
     }
 }

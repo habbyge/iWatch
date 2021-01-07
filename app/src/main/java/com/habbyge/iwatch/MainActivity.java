@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import androidx.annotation.Keep;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.habbyge.iwatch.patch.PatchManager;
@@ -47,10 +48,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "btnClick click !");
 
                 // 测试用例:
-                PatchManager.getInstance().testFix("com.habbyge.iwatch.MainActivity",
-                            "printf", new Class<?>[] {String.class}, void.class, false,
-                            "com.habbyge.iwatch.test.MainActivity2",
-                            "printf_hook", new Class<?>[] {String.class}, void.class, false);
+                PatchManager.getInstance().testFix(
+                        "com.habbyge.iwatch.MainActivity", "printf",
+                        new Class<?>[]{String.class}, void.class, false,
+
+                        "com.habbyge.iwatch.test.MainActivity2", "printf_hook",
+                        new Class<?>[]{String.class}, void.class, false);
             }
         });
 
@@ -58,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                printf("Mali");
+//                printf("Mali");
+                printf("Mali_Mango_Pidan_Habby");
 
 //                HookManager.get().fixMethod(
 //                        TestCase0.class, "printf", new Class<?>[] {String.class},
@@ -149,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Keep
     @SuppressWarnings("all")
     public void printf(String text) {
         Log.i(TAG, "printf: " + text);

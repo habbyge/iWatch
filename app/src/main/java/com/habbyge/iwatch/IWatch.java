@@ -23,7 +23,7 @@ import dalvik.system.DexFile;
  * Created by habbyge on 2021/1/5.
  */
 public final class IWatch {
-    private static final String TAG = "IWatch";
+    private static final String TAG = "iWatch.IWatch";
 
     private static final String DIR = "ipatch_opt";
 

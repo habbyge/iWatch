@@ -1,9 +1,13 @@
 package com.habbyge.iwatch.util;
 
+import android.util.Log;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public final class ReflectUtil {
+    private static final String TAG = "iWatch.ReflectUtil";
+
     public static final ClassLoader BOOTCLASSLOADER = ClassLoader.getSystemClassLoader();
 
     /**
@@ -35,7 +39,7 @@ public final class ReflectUtil {
         try {
             return getClass(classLoader, className, false);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            Log.e(TAG, "findClass", e);
             return null;
         }
     }
@@ -100,7 +104,7 @@ public final class ReflectUtil {
             Class<?> _class = Class.forName(className);
             return findMethod(_class, methodName, parameterTypes);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            Log.e(TAG, "findMethod-1", e);
             return null;
         }
     }
@@ -111,7 +115,7 @@ public final class ReflectUtil {
             method.setAccessible(true);
             return method;
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            Log.e(TAG, "findMethod-2", e);
             return null;
         }
     }

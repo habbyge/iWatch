@@ -328,6 +328,8 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
 //    artMethodSize = sizeof(art::mirror::art_method_11);
 //    logi("artMethodSize = %zu", artMethodSize);
   }
+
+  clear_exception(env);
 }
 
 /**
@@ -350,6 +352,11 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
     srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
     dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
     logd("method_hook(api<=29), srcArtMethod=%p, dstArtMethod=%p", srcArtMethod, dstArtMethod);
+    if (srcArtMethod == nullptr || dstArtMethod == nullptr) {
+      loge("method_hook(api<=29), srcArtMethod/dstArtMethod is nullptr !");
+      clear_exception(env);
+      return -1L;
+    }
     // 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败，错误！！！！！！
     // 经过研究 android-11.0.0_r17(http://aosp.opersys.com/) 源代码，class类中的ArtMethod
     // 排布依旧是线性分配的，这里没问题，问题是：从 FromReflectedMethod 这里获取地址是错误的(是个52/53很小的数值，
@@ -359,7 +366,7 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
     dstArtMethod = getArtMethod(env, dstMethod);
     logd("method_hook(api>=30), srcArtMethod=%p, dstArtMethod=%p", srcArtMethod, dstArtMethod);
     if (srcArtMethod == nullptr || dstArtMethod == nullptr) {
-      loge("method_hook dstArtMethod/dstArtMethod is nullptr !");
+      loge("method_hook(api>=30), srcArtMethod/dstArtMethod is nullptr !");
       clear_exception(env);
       return -1L;
     }
@@ -372,6 +379,7 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
     memcpy(backupArtMethod, srcArtMethod, artMethodSizeV1);
     // 替换成新方法
     memcpy(srcArtMethod, dstArtMethod, artMethodSizeV1);
+    logd("method_hook, coppy: artMethodSizeV1=%zu", artMethodSizeV1);
   } catch (std::exception& e) {
     loge("method_hook copy: eception: %s", e.what());
     clear_exception(env);
@@ -379,6 +387,8 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
   }
 
   logi("methodHook: method_hook Success !");
+  clear_exception(env);
+
   // 返回原方法地址
   return reinterpret_cast<jlong>(backupArtMethod);
 }
@@ -387,11 +397,16 @@ static jlong method_hookv2(JNIEnv* env, jclass,
                            jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
                            jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
+  /*if (sdkVersion <= 29) { // <= Android-10
+    return -1L;
+  }*/
+
   if (java_class1 == nullptr || java_class2 == nullptr
       || name1 == nullptr || name2 == nullptr
       || sig1 == nullptr || sig2 == nullptr) {
 
     loge("method_hookv2 input params are nullptr !");
+    clear_exception(env);
     return -1L;
   }
 
@@ -452,6 +467,7 @@ static jlong method_hookv2(JNIEnv* env, jclass,
   }
 
   logi("method_hookv2: method_hook Success !");
+  clear_exception(env);
 
   // 返回原方法地址
   return reinterpret_cast<jlong>(backupArtMethod);
@@ -464,6 +480,7 @@ static jobject restore_method(JNIEnv* env, jclass,jobject srcMethod, jlong metho
   delete[] reinterpret_cast<char*>(backupArtMethod); // 还原时卸载
 
   logv("methodRestore: Success !");
+  clear_exception(env);
 
   return srcMethod;
 }
@@ -503,9 +520,9 @@ static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField)
   memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
   memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
 
+  logv("hook_field: Success !");
   clear_exception(env);
 
-  logv("hook_field: Success !");
   return reinterpret_cast<jlong>(backupArtField); // 记得 free 掉
 }
 
