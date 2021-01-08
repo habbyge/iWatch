@@ -18,6 +18,8 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+// TODO: 除了提供 hook 功能之外，还需要提供 一键恢复出厂设置 的功能，免得出大坑。
+
 /**
  * Created by habbyge on 2021/1/5.
  * patch manager

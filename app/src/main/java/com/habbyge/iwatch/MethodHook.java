@@ -106,7 +106,8 @@ public final class MethodHook {
                                           boolean isStatic1, String className2, String funcName2,
                                           String funcSig2, boolean isStatic2);
     @Keep
-    private static native Method restoreMethod(Method src, long methodPtr);
+    private static native Method restoreMethod(Method src, long backupArtMethodPtr);
+
     @Keep
     private static native long hookField(Field src, Field dst);
     @Keep

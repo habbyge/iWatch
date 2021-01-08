@@ -393,8 +393,8 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
   logi("methodHook: method_hook Success !");
   clear_exception(env);
 
-  // 返回原方法地址
-  return reinterpret_cast<jlong>(backupArtMethod); // TODO: ing... 需要手动释放
+  // 返回需要备份的原方法数据内容的地址，注意：这里 new 的对象在 restore 逻辑中才需要回收(delete[])
+  return reinterpret_cast<jlong>(backupArtMethod);
 }
 
 static jlong method_hookv2(JNIEnv* env, jclass,
@@ -479,11 +479,17 @@ static jlong method_hookv2(JNIEnv* env, jclass,
   logi("method_hookv2: method_hook Success !");
   clear_exception(env);
 
-  // 返回原方法地址
-  return reinterpret_cast<jlong>(backupArtMethod); // TODO: ing... 需要手动释放
+  // 返回需要备份的原方法数据内容的地址，注意：这里 new 的对象在 restore 逻辑中才需要回收(delete[])
+  return reinterpret_cast<jlong>(backupArtMethod);
 }
 
-static jobject restore_method(JNIEnv* env, jclass,jobject srcMethod, jlong methodPtr) {
+static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong methodPtr) {
+  if (sdkVersion <= 29) { // <= Android-10
+
+  } else { // >= Android-11
+
+  }
+
   void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
   void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
   memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
@@ -521,7 +527,7 @@ typedef struct {
 
 static fieldHookClassInfo_t fieldHookClassInfo;
 
-static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
+static jlong field_hook(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
   // art::mirror::ArtField
   void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
   void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
@@ -536,7 +542,19 @@ static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField)
   return reinterpret_cast<jlong>(backupArtField); // TODO: ing 记得 delete[] 掉
 }
 
-static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
+static jlong field_restore(JNIEnv* env, jclass, jobject srcArtField, jlong backupSrcArtFieldPtr) {
+//  void* backupSrcArtField = reinterpret_cast<void*>(backupSrcArtFieldPtr);
+//  void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcArtField));
+//  memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
+//  delete[] reinterpret_cast<char*>(backupSrcArtFieldPtr); // 还原时卸载
+//
+//  logv("methodRestore: Success !");
+//  clear_exception(env);
+//  return srcMethod;
+  return -1L; // TODO: 有待搞定......
+}
+
+static jlong class_hook(JNIEnv* env, jclass, jstring clazzName) {
   jboolean isCopy;
   const char* kClassName = env->GetStringUTFChars(clazzName, &isCopy);
   std::string kClassNameStr(kClassName);
@@ -580,12 +598,12 @@ static JNINativeMethod gMethods[] = {
   {
     "hookField",
     "(Ljava/lang/reflect/Field;Ljava/lang/reflect/Field;)J",
-    (void*) hook_field
+    (void*) field_hook
   },
   {
     "hookClass",
     "(Ljava/lang/String;)J",
-    (void*) hook_class
+    (void*) class_hook
   },
   {
     "setCurThread",
