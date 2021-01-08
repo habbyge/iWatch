@@ -317,6 +317,8 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
     // 方案2
     initArtMethod2(env, context);
 
+    dlclose_elf(context); // 释放
+
     /*artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);*/
 //    artMethodSize = sizeof(art::mirror::ArtMethod_11); // 40-bytes
 
@@ -392,7 +394,7 @@ static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMeth
   clear_exception(env);
 
   // 返回原方法地址
-  return reinterpret_cast<jlong>(backupArtMethod);
+  return reinterpret_cast<jlong>(backupArtMethod); // TODO: ing... 需要手动释放
 }
 
 static jlong method_hookv2(JNIEnv* env, jclass,
@@ -478,7 +480,7 @@ static jlong method_hookv2(JNIEnv* env, jclass,
   clear_exception(env);
 
   // 返回原方法地址
-  return reinterpret_cast<jlong>(backupArtMethod);
+  return reinterpret_cast<jlong>(backupArtMethod); // TODO: ing... 需要手动释放
 }
 
 static jobject restore_method(JNIEnv* env, jclass,jobject srcMethod, jlong methodPtr) {
@@ -531,7 +533,7 @@ static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField)
   logv("hook_field: Success !");
   clear_exception(env);
 
-  return reinterpret_cast<jlong>(backupArtField); // 记得 free 掉
+  return reinterpret_cast<jlong>(backupArtField); // TODO: ing 记得 delete[] 掉
 }
 
 static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {

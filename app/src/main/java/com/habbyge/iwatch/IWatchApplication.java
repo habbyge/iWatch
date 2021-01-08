@@ -25,7 +25,8 @@ public class IWatchApplication extends Application {
 
         // FIXME: 这是一个测试用例：
         try {
-            // .apatch file path
+            // .ipatch file path:
+            // /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Documents/out.ipatch
             String patchPath = getApplicationContext().getExternalFilesDir(
                     Environment.DIRECTORY_DOCUMENTS) + IPATCH_PATH;
 

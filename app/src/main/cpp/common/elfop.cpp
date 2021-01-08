@@ -15,8 +15,8 @@ extern "C" {
 #endif
 
 static int _dlclose(void* handle) {
-  if (handle) {
-    auto* elf_ctx = reinterpret_cast<elf_ctx_t*>(handle);
+  if (handle != nullptr) {
+    auto elf_ctx = reinterpret_cast<elf_ctx_t*>(handle);
     if (elf_ctx->dynsym) {
       free(elf_ctx->dynsym);    /* we're saving dynsym and dynstr */
     }
@@ -48,7 +48,7 @@ static void* getArtCtx(const char* libpath, int flags) {
   char* shoff;
 
   // ELF文件头，这里是把so库文件使用 mmap() 系统调用，映射到这个地址
-  auto* elf = (Elf_Ehdr*) MAP_FAILED; // reinterpret_cast<void*>(-1)
+  auto elf = (Elf_Ehdr*) MAP_FAILED; // reinterpret_cast<void*>(-1)
 
 #define fatal(fmt, args...) do {    \
             log_err(fmt,##args);    \
@@ -139,7 +139,7 @@ static void* getArtCtx(const char* libpath, int flags) {
 
   // 遍历节头表(Section Header Table)
   for (i = 0; i < elf->e_shnum; i++, shoff += elf->e_shentsize) {
-    auto* sh = (Elf_Shdr*) shoff; // 节头
+    auto sh = (Elf_Shdr*) shoff; // 节头
     log_dbg("%s: i=%d shdr=%p type=%x", __func__, i, sh, sh->sh_type);
 
     switch (sh->sh_type) {
@@ -176,7 +176,7 @@ static void* getArtCtx(const char* libpath, int flags) {
       // - sh_addr: 该节在 elf 文件被加载到进程地址空间中后的偏移量，其在进程中的真实地址是:
       //            load_addr + sh->sh_addr.
       // - sh_offset 在 elf 文件中的偏移量
-      ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset; // TODO: ing......
+      ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset; // TODO: why ?
       i = elf->e_shnum;  /* exit for */
     }
     break;
@@ -276,8 +276,8 @@ static void* _dlopen(const char* filename, int flags) {
  * 2. sym->st_value 字段表示的是该字符对应的地址偏移.
  */
 static void* _dlsym(void* context, const char* symbol_name) {
-  auto* ctx = reinterpret_cast<elf_ctx_t*>(context);
-  auto* sym = reinterpret_cast<Elf_Sym*>(ctx->dynsym);
+  auto ctx = reinterpret_cast<elf_ctx_t*>(context);
+  auto sym = reinterpret_cast<Elf_Sym*>(ctx->dynsym);
   char* strings = reinterpret_cast<char*>(ctx->dynstr);
 
   for (int i = 0; i < ctx->nsyms; ++i, ++sym) { // 遍历符号表

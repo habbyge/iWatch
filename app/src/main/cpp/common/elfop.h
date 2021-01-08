@@ -51,7 +51,7 @@ typedef struct elf_ctx {
   void* dynsym;       // 符号表(Section)
   unsigned int nsyms; // 符号表中的符号item条数
 
-  off_t bias; // 是节头表在进程地址空间中的基地址(偏移地址) TODO:
+  off_t bias; // 是节头表在进程地址空间中的基地址(偏移地址) // TODO: why ?
 } elf_ctx_t;
 
 #ifdef __cplusplus

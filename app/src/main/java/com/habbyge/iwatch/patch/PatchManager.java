@@ -36,7 +36,7 @@ public final class PatchManager {
 
     private Context mContext; // 这里必须是 Application 的 Context
 
-    private File mPatchDir; // patch 目录
+    private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/ipatch
     private SortedSet<Patch> mPatchs; // TODO: 1/7/21 保存了所有补丁
     /**
      * classloaders
