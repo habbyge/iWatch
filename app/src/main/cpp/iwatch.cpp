@@ -19,8 +19,8 @@ static jlong method_hookv2(JNIEnv* env, jclass,
   return method_hookv2_impl(env, java_class1, name1, sig1, is_static1, java_class2, name2, sig2, is_static2);
 }
 
-static jobject restore_method(JNIEnv* env, jclass, jobject srcMethod, jlong methodPtr) {
-  return restore_method_impl(env, srcMethod, methodPtr);
+static jlong restore_method(JNIEnv* env, jclass, jlong srcArtMethodAddr, jlong backupArtMethodData) {
+  return restore_method_impl(env, srcArtMethodAddr, backupArtMethodData);
 }
 
 static jlong field_hook(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
@@ -53,7 +53,7 @@ static JNINativeMethod gMethods[] = {
   },
   {
     "restoreMethod",
-    "(Ljava/lang/reflect/Method;J)Ljava/lang/reflect/Method;",
+    "(JJ)J",
     (void*) restore_method
   },
   {

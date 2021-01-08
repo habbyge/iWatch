@@ -61,7 +61,7 @@ public final class MethodHook {
         return backupOriMethod != 0L && backupOriMethod != -1L;
     }
 
-    public static void restore() {
+    public static void restoreMethod() { // TODO: 1/8/21 ing
         /*if (backupMethodPtr != 0L) {
             Log.i(TAG, "restore  begin");
             restoreMethod(srcMethod, backupMethodPtr);
@@ -106,7 +106,7 @@ public final class MethodHook {
                                           boolean isStatic1, String className2, String funcName2,
                                           String funcSig2, boolean isStatic2);
     @Keep
-    private static native Method restoreMethod(Method src, long backupArtMethodPtr);
+    private static native long restoreMethod(long src, long backupArtMethodPtr); // TODO: 1/8/21 ing
 
     @Keep
     private static native long hookField(Field src, Field dst);

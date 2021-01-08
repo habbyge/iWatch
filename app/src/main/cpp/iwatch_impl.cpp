@@ -37,8 +37,6 @@
  * 这里 jmethodID 就是 ArtMethod.
  * 比起 ArtFix，iWatch 方案屏蔽细节、尽量通用，没有适配性。
  */
-static MethodHookClassInfo_t methodHookClassInfo;
-
 static size_t artMethodSizeV1 = -1;
 static size_t artMethodSizeV2 = -1;
 
@@ -160,7 +158,7 @@ static void initArtMethod2(JNIEnv* env, void* context) {
   }
 }
 
-void init_impl(JNIEnv* env, jint sdkVersionCode, jobject m1, jobject m2) {
+void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
   sdkVersion = sdkVersionCode;
 
   env->GetJavaVM(&vm);
@@ -306,7 +304,7 @@ void init_impl(JNIEnv* env, jint sdkVersionCode, jobject m1, jobject m2) {
  * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
  * 逻辑在 ClassLinker::LoadClass 中.
  */
-jlong method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod) {
+long method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod) {
   void* srcArtMethod = nullptr;
   void* dstArtMethod = nullptr;
 
@@ -356,9 +354,9 @@ jlong method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod) {
   return reinterpret_cast<jlong>(backupArtMethod);
 }
 
-jlong method_hookv2_impl(JNIEnv* env,
-                         jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
-                         jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
+long method_hookv2_impl(JNIEnv* env,
+                        jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
+                        jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
   if (sdkVersion <= 29) { // <= Android-10
     loge("method_hookv2 sdkVersion NOT >= 30: %d", sdkVersion);
@@ -442,16 +440,16 @@ jlong method_hookv2_impl(JNIEnv* env,
   return reinterpret_cast<jlong>(backupArtMethod);
 }
 
-jobject restore_method_impl(JNIEnv* env, jobject srcMethod, jlong methodPtr) {
-  void* backupArtMethod = reinterpret_cast<void*>(methodPtr);
-  void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
-  memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
-  delete[] reinterpret_cast<char*>(backupArtMethod); // 还原时卸载
+long restore_method_impl(JNIEnv* env, long srcArtMethodAddr, long backupArtMethodData) {
+  void* srcArtMethodPtr = reinterpret_cast<void*>(srcArtMethodAddr);
+  void* backupArtMethod = reinterpret_cast<void*>(backupArtMethodData);
+  memcpy(srcArtMethodPtr, backupArtMethod, artMethodSizeV1);
+  delete[] reinterpret_cast<int8_t*>(backupArtMethod); // 还原时卸载
 
   logv("methodRestore: Success !");
   clear_exception(env);
 
-  return srcMethod;
+  return srcArtMethodAddr;
 }
 
 //static void set_field_accFlags(JNIEnv* env, jobject fields[]) {
@@ -470,7 +468,7 @@ jobject restore_method_impl(JNIEnv* env, jobject srcMethod, jlong methodPtr) {
 
 static FieldHookClassInfo_t fieldHookClassInfo;
 
-jlong field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField) {
+long field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField) {
   // art::mirror::ArtField
   void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
   void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
@@ -497,7 +495,7 @@ static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtF
   return -1L; // TODO: 有待搞定......
 }
 
-jlong class_hook_impl(JNIEnv* env, jstring clazzName) {
+long class_hook_impl(JNIEnv* env, jstring clazzName) {
   jboolean isCopy;
   const char* kClassName = env->GetStringUTFChars(clazzName, &isCopy);
   std::string kClassNameStr(kClassName);
@@ -511,7 +509,7 @@ jlong class_hook_impl(JNIEnv* env, jstring clazzName) {
   return reinterpret_cast<jlong>(kClass);
 }
 
-void set_cur_thread_impl(JNIEnv* env, jlong threadAddr) {
+void set_cur_thread_impl(JNIEnv* env, long threadAddr) {
   cur_thread = reinterpret_cast<void*>(threadAddr);
   clear_exception(env);
   logi("set_cur_thread, cur_thread=%p", cur_thread);

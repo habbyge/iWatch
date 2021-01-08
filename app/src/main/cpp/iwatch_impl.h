@@ -71,20 +71,24 @@ static inline void clear_exception(JNIEnv* env) {
   }
 }
 
-void init_impl(JNIEnv* env, jint sdkVersionCode, jobject m1, jobject m2);
+void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2);
 
-jlong method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod);
+long method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod);
 
-jlong method_hookv2_impl(JNIEnv* env,
-                         jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
-                         jstring java_class2, jstring name2, jstring sig2, jboolean is_static2);
+long method_hookv2_impl(JNIEnv* env,
+                        jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
+                        jstring java_class2, jstring name2, jstring sig2, jboolean is_static2);
 
-jobject restore_method_impl(JNIEnv* env, jobject srcMethod, jlong methodPtr);
+/**
+ * 恢复原始方法: ArtMethod
+ * @return 返回原始 ArtMethod 地址
+ */
+long restore_method_impl(JNIEnv* env, long srcArtMethodAddr, long backupArtMethodData);
 
-jlong field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField);
-jlong class_hook_impl(JNIEnv* env, jstring clazzName);
+long field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField);
+long class_hook_impl(JNIEnv* env, jstring clazzName);
 
-void set_cur_thread_impl(JNIEnv* env, jlong threadAddr);
+void set_cur_thread_impl(JNIEnv* env, long threadAddr);
 
 #ifdef __cplusplus
 }
