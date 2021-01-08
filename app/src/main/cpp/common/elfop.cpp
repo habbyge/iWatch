@@ -173,10 +173,10 @@ static void* getArtCtx(const char* libpath, int flags) {
         break;
       }
       // won't even bother checking against the section name
-      // - sh_addr: 该节在ELF文件被加载到进程地址空间中后的偏移量，其在进程中的真实地址是:
-      // load_addr+sh->sh_addr.
-      // - sh_offset 在elf文件中的偏移量
-      ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset;
+      // - sh_addr: 该节在 elf 文件被加载到进程地址空间中后的偏移量，其在进程中的真实地址是:
+      //            load_addr + sh->sh_addr.
+      // - sh_offset 在 elf 文件中的偏移量
+      ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset; // TODO: ing......
       i = elf->e_shnum;  /* exit for */
     }
     break;
