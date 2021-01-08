@@ -3,10 +3,11 @@
 //
 
 #include <jni.h>
-#include <iostream>
 //#include <memory>
 #include <thread>
 #include <exception>
+#include <string>
+#include <algorithm>
 
 #include "common/log.h"
 #include "common/elfop.h"
@@ -27,6 +28,7 @@
 // -----------------------------------------------------------------------------------------------
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
+static const char* computeArtMethodSize_ClassName = "com/habbyge/iwatch/ArtMethodSize";
 
 // 方案限制：inline 函数 fix 会失败.
 // 这里需要考虑，对 inline 函数的影响，内联函数是否有 Method 对象，是否能够被成功替换 ？
@@ -180,7 +182,7 @@ static void initArtMethod1(JNIEnv* env, void* context, jobject m1, jobject m2) {
 
 static void initArtMethod2(JNIEnv* env, void* context) {
   try {
-    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+    jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
     FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(context, FindMethodJNI_Sym));
     logi("initArtMethod2, FindMethodJNI=%p", FindMethodJNI);
     void* artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);
@@ -213,7 +215,7 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
 //       (size_t) artMethod11);
 
   if (sdkVersionCode <= 29) { // <= Android-10(api-29)
-    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+    jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
     auto artMethod1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
     auto artMethod2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
     artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
@@ -262,7 +264,7 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
     // ArtMethod* DecodeMethodId(jmethodID method) REQUIRES(!Locks::jni_id_lock_);
     //
     // 方案1:
-    jclass ArtMethodSizeClass = env->FindClass("com/habbyge/iwatch/ArtMethodSize");
+    jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
     auto jmethodID1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
     auto jmethodID2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
 
@@ -399,6 +401,7 @@ static jlong method_hookv2(JNIEnv* env, jclass,
 
   if (sdkVersion <= 29) { // <= Android-10
     loge("method_hookv2 sdkVersion NOT >= 30: %d", sdkVersion);
+    clear_exception(env);
     return -1L;
   }
 
@@ -415,7 +418,9 @@ static jlong method_hookv2(JNIEnv* env, jclass,
   const char* class1 = env->GetStringUTFChars(java_class1, &isCopy);
   jclass jclass1;
   try {
-    jclass1 = env->FindClass(class1);
+    std::string classStr1(class1);
+    std::replace(classStr1.begin(), classStr1.end(), '.', '/');
+    jclass1 = env->FindClass(classStr1.c_str());
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-1: %s", e.what());
     clear_exception(env);
@@ -437,7 +442,9 @@ static jlong method_hookv2(JNIEnv* env, jclass,
   const char* class2 = env->GetStringUTFChars(java_class2, &isCopy);
   jclass jclass2;
   try {
-    jclass2 = env->FindClass(class2);
+    std::string classStr2(class2);
+    std::replace(classStr2.begin(), classStr2.end(), '.', '/');
+    jclass2 = env->FindClass(classStr2.c_str());
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-2: %s", e.what());
     clear_exception(env);
@@ -530,8 +537,10 @@ static jlong hook_field(JNIEnv* env, jclass, jobject srcField, jobject dstField)
 static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
   jboolean isCopy;
   const char* kClassName = env->GetStringUTFChars(clazzName, &isCopy);
-  logd("hookClass, className=%s", kClassName);
-  jclass kClass = env->FindClass(kClassName);
+  std::string kClassNameStr(kClassName);
+  std::replace(kClassNameStr.begin(), kClassNameStr.end(), '.', '/');
+  logd("hookClass, className=%s", kClassNameStr.c_str());
+  jclass kClass = env->FindClass(kClassNameStr.c_str());
   env->ReleaseStringUTFChars(clazzName, kClassName);
 
   clear_exception(env);
@@ -541,11 +550,8 @@ static jlong hook_class(JNIEnv* env, jclass, jstring clazzName) {
 
 static void set_cur_thread(JNIEnv* env, jclass, jlong threadAddr) {
   cur_thread = reinterpret_cast<void*>(threadAddr);
+  clear_exception(env);
   logi("set_cur_thread, cur_thread=%p", cur_thread);
-}
-
-uint32_t art::mirror::Object::ClassSize(art::PointerSize pointer_size) {
-  return 0;
 }
 
 static JNINativeMethod gMethods[] = {

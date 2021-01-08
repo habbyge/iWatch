@@ -48,7 +48,9 @@ public:
   static constexpr size_t kVTableLength = 11;
 
   // The size of the java.lang.Class representing a java.lang.Object.
-  static uint32_t ClassSize(PointerSize pointer_size);
+  static uint32_t ClassSize(PointerSize pointer_size) {
+    return 0;
+  }
 
 private:
   static std::atomic<uint32_t> hash_code_seed;

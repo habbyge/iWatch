@@ -79,6 +79,7 @@ public final class PatchManager {
             Log.e(TAG, "mPatchDir delete result=" + mPatchDir.delete());
             return;
         }
+        Log.i(TAG, "mPatchDir=" + mPatchDir); // TODO: 1/8/21 ing......
 
         // 线程安全的有序的集合，适用于高并发的场景
         mPatchs = new ConcurrentSkipListSet<Patch>();
@@ -222,6 +223,7 @@ public final class PatchManager {
     private void cleanPatch() {
         File[] files = mPatchDir.listFiles();
         if (files == null) {
+            Log.e(TAG, "cleanPatch: files=null");
             return;
         }
         for (File file : files) {

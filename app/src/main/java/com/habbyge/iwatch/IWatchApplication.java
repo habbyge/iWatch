@@ -32,7 +32,7 @@ public class IWatchApplication extends Application {
             PatchManager.getInstance().addPatch(patchPath);
             Log.d(TAG, "ipatch: " + patchPath + " added.");
         } catch (IOException e) {
-            Log.e(TAG, "", e);
+            Log.e(TAG, "out.ipatch", e);
         }
 
         // FIXME: 这是一个测试用例：

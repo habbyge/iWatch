@@ -59,6 +59,7 @@ public final class IWatch {
             boolean ret = mOptDir.delete();
             Log.i(TAG, "mOptDir.delete(): " + ret);
         }
+        Log.i(TAG, "mOptDir=" + mOptDir.getAbsolutePath());
     }
 
     public void init() {
@@ -85,7 +86,13 @@ public final class IWatch {
     }
 
     private void doFix(File patchFile, ClassLoader cl, List<String> classNames) {
+        if (patchFile == null || !patchFile.exists()) {
+            Log.e(TAG, "doFix, patchFile NOT exists");
+            return;
+        }
+
         if (!mSecurityChecker.verifyApk(patchFile)) { // security check fail
+            Log.e(TAG, "doFix, mSecurityChecker.verifyApk failure: " + patchFile.getAbsolutePath());
             return;
         }
 
@@ -100,11 +107,14 @@ public final class IWatch {
                 // http://secauo.com/Exaggerated-Android-Vulnerability-Parasyte.html
 
                 if (mSecurityChecker.verifyOpt(optfile)) {
+                    Log.i(TAG, "doFix, mSecurityChecker.verifyOpt=" + optfile.getAbsolutePath());
                     saveFingerprint = false;
                 } else if (!optfile.delete()) {
                     return;
                 }
             }
+            Log.i(TAG, "doFix, patchFile, optFile: " + patchFile.getAbsolutePath() + ", "
+                                                     + optfile.getAbsolutePath());
 
             // libcore/dalvik/src/main/java/dalvik/system/DexFile.java
             final DexFile dexFile = DexFile.loadDex(patchFile.getAbsolutePath(),
