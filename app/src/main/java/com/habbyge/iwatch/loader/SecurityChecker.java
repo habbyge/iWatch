@@ -17,6 +17,7 @@ import java.util.jar.JarFile;
 
 import javax.security.auth.x500.X500Principal;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -115,7 +116,9 @@ public class SecurityChecker {
 			is = jarFile.getInputStream(je);
 			byte[] bytes = new byte[8192];
 			while (is.read(bytes) > 0) {
+				// ignored
 			}
+		} catch (Exception ignored) {
 		} finally {
 			if (is != null) {
 				is.close();
@@ -169,16 +172,16 @@ public class SecurityChecker {
 	}
 
 	// md5 as fingerprint
+	@SuppressLint("ApplySharedPref")
 	private void saveFingerprint(String fileName, String md5) {
 		SharedPreferences sp = mContext.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
 		Editor editor = sp.edit();
 		editor.putString(fileName + SP_MD5, md5);
-		editor.commit();
+		editor.apply();
 	}
 
 	private String getFingerprint(String fileName) {
-		SharedPreferences sharedPreferences = mContext.getSharedPreferences(
-				SP_NAME, Context.MODE_PRIVATE);
+		SharedPreferences sharedPreferences = mContext.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
 		return sharedPreferences.getString(fileName + SP_MD5, null);
 	}
 
