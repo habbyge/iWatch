@@ -310,7 +310,9 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
  * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
  * 逻辑在 ClassLinker::LoadClass 中.
  */
-long method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod) {
+long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
+                      jobject srcMethod, jobject dstMethod) {
+
   void* srcArtMethod = nullptr;
   void* dstArtMethod = nullptr;
 
@@ -353,10 +355,19 @@ long method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod) {
     return -1L;
   }
 
-  // TODO: 1/2
+  jboolean isCopy;
+  auto srcClassChars = env->GetStringUTFChars(srcClass, &isCopy);
+  std::string srcClassStr(srcClassChars);
+  env->ReleaseStringUTFChars(srcClass, srcClassChars);
+  auto srcFuncChars = env->GetStringUTFChars(srcName, &isCopy);
+  std::string srcFuncStr(srcFuncChars);
+  env->ReleaseStringUTFChars(srcName, srcFuncChars);
+  auto srcDescChars = env->GetStringUTFChars(srcSig, &isCopy);
+  std::string srcDescStr(srcDescChars);
+  env->ReleaseStringUTFChars(srcSig, srcDescChars);
   auto backupArtMethodAddr = reinterpret_cast<long>(backupArtMethod);
   auto srcArtMethodAddr = reinterpret_cast<long>(srcArtMethod);
-  artRestore->save(, , , backupArtMethodAddr, srcArtMethodAddr);
+  artRestore->save(srcClassStr, srcFuncStr, srcDescStr, backupArtMethodAddr, srcArtMethodAddr);
 
   logi("methodHook: method_hook Success !");
   clear_exception(env);

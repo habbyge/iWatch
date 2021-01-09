@@ -72,7 +72,8 @@ static inline void clear_exception(JNIEnv* env) {
 
 void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2);
 
-long method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod);
+long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
+                      jobject srcMethod, jobject dstMethod);
 
 long method_hookv2_impl(JNIEnv* env,
                         jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
