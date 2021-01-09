@@ -19,7 +19,6 @@
 #include "art/ScopedFastNativeObjectAccess.h"
 #include "art/scoped_thread_state_change.h"
 
-
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
 static const char* computeArtMethodSize_ClassName = "com/habbyge/iwatch/ArtMethodSize";
 

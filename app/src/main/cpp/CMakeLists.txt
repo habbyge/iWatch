@@ -13,6 +13,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11")
 
 set(SRC_LIST iwatch.cpp
              iwatch_impl.cpp
+             ArtRestore.cpp
              field_hook.cpp
              common/elfop.cpp)
 
@@ -36,6 +37,7 @@ include_directories(
     common/*.h
     art/*.h
     iwatch_impl.h
+    ArtRestore.h
 )
 
 # Searches for a specified prebuilt library and stores the path as a

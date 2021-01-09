@@ -3,6 +3,7 @@
 //
 
 #include "iwatch_impl.h"
+#include "ArtRestore.h"
 
 //#include <art/runtime/jni/jni_internal.h>
 //#include <exception> C/C++ 的 Exception
@@ -88,6 +89,8 @@ FromReflectedMethod_t FromReflectedMethod;
 FindMethodJNI_t FindMethodJNI;
 // 同时使用 方案1 和 方案2，哪个生效用哪里，双保险!!!!!!
 
+ArtRestore* artRestore;
+
 /**
  * 方案1
  */
@@ -163,6 +166,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 
   env->GetJavaVM(&vm);
 
+  artRestore = new ArtRestore();
+
   // art::mirror::ArtMethod
 //  auto artMethod11 = env->FromReflectedMethod(m1);
 //  auto artMethod22 = env->FromReflectedMethod(m2);
@@ -179,8 +184,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 
     // artMethodSize = sizeof(ArtMethod);
     logi("artMethodSize-1 = %d, %zu, %zu, %zu", sdkVersionCode, artMethodSizeV1,
-         reinterpret_cast<size_t>(artMethod2),
-         reinterpret_cast<size_t>(artMethod1));
+                                                reinterpret_cast<size_t>(artMethod2),
+                                                reinterpret_cast<size_t>(artMethod1));
   } else { // >= Android-11(api-30)
     loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
 
@@ -242,7 +247,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     // 注意 libart.so 中的符号都是加过密的
 //    const char* addWeakGloablRef_Sym =
 //        sdkVersionCode <= 25 ? "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE"
-//          : "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEE"; // 这个也符合Android-11
+//          : "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEE";
+//      //  这个也符合Android-11
 //    addWeakGlobalRef = reinterpret_cast<addWeakGlobalRef_t>(dlsym_elf(context, addWeakGloablRef_Sym));
 //    logi("init, addWeakGlobalRef=%p", addWeakGlobalRef);
 //
@@ -333,9 +339,9 @@ long method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod) {
     }
   }
 
-  char* backupArtMethod = nullptr;
+  int8_t* backupArtMethod = nullptr;
   try {
-    backupArtMethod = new char[artMethodSizeV1];
+    backupArtMethod = new int8_t[artMethodSizeV1];
     // 备份原方法
     memcpy(backupArtMethod, srcArtMethod, artMethodSizeV1);
     // 替换成新方法
@@ -347,11 +353,16 @@ long method_hook_impl(JNIEnv* env, jobject srcMethod, jobject dstMethod) {
     return -1L;
   }
 
+  // TODO: 1/2
+  auto backupArtMethodAddr = reinterpret_cast<long>(backupArtMethod);
+  auto srcArtMethodAddr = reinterpret_cast<long>(srcArtMethod);
+  artRestore->save(, , , backupArtMethodAddr, srcArtMethodAddr);
+
   logi("methodHook: method_hook Success !");
   clear_exception(env);
 
   // 返回需要备份的原方法数据内容的地址，注意：这里 new 的对象在 restore 逻辑中才需要回收(delete[])
-  return reinterpret_cast<jlong>(backupArtMethod);
+  return backupArtMethodAddr;
 }
 
 long method_hookv2_impl(JNIEnv* env,
@@ -376,9 +387,9 @@ long method_hookv2_impl(JNIEnv* env,
   jboolean isCopy;
   const char* class1 = env->GetStringUTFChars(java_class1, &isCopy);
   jclass jclass1;
+  std::string classStr1(class1);
+  std::replace(classStr1.begin(), classStr1.end(), '.', '/');
   try {
-    std::string classStr1(class1);
-    std::replace(classStr1.begin(), classStr1.end(), '.', '/');
     jclass1 = env->FindClass(classStr1.c_str());
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-1: %s", e.what());
@@ -400,9 +411,9 @@ long method_hookv2_impl(JNIEnv* env,
 
   const char* class2 = env->GetStringUTFChars(java_class2, &isCopy);
   jclass jclass2;
+  std::string classStr2(class2);
+  std::replace(classStr2.begin(), classStr2.end(), '.', '/');
   try {
-    std::string classStr2(class2);
-    std::replace(classStr2.begin(), classStr2.end(), '.', '/');
     jclass2 = env->FindClass(classStr2.c_str());
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-2: %s", e.what());
@@ -422,9 +433,9 @@ long method_hookv2_impl(JNIEnv* env,
     return -1L;
   }
 
-  char* backupArtMethod = nullptr;
+  int8_t* backupArtMethod = nullptr;
   try {
-    backupArtMethod = new char[artMethodSizeV2];
+    backupArtMethod = new int8_t[artMethodSizeV2];
     memcpy(backupArtMethod, artMethod1, artMethodSizeV2);
     memcpy(artMethod1, artMethod2, artMethodSizeV2);
   } catch (std::exception& e) {
@@ -433,11 +444,21 @@ long method_hookv2_impl(JNIEnv* env,
     return -1L;
   }
 
+  auto srcFunc = env->GetStringUTFChars(name1, &isCopy);
+  std::string srcFuncStr(srcFunc);
+  env->ReleaseStringUTFChars(name1, srcFunc);
+  auto srcDesc = env->GetStringUTFChars(sig1, &isCopy);
+  std::string srcDescStr(srcDesc);
+  env->ReleaseStringUTFChars(sig1, srcDesc);
+  auto backupArtMethodAddr = reinterpret_cast<long>(backupArtMethod);
+  auto srcArtMethodAddr = reinterpret_cast<long>(artMethod1);
+  artRestore->save(classStr1, srcFuncStr, srcDescStr, backupArtMethodAddr, srcArtMethodAddr);
+
   logi("method_hookv2: method_hook Success !");
   clear_exception(env);
 
   // 返回需要备份的原方法数据内容的地址，注意：这里 new 的对象在 restore 逻辑中才需要回收(delete[])
-  return reinterpret_cast<jlong>(backupArtMethod);
+  return backupArtMethodAddr;
 }
 
 long restore_method_impl(JNIEnv* env, long srcArtMethodAddr, long backupArtMethodData) {
@@ -487,7 +508,7 @@ static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtF
 //  void* backupSrcArtField = reinterpret_cast<void*>(backupSrcArtFieldPtr);
 //  void* srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcArtField));
 //  memcpy(srcArtMethod, backupArtMethod, methodHookClassInfo.methodSize);
-//  delete[] reinterpret_cast<char*>(backupSrcArtFieldPtr); // 还原时卸载
+//  delete[] reinterpret_cast<int8_t*>(backupSrcArtFieldPtr); // 还原时卸载
 //
 //  logv("methodRestore: Success !");
 //  clear_exception(env);
