@@ -64,6 +64,12 @@ public final class MethodHook {
     }
 
     // TODO: 1/11/21 ing......
+    /**
+     * 方法恢复机制：
+     * 1. 进程重启，初始化时，检查 reversion 是否合法 ？
+     * 2. 每个方法 hook 时，检查 reversion 是否合法？
+     * 以上满足任一条件，即不合法，都应该使用原始函数；
+     */
     public static void restoreMethod(String className, String name, String sig) {
         unhookMethod(className, name, sig);
     }
