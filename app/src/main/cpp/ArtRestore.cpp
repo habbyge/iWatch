@@ -4,6 +4,7 @@
 
 #include "ArtRestore.h"
 
+// iwatch_impl.cpp
 extern size_t artMethodSizeV1;
 extern size_t artMethodSizeV2;
 
@@ -47,7 +48,8 @@ void ArtRestore::save(std::string className, std::string funcName, std::string d
  * TODO: 这里是恢复对应的 ArtMethod 为原始的，注意需要 delete 掉对应的堆内存，互斥访问
  */
 void ArtRestore::restoreArtMethod(std::string className, std::string funcName, std::string desciptor) {
-  if (artMethodSizeV1 <= 0) {
+  int artMethodSize = artMethodSizeV1 <= 0 ? artMethodSizeV2 : artMethodSizeV1;
+  if (artMethodSize <= 0) {
     return;
   }
 
@@ -72,10 +74,12 @@ void ArtRestore::restoreArtMethod(std::string className, std::string funcName, s
     return;
   }
 
-  void* srcArtMethodPtr = reinterpret_cast<void*>(dataItor->second->artMethodAddr);
-  void* backupArtMethod = reinterpret_cast<void*>(dataItor->second->backupArtmethodAddr);
-  memcpy(srcArtMethodPtr, backupArtMethod, artMethodSizeV1);
-  delete[] reinterpret_cast<int8_t*>(backupArtMethod); // 还原时卸载
-
-  logv("ArtRestore::restoreArtMethod: Success !");
+  try {
+    void* srcArtMethodPtr = reinterpret_cast<void*>(dataItor->second->artMethodAddr);
+    void* backupArtMethod = reinterpret_cast<void*>(dataItor->second->backupArtmethodAddr);
+    memcpy(srcArtMethodPtr, backupArtMethod, artMethodSize);
+    delete[] reinterpret_cast<int8_t*>(backupArtMethod); // 还原时卸载
+  } catch (std::exception& e) {
+    loge("ArtRestore::restoreArtMethod, eception: %s", e.what());
+  }
 }
