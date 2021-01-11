@@ -229,7 +229,7 @@ public final class IWatch {
 
         Method method1 = ReflectUtil.findMethod(className1, funcName1, paramTypes1);
         Method method2 = ReflectUtil.findMethod(className2, funcName2, paramTypes2);
-        boolean success = MethodHook.hookMethod1(method1, method2);
+        boolean success = MethodHook.hookMethod1(className1, funcName1, funcName2, method1, method2);
         Log.i(TAG, "hookMethod1 success=" + success);
         if (success) {
             return;

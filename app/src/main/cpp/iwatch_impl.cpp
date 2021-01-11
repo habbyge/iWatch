@@ -475,18 +475,17 @@ long method_hookv2_impl(JNIEnv* env,
   return backupArtMethodAddr;
 }
 
-long restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring sig,
-                         long srcArtMethodAddr, long backupArtMethodData) {
+void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring sig) {
+  jboolean isCopy;
+  const char* classStr = env->GetStringUTFChars(className, &isCopy);
+  const char* nameStr = env->GetStringUTFChars(name, &isCopy);
+  const char* sigStr = env->GetStringUTFChars(sig, &isCopy);
+  artRestore->restoreArtMethod(std::string(classStr), std::string(nameStr), std::string(sigStr));
+  env->ReleaseStringUTFChars(className, classStr);
+  env->ReleaseStringUTFChars(name, nameStr);
+  env->ReleaseStringUTFChars(sig, sigStr);
 
-  void* srcArtMethodPtr = reinterpret_cast<void*>(srcArtMethodAddr);
-  void* backupArtMethod = reinterpret_cast<void*>(backupArtMethodData);
-  memcpy(srcArtMethodPtr, backupArtMethod, artMethodSizeV1);
-  delete[] reinterpret_cast<int8_t*>(backupArtMethod); // 还原时卸载
-// TODO: 这里需要修改......
-  logv("methodRestore: Success !");
   clear_exception(env);
-
-  return srcArtMethodAddr;
 }
 
 //static void set_field_accFlags(JNIEnv* env, jobject fields[]) {

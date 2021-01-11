@@ -8,8 +8,11 @@ static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m
   init_impl(env, sdkVersionCode, m1, m2);
 }
 
-static jlong method_hook(JNIEnv* env, jclass, jobject srcMethod, jobject dstMethod) {
-  return method_hook_impl(env, srcMethod, dstMethod);
+static jlong method_hook(JNIEnv* env, jclass, jstring srcClass,
+                         jstring srcName, jstring  srcSig,
+                         jobject srcMethod, jobject dstMethod) {
+
+  return method_hook_impl(env, srcClass, srcName, srcSig, srcMethod, dstMethod);
 }
 
 static jlong method_hookv2(JNIEnv* env, jclass,
@@ -19,8 +22,8 @@ static jlong method_hookv2(JNIEnv* env, jclass,
   return method_hookv2_impl(env, java_class1, name1, sig1, is_static1, java_class2, name2, sig2, is_static2);
 }
 
-static jlong restore_method(JNIEnv* env, jclass, jstring className, jstring name, jstring sig, jlong srcArtMethodAddr, jlong backupArtMethodData) {
-  return restore_method_impl(env, srcArtMethodAddr, backupArtMethodData);
+static void restore_method(JNIEnv* env, jclass, jstring className, jstring name, jstring sig) {
+  restore_method_impl(env, className, name, sig);
 }
 
 static jlong field_hook(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
@@ -43,7 +46,7 @@ static JNINativeMethod gMethods[] = {
   },
   {
     "hookMethod",
-    "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)J",
+    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)J",
     (void*) method_hook
   },
   {
@@ -52,8 +55,8 @@ static JNINativeMethod gMethods[] = {
       (void*) method_hookv2
   },
   {
-    "restoreMethod",
-    "(JJ)J",
+    "unhookMethod",
+    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
     (void*) restore_method
   },
   {

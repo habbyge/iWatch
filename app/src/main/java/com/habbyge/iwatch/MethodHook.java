@@ -43,11 +43,13 @@ public final class MethodHook {
         ArtMethodSize.init(Build.VERSION.SDK_INT);
     }
 
-    public static boolean hookMethod1(Method method1, Method method2) {
+    public static boolean hookMethod1(String className1, String name1, String sig1,
+                                      Method method1, Method method2) {
+
         if (method1 == null || method2 == null) {
             return false;
         }
-        final long backupOriMethod = hookMethod(method1, method2);
+        final long backupOriMethod = hookMethod(className1, name1, sig1, method1, method2);
         return backupOriMethod != 0L && backupOriMethod != -1L;
     }
 
@@ -61,13 +63,9 @@ public final class MethodHook {
         return backupOriMethod != 0L && backupOriMethod != -1L;
     }
 
-    public static void restoreMethod() { // TODO: 1/8/21 ing
-        /*if (backupMethodPtr != 0L) {
-            Log.i(TAG, "restore  begin");
-            restoreMethod(srcMethod, backupMethodPtr);
-            Log.i(TAG, "restore  success");
-            backupMethodPtr = 0L;
-        }*/
+    // TODO: 1/11/21 ing......
+    public static void restoreMethod(String className, String name, String sig) {
+        unhookMethod(className, name, sig);
     }
 
     public static void callOrigin(Object receiver, Object... args) throws InvocationTargetException,
@@ -100,13 +98,14 @@ public final class MethodHook {
     @Keep
     public static native void init(int sdkVersionCode, Method m1, Method m2);
     @Keep
-    private static native long hookMethod(Method src, Method dst);
+    private static native long hookMethod(String srcClass, String srcName, String srcSig,
+                                          Method src, Method dst);
     @Keep
     private static native long hookMethod(String className1, String funcName1, String funcSig1,
                                           boolean isStatic1, String className2, String funcName2,
                                           String funcSig2, boolean isStatic2);
     @Keep
-    private static native long restoreMethod(long src, long backupArtMethodPtr); // TODO: 1/8/21 ing
+    private static native void unhookMethod(String className, String name, String sig);
 
     @Keep
     private static native long hookField(Field src, Field dst);
