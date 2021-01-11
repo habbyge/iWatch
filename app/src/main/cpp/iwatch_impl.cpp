@@ -31,6 +31,9 @@
 // 我 review 了下，我之前的那么多统计上报代码，在可能被 inline 的地方添加上报的可能性几乎么有。
 
 // Android-11 适配问题 ------> fix
+
+// jni.h 中的实现，在 Art 虚拟机中的目录是 art/runtime/jni/ 目录下，例如：art/runtime/jni/jni_internal.cc
+
 // TODO: dex diff 问题
 
 /**
@@ -472,12 +475,14 @@ long method_hookv2_impl(JNIEnv* env,
   return backupArtMethodAddr;
 }
 
-long restore_method_impl(JNIEnv* env, long srcArtMethodAddr, long backupArtMethodData) {
+long restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring sig,
+                         long srcArtMethodAddr, long backupArtMethodData) {
+
   void* srcArtMethodPtr = reinterpret_cast<void*>(srcArtMethodAddr);
   void* backupArtMethod = reinterpret_cast<void*>(backupArtMethodData);
   memcpy(srcArtMethodPtr, backupArtMethod, artMethodSizeV1);
   delete[] reinterpret_cast<int8_t*>(backupArtMethod); // 还原时卸载
-
+// TODO: 这里需要修改......
   logv("methodRestore: Success !");
   clear_exception(env);
 

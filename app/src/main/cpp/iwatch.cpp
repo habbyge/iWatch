@@ -19,7 +19,7 @@ static jlong method_hookv2(JNIEnv* env, jclass,
   return method_hookv2_impl(env, java_class1, name1, sig1, is_static1, java_class2, name2, sig2, is_static2);
 }
 
-static jlong restore_method(JNIEnv* env, jclass, jlong srcArtMethodAddr, jlong backupArtMethodData) {
+static jlong restore_method(JNIEnv* env, jclass, jstring className, jstring name, jstring sig, jlong srcArtMethodAddr, jlong backupArtMethodData) {
   return restore_method_impl(env, srcArtMethodAddr, backupArtMethodData);
 }
 

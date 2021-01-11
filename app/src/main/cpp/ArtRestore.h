@@ -25,6 +25,7 @@ public:
   void restoreArtMethod(std::string className, std::string funcName, std::string desciptor);
 
 private:
+  // 这里需要互斥并发
   std::shared_ptr<std::vector<ArtRestoreData*>> restoreList;
 };
 
