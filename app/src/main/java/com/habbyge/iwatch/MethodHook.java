@@ -66,9 +66,13 @@ public final class MethodHook {
     // TODO: 1/11/21 ing......
     /**
      * 方法恢复机制：
-     * 1. 进程重启，初始化时，检查 reversion 是否合法 ？
-     * 2. 每个方法 hook 时，检查 reversion 是否合法？
-     * 以上满足任一条件，即不合法，都应该使用原始函数；
+     * 1. 进程重启，初始化时，检查补丁支持的 reversion 是否与当前 app 的 reversion 相同
+     * 2. 每个方法 hook 时，检查从补丁支持的 reversion 是否与当前 app 的 reversion 相同，从补丁中获取的方法
+     *    是否 替换 原始方法（由注解决定）.
+     * 当前 app 进程在内存中存储了目前已经被 hook 的方法列表，分为两种情况:
+     * 1. 进程重启，完全不支持，则直接退出即可；
+     * 2. 正在 fix 一个方法，发现补丁支持的 reversion 与当前 app 的 reversion 不符，则也恢复所有的方法，
+     *    并删掉补丁文件.
      */
     public static void restoreMethod(String className, String name, String sig) {
         unhookMethod(className, name, sig);

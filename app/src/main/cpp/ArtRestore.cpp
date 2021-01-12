@@ -19,6 +19,7 @@ ArtRestore::~ArtRestore() {
     delete it->second;
     it->second = nullptr;
   }
+  restoreMap.clear();
 }
 
 void ArtRestore::save(std::string className, std::string funcName, std::string desciptor,
