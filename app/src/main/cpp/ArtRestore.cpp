@@ -7,7 +7,8 @@
 extern size_t artMethodSizeV1;
 extern size_t artMethodSizeV2;
 
-ArtRestore::ArtRestore() {
+ArtRestore::ArtRestore() : lock(std::move(std::timed_mutex())),
+                           restoreMap(std::move(std::map<std::string&&, ArtRestoreData*>())) {
 }
 
 ArtRestore::~ArtRestore() {
@@ -17,7 +18,6 @@ ArtRestore::~ArtRestore() {
     delete it->second;
     it->second = nullptr;
   }
-  restoreMap.clear();
 }
 
 void ArtRestore::save(std::string className, std::string funcName, std::string desciptor,
@@ -44,7 +44,7 @@ void ArtRestore::save(std::string className, std::string funcName, std::string d
 }
 
 /**
- * TODO: 这里是恢复对应的 ArtMethod 为原始的，注意需要 delete 掉对应的堆内存，互斥访问
+ * 这里是恢复对应的 ArtMethod 为原始的，注意需要 delete 掉对应的堆内存，互斥访问
  */
 void ArtRestore::restoreArtMethod(std::string className, std::string funcName, std::string desciptor) {
   if (artMethodSizeV1 <= 0) {

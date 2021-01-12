@@ -20,6 +20,9 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 // TODO: 除了提供 hook 功能之外，还需要提供 一键恢复出厂设置 的功能，免得出大坑。
 
+// TODO: iWatch 立项，还有一个理由：我们数据开发组接需求，是以周为单位，并不跟主线版本(包括tinker版本)，
+//  那么就必然需要一个 "热补丁" 来实时发包，另外，还必须与 tinker 互斥；
+
 /**
  * Created by habbyge on 2021/1/5.
  * patch manager
