@@ -3,18 +3,18 @@
 //
 
 #include "ArtRestore.h"
+#include "iwatch_impl.h"
 
 // iwatch_impl.cpp
-extern size_t artMethodSizeV1;
-extern size_t artMethodSizeV2;
+//extern size_t artMethodSizeV1;
+//extern size_t artMethodSizeV2;
 
-ArtRestore::ArtRestore() : lock(std::move(std::timed_mutex())),
-                           restoreMap(std::move(std::map<std::string&&, ArtRestoreData*>())) {
+ArtRestore::ArtRestore() : restoreMap(), lock() {
 }
 
 ArtRestore::~ArtRestore() {
   // delete 掉 列表内存
-  std::map<std::string&&, ArtRestoreData*>::iterator it;
+  std::map<std::string, ArtRestoreData*>::iterator it;
   for (it = restoreMap.begin(); it != restoreMap.end(); ++it) {
     delete it->second;
     it->second = nullptr;
@@ -48,7 +48,7 @@ void ArtRestore::save(std::string className, std::string funcName, std::string d
  * 这里是恢复对应的 ArtMethod 为原始的，注意需要 delete 掉对应的堆内存，互斥访问
  */
 void ArtRestore::restoreArtMethod(std::string className, std::string funcName, std::string desciptor) {
-  int artMethodSize = artMethodSizeV1 <= 0 ? artMethodSizeV2 : artMethodSizeV1;
+  size_t artMethodSize = artMethodSizeV1 <= 0 ? artMethodSizeV2 : artMethodSizeV1;
   if (artMethodSize <= 0) {
     return;
   }

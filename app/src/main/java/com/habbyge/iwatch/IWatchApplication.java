@@ -18,8 +18,13 @@ public class IWatchApplication extends Application {
         super.onCreate();
 
         // 必须最先执行的初始化
-        PatchManager.getInstance().init(getApplicationContext(),
-                                        "fa25df64dd46ee117fbb2527d2dc1cd82fd04e67");
+        boolean initRet = PatchManager.getInstance().init(getApplicationContext(),
+                                                          "fa25df64dd46ee117fbb2527d2dc1cd82fd04e67");
+        if (!initRet) {
+            Log.e(TAG, "onCreate, init failure !");
+            return;
+        }
+
         // 加载所有补丁
         PatchManager.getInstance().loadPatch();
 

@@ -34,15 +34,15 @@ public final class PatchManager {
     private static final String TAG = "iWatch.PatchManager";
 
     // patch extension
-    private static final String SUFFIX = ".ipatch"; // patch文件的后缀
+    private static final String SUFFIX = ".ipatch"; // patch 文件的后缀
     private static final String DIR = "ipatch";
     private static final String SP_NAME = "_iwatch_";
-    private static final String SP_REVERSION = "ipatch_reversion";
+    private static final String SP_IWATCH_PATCH = "iwatch_version";
 
     private Context mContext; // 这里必须是 Application 的 Context
 
     private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/ipatch
-    private SortedSet<Patch> mPatchs; // TODO: 1/7/21 保存了所有补丁
+    private SortedSet<Patch> mPatchs; // TODO: 1/7/21 保存了所有补丁......
     /**
      * classloaders
      */
@@ -71,36 +71,38 @@ public final class PatchManager {
      * 初始化入口(越早初始化越好)
      *
      * @param context 必须是全局的 Application 的 Context
-     * @param appReversion App 打包粒度的 version
+     * @param iwatchVersion iwatch本身的版本号
      */
-    public void init(Context context, String appReversion) {
+    public boolean init(Context context, String iwatchVersion) {
         mContext = context;
 
         mPatchDir = new File(mContext.getFilesDir(), DIR);
         if (!mPatchDir.exists() && !mPatchDir.mkdirs()) {// make directory fail
             Log.e(TAG, "patch dir create error.");
-            return;
+            return false;
         } else if (!mPatchDir.isDirectory()) { // not directory
             Log.e(TAG, "mPatchDir delete result=" + mPatchDir.delete());
-            return;
+            return false;
         }
-        Log.i(TAG, "mPatchDir=" + mPatchDir); // TODO: 1/8/21 ing......
+        Log.i(TAG, "mPatchDir=" + mPatchDir);
 
         // 线程安全的有序的集合，适用于高并发的场景
         mPatchs = new ConcurrentSkipListSet<Patch>();
         mClassLoaderMap = new ConcurrentHashMap<String, ClassLoader>();
 
         SharedPreferences sp = mContext.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
-        String reversion = sp.getString(SP_REVERSION, null);
-        if (reversion == null || !reversion.equalsIgnoreCase(appReversion)) {
+        String oldIwatchPatch = sp.getString(SP_IWATCH_PATCH, null);
+        if (oldIwatchPatch == null || !oldIwatchPatch.equalsIgnoreCase(iwatchVersion)) {
             cleanPatch(); // 非对应 reversion 版本，则清理掉补丁，使用原始逻辑
-            sp.edit().putString(SP_REVERSION, appReversion).apply();
-            Log.e(TAG, "PatchManager init failure appReversion=" + appReversion);
+            sp.edit().putString(SP_IWATCH_PATCH, iwatchVersion).apply();
+            Log.e(TAG, "PatchManager init iwatchVersion=" + iwatchVersion);
         } else {
             initPatchs();
         }
 
         initIWatch(context);
+
+        return true;
     }
 
     /**

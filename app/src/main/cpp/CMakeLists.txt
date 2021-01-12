@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project("iWatch")
 
-set(CMAKE_CXX_FLAGS "-std=c++11")
+set(CMAKE_CXX_FLAGS "-std=c++11 -DANDROID_STL=c++_shared")
 
 set(SRC_LIST iwatch.cpp
              iwatch_impl.cpp
@@ -17,9 +17,15 @@ set(SRC_LIST iwatch.cpp
              field_hook.cpp
              common/elfop.cpp)
 
+#设定存放编译出来的库文件的目录
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../libs/${ANDROID_ABI})
+
+##并且把该目录设为连接目录
+#LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/../libs/${ANDROID_ABI)
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
+# You can define multiple libra-DANDROID_STL=c++_sharedries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
 add_library(
@@ -34,8 +40,15 @@ add_library(
 )
 
 include_directories(
-    common/*.h
-    art/*.h
+    common/elfop.h
+    common/log.h
+
+    art/art_method_11.h
+    art/JNIEnvExt.h
+    art/scoped_thread_state_change.h
+    art/ScopedFastNativeObjectAccess.h
+    art/value_object.h
+
     iwatch_impl.h
     ArtRestore.h
 )

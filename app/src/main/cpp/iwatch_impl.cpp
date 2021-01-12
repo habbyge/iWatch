@@ -41,12 +41,12 @@
  * 这里 jmethodID 就是 ArtMethod.
  * 比起 ArtFix，iWatch 方案屏蔽细节、尽量通用，没有适配性。
  */
-static size_t artMethodSizeV1 = -1;
-static size_t artMethodSizeV2 = -1;
 
 static int sdkVersion = 0;
 static void* cur_thread = nullptr;
 static JavaVM* vm;
+
+static const int SDK_INT_ANDROID_10 = 29;
 
 //using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
 //addWeakGlobalRef_t addWeakGlobalRef;
@@ -165,6 +165,9 @@ static void initArtMethod2(JNIEnv* env, void* context) {
 }
 
 void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
+  artMethodSizeV1 = -1;
+  artMethodSizeV2 = -1;
+
   sdkVersion = sdkVersionCode;
 
   env->GetJavaVM(&vm);
@@ -179,7 +182,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 //       (size_t) artMethod22,
 //       (size_t) artMethod11);
 
-  if (sdkVersionCode <= 29) { // <= Android-10(api-29)
+  if (sdkVersionCode <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
     jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
     auto artMethod1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
     auto artMethod2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
@@ -319,7 +322,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
   void* srcArtMethod = nullptr;
   void* dstArtMethod = nullptr;
 
-  if (sdkVersion <= 29) { // <= Android-10
+  if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10
     // art::mirror::ArtMethod
     srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
     dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
@@ -383,7 +386,7 @@ long method_hookv2_impl(JNIEnv* env,
                         jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
                         jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
-  if (sdkVersion <= 29) { // <= Android-10
+  if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10
     loge("method_hookv2 sdkVersion NOT >= 30: %d", sdkVersion);
     clear_exception(env);
     return -1L;

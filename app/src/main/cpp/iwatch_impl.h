@@ -6,7 +6,7 @@
 #define IWATCH_IWATCH_H
 
 #include <jni.h>
-//#include <memory>
+#include <memory>
 #include <thread>
 #include <exception>
 #include <string>
@@ -34,6 +34,9 @@ using FindMethodJNI_t = void* (*)(const art::ScopedObjectAccess& soa,
                                   const char* name,
                                   const char* sig,
                                   bool is_static);
+
+static size_t artMethodSizeV1;
+static size_t artMethodSizeV2;
 
 /**
  * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，
