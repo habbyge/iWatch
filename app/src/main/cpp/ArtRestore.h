@@ -5,7 +5,7 @@
 #ifndef IWATCH_ARTRESTORE_H
 #define IWATCH_ARTRESTORE_H
 
-/*#include <memory>*/
+//#include <memory>
 #include <string>
 #include <mutex>
 #include <chrono>
