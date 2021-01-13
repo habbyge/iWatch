@@ -32,8 +32,9 @@ public:
   void restoreArtMethod(std::string className, std::string funcName, std::string desciptor);
 
 private:
-  // 这里可能存在并发，需要互斥访问.
-  // 这里不能使用 C++11 的 智能指针，因为map以及map中的成员都需要根据逻辑手工释放.
+  // 这里可能存在并发(来自Java层)，需要互斥访问.
+  // 这里不能使用 C++11 的 智能指针，因为 restoreMap 以及 restoreMap 中的成员都需要根据恢复逻辑手工释放.
+  // 即: 只有在需要恢复原始方法时、且恢复完成后，才能释放其 ArtRestoreData* 指向的对象，所以需要手工释放.
   /*std::shared_ptr<std::vector<ArtRestoreData*>> restoreList;*/
   std::map<std::string, ArtRestoreData*> restoreMap;
   std::timed_mutex lock;
