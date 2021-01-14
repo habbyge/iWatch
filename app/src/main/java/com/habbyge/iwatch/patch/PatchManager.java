@@ -9,7 +9,6 @@ import com.habbyge.iwatch.IWatch;
 import com.habbyge.iwatch.util.FileUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,11 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 // TODO: iWatch 立项，还有一个理由：我们数据开发组接需求，是以周为单位，并不跟主线版本(包括tinker版本)，
 //  那么就必然需要一个 "热补丁" 来实时发包，另外，还必须与 tinker 互斥；
+
+// TODO: 1/15/21 需要考虑 不同上报需求提出的时间是碎片化的，因此补丁也可以是多个同时生效，此时考虑是一个app版本
+//  只使用一个补丁好？还是一个app版本对应多个不同的补丁生效？
+//  从 结果来看，"一对多" 更好，但是有个问题是，如果两个不同的上报需求，需要同时修改同一个函数，那么就会因为不知道其他
+//  补丁的情况，而发生覆盖情况，因此从实用角度来看，"一对一" 模式更好。所以这里选择 "一对一"模式.
 
 /**
  * Created by habbyge on 2021/1/5.
@@ -42,7 +46,7 @@ public final class PatchManager {
     private Context mContext; // 这里必须是 Application 的 Context
 
     private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/ipatch
-    private SortedSet<Patch> mPatchs; // TODO: 1/7/21 保存了所有补丁......
+    private SortedSet<Patch> mPatchs; // TODO: 1/7/21 保存了所有补丁...... 下载补丁后，安装补丁到这里
     /**
      * classloaders
      */
@@ -108,7 +112,7 @@ public final class PatchManager {
     /**
      * load all patch, call when application start
      */
-    public void loadPatch() {
+    public void loadPatch() { // TODO: 1/15/21 ing
         mClassLoaderMap.put("*", mContext.getClassLoader()); // wildcard
         Set<String> patchNames;
         List<String> classes;

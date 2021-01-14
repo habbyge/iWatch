@@ -29,10 +29,10 @@ public:
   void save(std::string& className, std::string& funcName, std::string& desciptor,
             long backupArtmethodAddr, long artMethodAddr);
 
-  void restoreArtMethod(std::string& className, std::string& funcName, std::string& desciptor); // TODO:
-  void restoreAllArtMethod(); // TODO:
+  void restoreArtMethod(std::string& className, std::string& funcName, std::string& desciptor);
+  void restoreAllArtMethod();
 
-  bool inHooking(std::string& className, std::string& funcName, std::string& desciptor); // TODO: ing
+  bool inHooking(std::string& className, std::string& funcName, std::string& desciptor);
 
 private:
   // 这里可能存在并发(来自Java层)，需要互斥访问.

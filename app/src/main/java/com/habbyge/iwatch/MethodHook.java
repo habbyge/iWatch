@@ -63,7 +63,6 @@ public final class MethodHook {
         return backupOriMethod != 0L && backupOriMethod != -1L;
     }
 
-    // TODO: 1/11/21 ing......
     /**
      * 方法恢复机制：
      * 1. 进程重启，初始化时，检查补丁支持的 reversion 是否与当前 app 的 reversion 相同
@@ -74,17 +73,14 @@ public final class MethodHook {
      * 2. 正在 fix 一个方法，发现补丁支持的 reversion 与当前 app 的 reversion 不符，则也恢复所有的方法，
      *    并删掉补丁文件.
      */
+    // TODO: 1/15/21 恢复单独一个方法时，是需要继续执行原始函数的
     public static void restoreMethod(String className, String name, String sig) {
         unhookMethod(className, name, sig);
     }
 
-    /**
-     * 调用原始方法
-     */
-    public static void callOriginMethod(String className, String name, String sig) throws
-                                        InvocationTargetException, IllegalAccessException {
-
-        // TODO: 1/14/21 ing......
+    // TODO: 1/15/21 ing......
+    public static void restoreAllMethod() {
+        unhookAllmethod();
     }
 
     public static void hookField2(Field src, Field dst) {
