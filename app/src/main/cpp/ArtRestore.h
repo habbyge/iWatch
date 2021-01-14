@@ -43,9 +43,9 @@ private:
   std::recursive_mutex lock;
 
   void restoreArtMethod(std::string&& key);
-  void doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, size_t artMethodSize);
+  static void doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, size_t artMethodSize);
 
-  inline size_t getArtMethodSize();
+  static inline size_t getArtMethodSize();
 
   inline std::string&& getKey(std::string& className, std::string& funcName, std::string& desciptor) {
     return std::move(className + "$" + funcName + "$" + desciptor);
