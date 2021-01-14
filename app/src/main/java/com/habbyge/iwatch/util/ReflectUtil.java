@@ -115,7 +115,7 @@ public final class ReflectUtil {
             method.setAccessible(true);
             return method;
         } catch (NoSuchMethodException e) {
-            Log.e(TAG, "findMethod-2", e);
+            /*Log.e(TAG, "findMethod-2", e);*/
             return null;
         }
     }

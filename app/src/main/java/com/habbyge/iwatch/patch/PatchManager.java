@@ -130,7 +130,7 @@ public final class PatchManager {
         File src = new File(path);
         File dest = new File(mPatchDir, src.getName());
         if (!src.exists()) {
-            Log.e(TAG, "addPath, FileNotFoundException", new FileNotFoundException(path));
+            /*Log.e(TAG, "addPath, FileNotFoundException", new FileNotFoundException(path));*/
             return;
         }
         if (dest.exists()) {

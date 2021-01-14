@@ -9,6 +9,7 @@
  */
 
 #include "elfop.h"
+#include "constants.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,7 +26,7 @@ static int _dlclose(void* handle) {
     }
     free(elf_ctx);
   }
-  return 0;
+  return I_OK;
 }
 
 /** 

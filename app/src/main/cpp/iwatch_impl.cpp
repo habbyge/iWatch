@@ -4,6 +4,7 @@
 
 #include "iwatch_impl.h"
 #include "ArtRestore.h"
+#include "common/constants.h"
 
 //#include <art/runtime/jni/jni_internal.h>
 //#include <exception> C/C++ 的 Exception
@@ -319,6 +320,24 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
                       jobject srcMethod, jobject dstMethod) {
 
+  jboolean isCopy;
+  const char* srcClassStr = env->GetStringUTFChars(srcClass, &isCopy);
+  std::string _class(srcClassStr);
+  std::replace(_class.begin(), _class.end(), '.', '/');
+  env->ReleaseStringUTFChars(srcClass, srcClassStr);
+
+  auto srcFuncStr = env->GetStringUTFChars(srcName, &isCopy);
+  std::string _func(srcFuncStr);
+  env->ReleaseStringUTFChars(srcName, srcFuncStr);
+
+  auto srcDescStr = env->GetStringUTFChars(srcSig, &isCopy);
+  std::string _descriptor(srcDescStr);
+  env->ReleaseStringUTFChars(srcSig, srcDescStr);
+
+  if (artRestore->inHooking(_class, _func, _descriptor)) {
+    return I_OK; // 已经 hook 了，无需重复
+  }
+
   void* srcArtMethod = nullptr;
   void* dstArtMethod = nullptr;
 
@@ -330,7 +349,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
     if (srcArtMethod == nullptr || dstArtMethod == nullptr) {
       loge("method_hook(api<=29), srcArtMethod/dstArtMethod is nullptr !");
       clear_exception(env);
-      return -1L;
+      return I_ERR;
     }
     // 这里有坑，大小不正确...... 在 Android-11 系统中这里的大小获取失败，错误！！！！！！
     // 经过研究 android-11.0.0_r17(http://aosp.opersys.com/) 源代码，class类中的ArtMethod
@@ -343,7 +362,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
     if (srcArtMethod == nullptr || dstArtMethod == nullptr) {
       loge("method_hook(api>=30), srcArtMethod/dstArtMethod is nullptr !");
       clear_exception(env);
-      return -1L;
+      return I_ERR;
     }
   }
 
@@ -358,22 +377,12 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
   } catch (std::exception& e) {
     loge("method_hook copy: eception: %s", e.what());
     clear_exception(env);
-    return -1L;
+    return I_ERR;
   }
 
-  jboolean isCopy;
-  auto srcClassChars = env->GetStringUTFChars(srcClass, &isCopy);
-  std::string srcClassStr(srcClassChars);
-  env->ReleaseStringUTFChars(srcClass, srcClassChars);
-  auto srcFuncChars = env->GetStringUTFChars(srcName, &isCopy);
-  std::string srcFuncStr(srcFuncChars);
-  env->ReleaseStringUTFChars(srcName, srcFuncChars);
-  auto srcDescChars = env->GetStringUTFChars(srcSig, &isCopy);
-  std::string srcDescStr(srcDescChars);
-  env->ReleaseStringUTFChars(srcSig, srcDescChars);
   auto backupArtMethodAddr = reinterpret_cast<long>(backupArtMethod);
   auto srcArtMethodAddr = reinterpret_cast<long>(srcArtMethod);
-  artRestore->save(srcClassStr, srcFuncStr, srcDescStr, backupArtMethodAddr, srcArtMethodAddr);
+  artRestore->save(_class, _func, _descriptor, backupArtMethodAddr, srcArtMethodAddr);
 
   logi("methodHook: method_hook Success !");
   clear_exception(env);
@@ -389,7 +398,7 @@ long method_hookv2_impl(JNIEnv* env,
   if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10
     loge("method_hookv2 sdkVersion NOT >= 30: %d", sdkVersion);
     clear_exception(env);
-    return -1L;
+    return I_ERR;
   }
 
   if (java_class1 == nullptr || java_class2 == nullptr
@@ -398,32 +407,43 @@ long method_hookv2_impl(JNIEnv* env,
 
     loge("method_hookv2 input params are nullptr !");
     clear_exception(env);
-    return -1L;
+    return I_ERR;
   }
 
   jboolean isCopy;
-  const char* class1 = env->GetStringUTFChars(java_class1, &isCopy);
+  const char* class1Str = env->GetStringUTFChars(java_class1, &isCopy);
+  std::string _class1(class1Str);
+  std::replace(_class1.begin(), _class1.end(), '.', '/');
+  env->ReleaseStringUTFChars(java_class1, class1Str);
+
+  const char* funcStr1 = env->GetStringUTFChars(name1, &isCopy);
+  std::string _func1(funcStr1);
+
+  const char* descriptorStr1 = env->GetStringUTFChars(sig1, &isCopy);
+  std::string _descriptor1(descriptorStr1);
+
+  if (artRestore->inHooking(_class1, _func1, _descriptor1)) {
+    return I_OK; // 已经 hook 了，无需重复
+  }
+
   jclass jclass1;
-  std::string classStr1(class1);
-  std::replace(classStr1.begin(), classStr1.end(), '.', '/');
   try {
-    jclass1 = env->FindClass(classStr1.c_str());
+    jclass1 = env->FindClass(_class1.c_str());
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-1: %s", e.what());
     clear_exception(env);
-    return -1L;
+    return I_ERR;
   }
 
-  const char* name_str1 = env->GetStringUTFChars(name1, &isCopy);
-  const char* sig_str1 = env->GetStringUTFChars(sig1, &isCopy);
-  auto artMethod1 = getArtMethod(env, jclass1, name_str1, sig_str1, is_static1);
-  env->ReleaseStringUTFChars(java_class1, class1);
-  env->ReleaseStringUTFChars(name1, name_str1);
-  env->ReleaseStringUTFChars(sig1, sig_str1);
+  auto artMethod1 = getArtMethod(env, jclass1, funcStr1, descriptorStr1, is_static1);
+
+  env->ReleaseStringUTFChars(name1, funcStr1);
+  env->ReleaseStringUTFChars(sig1, descriptorStr1);
+
   logi("method_hookv2, artMethod1=%p", artMethod1);
   if (artMethod1 == nullptr) {
     clear_exception(env);
-    return -1L;
+    return I_ERR;
   }
 
   const char* class2 = env->GetStringUTFChars(java_class2, &isCopy);
@@ -435,7 +455,7 @@ long method_hookv2_impl(JNIEnv* env,
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-2: %s", e.what());
     clear_exception(env);
-    return -1L;
+    return I_ERR;
   }
 
   const char* name_str2 = env->GetStringUTFChars(name2, &isCopy);
@@ -447,7 +467,7 @@ long method_hookv2_impl(JNIEnv* env,
   logi("method_hookv2, artMethod2=%p", artMethod2);
   if (artMethod2 == nullptr) {
     clear_exception(env);
-    return -1L;
+    return I_ERR;
   }
 
   int8_t* backupArtMethod = nullptr;
@@ -458,18 +478,12 @@ long method_hookv2_impl(JNIEnv* env,
   } catch (std::exception& e) {
     loge("method_hookv2 copy: eception: %s", e.what());
     clear_exception(env);
-    return -1L;
+    return I_ERR;
   }
 
-  auto srcFunc = env->GetStringUTFChars(name1, &isCopy);
-  std::string srcFuncStr(srcFunc);
-  env->ReleaseStringUTFChars(name1, srcFunc);
-  auto srcDesc = env->GetStringUTFChars(sig1, &isCopy);
-  std::string srcDescStr(srcDesc);
-  env->ReleaseStringUTFChars(sig1, srcDesc);
   auto backupArtMethodAddr = reinterpret_cast<long>(backupArtMethod);
   auto srcArtMethodAddr = reinterpret_cast<long>(artMethod1);
-  artRestore->save(classStr1, srcFuncStr, srcDescStr, backupArtMethodAddr, srcArtMethodAddr);
+  artRestore->save(_class1, _func1, _descriptor1, backupArtMethodAddr, srcArtMethodAddr);
 
   logi("method_hookv2: method_hook Success !");
   clear_exception(env);
@@ -485,6 +499,7 @@ void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring s
   const char* sigStr = env->GetStringUTFChars(sig, &isCopy);
 
   std::string _class(classStr);
+  std::replace(_class.begin(), _class.end(), '.', '/');
   std::string _method(nameStr);
   std::string _descripor(sigStr); // 必须这样，才是左值
   artRestore->restoreArtMethod(_class, _method, _descripor);
@@ -541,7 +556,7 @@ static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtF
 //  logv("methodRestore: Success !");
 //  clear_exception(env);
 //  return srcMethod;
-  return -1L; // TODO: 有待搞定......
+  return I_ERR; // TODO: 有待搞定......
 }
 
 long class_hook_impl(JNIEnv* env, jstring clazzName) {
