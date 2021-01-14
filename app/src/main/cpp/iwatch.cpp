@@ -26,6 +26,10 @@ static void restore_method(JNIEnv* env, jclass, jstring className, jstring name,
   restore_method_impl(env, className, name, sig);
 }
 
+static void restore_all_method(JNIEnv* env, jclass) {
+  restore_all_method_impl(env);
+}
+
 static jlong field_hook(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
   return field_hook_impl(env, srcField, dstField);
 }
@@ -58,6 +62,11 @@ static JNINativeMethod gMethods[] = {
     "unhookMethod",
     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
     (void*) restore_method
+  },
+  {
+    "unhookAllmethod",
+    "()V",
+    (void*) restore_all_method
   },
   {
     "hookField",

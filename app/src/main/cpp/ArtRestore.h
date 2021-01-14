@@ -26,10 +26,13 @@ public:
   ArtRestore(const ArtRestore&) = delete;
   ArtRestore& operator=(const ArtRestore&) = delete;
 
-  void save(std::string className, std::string funcName, std::string desciptor,
+  void save(std::string& className, std::string& funcName, std::string& desciptor,
             long backupArtmethodAddr, long artMethodAddr);
 
-  void restoreArtMethod(std::string className, std::string funcName, std::string desciptor);
+  void restoreArtMethod(std::string& className, std::string& funcName, std::string& desciptor); // TODO:
+  void restoreAllArtMethod(); // TODO:
+
+  bool inHooking(std::string& className, std::string& funcName, std::string& desciptor); // TODO:
 
 private:
   // 这里可能存在并发(来自Java层)，需要互斥访问.
@@ -38,6 +41,25 @@ private:
   /*std::shared_ptr<std::vector<ArtRestoreData*>> restoreList;*/
   std::map<std::string, ArtRestoreData*> restoreMap;
   std::timed_mutex lock;
+
+  void restoreArtMethod(std::string&& key);
+  void doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, size_t artMethodSize);
+
+  inline size_t getArtMethodSize();
+
+  inline std::string&& getKey(std::string& className, std::string& funcName, std::string& desciptor) {
+    return std::move(className + "$" + funcName + "$" + desciptor);
+  }
+
+  inline void tryLock() {
+    while (!lock.try_lock_for(std::chrono::milliseconds(1000))) {
+      // ignored: empty line.
+    }
+  }
+
+  inline void unlock() {
+    lock.unlock();
+  }
 };
 
 #endif // IWATCH_ARTRESTORE_H

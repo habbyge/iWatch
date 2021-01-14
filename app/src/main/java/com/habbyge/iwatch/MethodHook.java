@@ -78,40 +78,13 @@ public final class MethodHook {
         unhookMethod(className, name, sig);
     }
 
-    public static void callOriginMethod(String className, String name, String sig)
-            throws InvocationTargetException, IllegalAccessException {
+    /**
+     * 调用原始方法
+     */
+    public static void callOriginMethod(String className, String name, String sig) throws
+                                        InvocationTargetException, IllegalAccessException {
 
         // TODO: 1/14/21 ing......
-    }
-
-    // TODO: 1/14/21 ing......
-    public void callOrigin(Object receiver, Object... args) {
-        StackTraceElement stackTrace = Thread.currentThread().getStackTrace()[3];
-        String className = stackTrace.getClassName();
-        String methodName = stackTrace.getMethodName();
-        MethodHook methodHook = methodHookMap.get(Pair.create(className, methodName));
-        if (methodHook != null) {
-            try {
-                methodHook.callOrigin(receiver, args);
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    // TODO: 1/14/21 ing......
-    public static void callOrigin(Object receiver, Object... args) throws InvocationTargetException,
-                                                                          IllegalAccessException {
-
-        if (backupMethodPtr != 0) {
-            restore();
-            srcMethod.invoke(receiver, args);
-            hook();
-        } else {
-            srcMethod.invoke(receiver, args);
-        }
     }
 
     public static void hookField2(Field src, Field dst) {
@@ -140,6 +113,8 @@ public final class MethodHook {
                                           String funcSig2, boolean isStatic2);
     @Keep
     private static native void unhookMethod(String className, String name, String sig);
+    @Keep
+    private static native void unhookAllmethod();
 
     @Keep
     private static native long hookField(Field src, Field dst);

@@ -87,6 +87,7 @@ long method_hookv2_impl(JNIEnv* env,
  * @return 返回原始 ArtMethod 地址
  */
 void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring sig);
+void restore_all_method_impl(JNIEnv* env);
 
 long field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField);
 long class_hook_impl(JNIEnv* env, jstring clazzName);

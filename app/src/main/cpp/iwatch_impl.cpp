@@ -483,11 +483,21 @@ void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring s
   const char* classStr = env->GetStringUTFChars(className, &isCopy);
   const char* nameStr = env->GetStringUTFChars(name, &isCopy);
   const char* sigStr = env->GetStringUTFChars(sig, &isCopy);
-  artRestore->restoreArtMethod(std::string(classStr), std::string(nameStr), std::string(sigStr));
+
+  std::string _class(classStr);
+  std::string _method(nameStr);
+  std::string _descripor(sigStr); // 必须这样，才是左值
+  artRestore->restoreArtMethod(_class, _method, _descripor);
+
   env->ReleaseStringUTFChars(className, classStr);
   env->ReleaseStringUTFChars(name, nameStr);
   env->ReleaseStringUTFChars(sig, sigStr);
 
+  clear_exception(env);
+}
+
+void restore_all_method_impl(JNIEnv* env) {
+  artRestore->restoreAllArtMethod();
   clear_exception(env);
 }
 
