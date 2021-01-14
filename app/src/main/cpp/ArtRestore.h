@@ -40,7 +40,7 @@ private:
   // 即: 只有在需要恢复原始方法时、且恢复完成后，才能释放其 ArtRestoreData* 指向的对象，所以需要手工释放.
   /*std::shared_ptr<std::vector<ArtRestoreData*>> restoreList;*/
   std::map<std::string, ArtRestoreData*> restoreMap;
-  std::timed_mutex lock;
+  std::recursive_mutex lock;
 
   void restoreArtMethod(std::string&& key);
   void doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, size_t artMethodSize);
@@ -49,16 +49,6 @@ private:
 
   inline std::string&& getKey(std::string& className, std::string& funcName, std::string& desciptor) {
     return std::move(className + "$" + funcName + "$" + desciptor);
-  }
-
-  inline void tryLock() {
-    while (!lock.try_lock_for(std::chrono::milliseconds(1000))) {
-      // ignored: empty line.
-    }
-  }
-
-  inline void unlock() {
-    lock.unlock();
   }
 };
 

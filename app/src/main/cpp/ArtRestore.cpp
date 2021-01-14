@@ -36,11 +36,9 @@ void ArtRestore::save(std::string& className, std::string& funcName, std::string
   data->artMethodAddr = artMethodAddr;
 
   // Java 层可能存在多线程竞态，需要互斥访问
-  tryLock();
+  std::lock_guard<std::recursive_mutex> lockGuard(lock);
   // 比 insert() 好在：避免不必要的临时对象的产生
   restoreMap.emplace(std::make_pair(getKey(className, funcName, desciptor), data));
-
-  unlock();
 }
 
 /**
@@ -57,7 +55,7 @@ void ArtRestore::restoreAllArtMethod() {
     return;
   }
 
-  tryLock();
+  std::lock_guard<std::recursive_mutex> lockGuard(lock);
 
   auto it = restoreMap.begin(); // std::map<std::string, ArtRestoreData*>::iterator
   while (it != restoreMap.end()) {
@@ -66,8 +64,6 @@ void ArtRestore::restoreAllArtMethod() {
     delete it->second;
     it = restoreMap.erase(it);
   }
-
-  unlock();
 }
 
 void ArtRestore::restoreArtMethod(std::string&& key) {
@@ -76,22 +72,24 @@ void ArtRestore::restoreArtMethod(std::string&& key) {
     return;
   }
 
-  // Java 层可能存在多线程竞态，需要互斥访问
-  tryLock();
+  long artMethodAddr = 0L;
+  long backupArtmethodAddr = 0L;
 
-  auto dataItor = restoreMap.find(key);
-  if (dataItor == restoreMap.end()) {
-    unlock();
-    return;
+  {
+    // Java 层可能存在多线程竞态，需要互斥访问
+    std::lock_guard<std::recursive_mutex> lockGuard(lock);
+
+    auto dataItor = restoreMap.find(key);
+    if (dataItor == restoreMap.end()) {
+      return;
+    }
+    artMethodAddr       = dataItor->second->artMethodAddr;
+    backupArtmethodAddr = dataItor->second->backupArtmethodAddr;
+
+    // 释放 + 删除
+    delete dataItor->second;
+    restoreMap.erase(dataItor);
   }
-  long artMethodAddr = dataItor->second->artMethodAddr;
-  long backupArtmethodAddr = dataItor->second->backupArtmethodAddr;
-
-  // 释放 + 删除
-  delete dataItor->second;
-  restoreMap.erase(dataItor);
-
-  unlock();
 
   doRestoreMethod(artMethodAddr, backupArtmethodAddr, artMethodSize);
 }
@@ -117,10 +115,10 @@ void ArtRestore::doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, s
 bool ArtRestore::inHooking(std::string& className, std::string& funcName, std::string& desciptor) {
   std::string&& key = getKey(className, funcName, desciptor);
 
-  tryLock();
+  std::lock_guard<std::recursive_mutex> lockGuard(lock);
+
   auto it = restoreMap.find(key);
   auto hooking = (it != restoreMap.end());
-  unlock();
   return hooking;
 }
 
