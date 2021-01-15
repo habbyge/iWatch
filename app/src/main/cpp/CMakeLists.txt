@@ -60,12 +60,15 @@ include_directories(
 # completing its build.
 # Mention the Android NDK library name to locate.
 find_library(
+    # Path to a library.
+    log-lib:FILEPATH=/Users/habbyge/Library/Android/sdk/ndk-bundle/platforms/android-29/arch-arm/usr/lib/liblog.so
+
     # 解决 cmake 找到 log-lib
 #    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/lib/
 #    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/toolchains/
 #    PATHS /Users/habbyge/Library/Android/sdk/ndk-bundle/platforms/android-29/arch-arm/usr/lib/liblog.so
 #        /Users/habbyge/Library/Android/sdk/ndk-bundle/platforms/android-29/arch-arm/usr/lib/
-    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/android/
+#    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/android/
     # 解决 cmake 找到 jni.h
 #    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include/
     # Sets the name of the path variable.
