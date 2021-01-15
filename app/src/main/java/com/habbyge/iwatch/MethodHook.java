@@ -8,7 +8,6 @@ import androidx.annotation.Keep;
 import com.habbyge.iwatch.util.ReflectUtil;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**

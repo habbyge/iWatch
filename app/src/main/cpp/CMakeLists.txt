@@ -2,11 +2,9 @@
 # documentation: https://d.android.com/studio/projects/add-native-code.html
 
 # Sets the minimum version of CMake required to build the native library.
-
 cmake_minimum_required(VERSION 3.10.2)
 
 # Declares and names the project.
-
 project("iWatch")
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -DANDROID_STL=c++_shared")
@@ -17,7 +15,7 @@ set(SRC_LIST iwatch.cpp
              field_hook.cpp
              common/elfop.cpp)
 
-#设定存放编译出来的库文件的目录
+# 指定so生成到libs目录
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../libs/${ANDROID_ABI})
 
 ##并且把该目录设为连接目录
@@ -27,7 +25,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../libs/${ANDROID_ABI})
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libra-DANDROID_STL=c++_sharedries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
-
+# Specify your native library name, type and the cpp source files.
 add_library(
     # Sets the name of the library.
     iWatch
@@ -39,9 +37,11 @@ add_library(
     ${SRC_LIST}
 )
 
+# Set the header files directory.
 include_directories(
     common/elfop.h
     common/log.h
+    common/constants.h
 
     art/art_method_11.h
     art/JNIEnvExt.h
@@ -58,8 +58,16 @@ include_directories(
 # default, you only need to specify the name of the public NDK library
 # you want to add. CMake verifies that the library exists before
 # completing its build.
-
+# Mention the Android NDK library name to locate.
 find_library(
+    # 解决 cmake 找到 log-lib
+#    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/lib/
+#    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/toolchains/
+#    PATHS /Users/habbyge/Library/Android/sdk/ndk-bundle/platforms/android-29/arch-arm/usr/lib/liblog.so
+#        /Users/habbyge/Library/Android/sdk/ndk-bundle/platforms/android-29/arch-arm/usr/lib/
+    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/android/
+    # 解决 cmake 找到 jni.h
+#    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include/
     # Sets the name of the path variable.
     log-lib
 
@@ -71,7 +79,7 @@ find_library(
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
-
+# Link the Android NDK library with your native library.
 target_link_libraries(
     # Specifies the target library.
     iWatch
