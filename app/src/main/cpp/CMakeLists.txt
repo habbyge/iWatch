@@ -37,6 +37,22 @@ add_library(
     ${SRC_LIST}
 )
 
+
+## ${PHPCPP_ARCH} 这个也可以
+#if ("${ANDROID_ABI}" STREQUAL "x86_64")
+#    include_directories(${ANDROID_SYSROOT}/usr/include/x86_64-linux-android
+#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
+#elseif ("${ANDROID_ABI}" STREQUAL "x86")
+#    include_directories(${ANDROID_SYSROOT}/usr/include/i686-linux-android
+#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
+#elseif ("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+#    include_directories(${ANDROID_SYSROOT}/usr/include/aarch64-linux-android
+#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
+#elseif ("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
+#    include_directories(${ANDROID_SYSROOT}/usr/include/arm-linux-androideabi,
+#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
+#endif()
+
 # Set the header files directory.
 include_directories(
     common/elfop.h
@@ -53,16 +69,31 @@ include_directories(
     ArtRestore.h
 )
 
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
-# Mention the Android NDK library name to locate.
-find_library(
-    # Path to a library.
-    log-lib:FILEPATH=/Users/habbyge/Library/Android/sdk/ndk-bundle/platforms/android-29/arch-arm/usr/lib/liblog.so
+#if ("${ANDROID_ABI}" STREQUAL "x86_64")
+#    find_library(/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-x86_64/usr/lib64/liblog.so
+#                 log-lib
+#                 log)
+#elseif ("${ANDROID_ABI}" STREQUAL "x86")
+#    find_library(/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-x86/usr/lib/liblog.so
+#                 log-lib
+#                 log)
+#elseif ("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+#    find_library(/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-arm64/usr/lib64/liblog.so
+#                 log-lib
+#                 log)
+#elseif ("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
+#    find_library(/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-arm/usr/lib/liblog.so
+#                 log-lib
+#                 log)
+#endif()
 
+## Searches for a specified prebuilt library and stores the path as a
+## variable. Because CMake includes system libraries in the search path by
+## default, you only need to specify the name of the public NDK library
+## you want to add. CMake verifies that the library exists before
+## completing its build.
+## Mention the Android NDK library name to locate.
+find_library(
     # 解决 cmake 找到 log-lib
 #    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/lib/
 #    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/toolchains/
