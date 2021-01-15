@@ -25,6 +25,8 @@ import java.util.Set;
 //  补丁的情况，而发生覆盖情况，因此从实用角度来看，"一对一" 模式更好。所以这里选择 "一对一"模式.
 //  一个用户(微信App)只让一个补丁生效，不允许多补丁存在，是 "一对一" 的关系.
 
+// TODO: 需要考虑随时存在的 tinker 或 正常升级 导致的 微信 app 版本号改变情况，这个情况微信会重启，因此不会有问题.
+
 /**
  * Created by habbyge on 2021/1/5.
  * patch manager
@@ -117,6 +119,8 @@ public final class PatchManager {
     }
 
     /**
+     * 实时加载补丁、生效函数接口
+     *
      * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
      * When a new patch file has been downloaded, it will become effective immediately by addPatch.
      * @param patchPath path
@@ -142,7 +146,7 @@ public final class PatchManager {
     }
 
     /**
-     * load patch,call when plugin be loaded. used for plugin architecture.</br>
+     * load patch, call when plugin be loaded. used for plugin architecture.</br>
      * <p>
      * need name and classloader of the plugin
      *

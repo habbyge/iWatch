@@ -72,7 +72,6 @@ public final class MethodHook {
      * 2. 正在 fix 一个方法，发现补丁支持的 reversion 与当前 app 的 reversion 不符，则也恢复所有的方法，
      *    并删掉补丁文件.
      */
-    // TODO: 1/15/21 恢复单独一个方法时，是需要继续执行原始函数的
     public static void restoreMethod(String className, String name, String sig) {
         unhookMethod(className, name, sig);
     }
