@@ -242,6 +242,10 @@ public final class IWatch {
         Log.i(TAG, "hookMethod2 success=" + success);
     }
 
+    public void unhookAllMethod() {
+        MethodHook.unhookAllMethod();
+    }
+
     /**
      * delete optimize file of patch file
      * @param file patch file

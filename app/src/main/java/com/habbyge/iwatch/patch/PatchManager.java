@@ -2,8 +2,9 @@ package com.habbyge.iwatch.patch;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import com.habbyge.iwatch.IWatch;
 import com.habbyge.iwatch.util.FileUtil;
@@ -11,11 +12,7 @@ import com.habbyge.iwatch.util.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 // TODO: 除了提供 hook 功能之外，还需要提供 一键恢复出厂设置 的功能，免得出大坑。
 
@@ -26,6 +23,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 //  只使用一个补丁好？还是一个app版本对应多个不同的补丁生效？
 //  从 结果来看，"一对多" 更好，但是有个问题是，如果两个不同的上报需求，需要同时修改同一个函数，那么就会因为不知道其他
 //  补丁的情况，而发生覆盖情况，因此从实用角度来看，"一对一" 模式更好。所以这里选择 "一对一"模式.
+//  一个用户(微信App)只让一个补丁生效，不允许多补丁存在，是 "一对一" 的关系.
 
 /**
  * Created by habbyge on 2021/1/5.
@@ -40,17 +38,17 @@ public final class PatchManager {
     // patch extension
     private static final String SUFFIX = ".ipatch"; // patch 文件的后缀
     private static final String DIR = "ipatch";
-    private static final String SP_NAME = "_iwatch_";
-    private static final String SP_IWATCH_PATCH = "iwatch_version";
 
     private Context mContext; // 这里必须是 Application 的 Context
 
+    private String mIWatchVersion = null;
+    private String mAppVersion = null;
+
     private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/ipatch
-    private SortedSet<Patch> mPatchs; // TODO: 1/7/21 保存了所有补丁...... 下载补丁后，安装补丁到这里
-    /**
-     * classloaders
-     */
-    private Map<String, ClassLoader> mClassLoaderMap; // TODO: 1/7/21 ing
+    @Nullable
+    private Patch mPatch;
+
+    private ClassLoader mClassLoader;
 
     private IWatch iWatch;
 
@@ -77,8 +75,10 @@ public final class PatchManager {
      * @param context 必须是全局的 Application 的 Context
      * @param iwatchVersion iwatch本身的版本号
      */
-    public boolean init(Context context, String iwatchVersion) {
+    public boolean init(Context context, String iwatchVersion, String appVersion) {
         mContext = context;
+        mIWatchVersion = iwatchVersion;
+        mAppVersion = appVersion;
 
         mPatchDir = new File(mContext.getFilesDir(), DIR);
         if (!mPatchDir.exists() && !mPatchDir.mkdirs()) {// make directory fail
@@ -90,61 +90,54 @@ public final class PatchManager {
         }
         Log.i(TAG, "mPatchDir=" + mPatchDir);
 
-        // 线程安全的有序的集合，适用于高并发的场景
-        mPatchs = new ConcurrentSkipListSet<Patch>();
-        mClassLoaderMap = new ConcurrentHashMap<String, ClassLoader>();
-
-        SharedPreferences sp = mContext.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
-        String oldIwatchPatch = sp.getString(SP_IWATCH_PATCH, null);
-        if (oldIwatchPatch == null || !oldIwatchPatch.equalsIgnoreCase(iwatchVersion)) {
-            cleanPatch(); // 非对应 reversion 版本，则清理掉补丁，使用原始逻辑
-            sp.edit().putString(SP_IWATCH_PATCH, iwatchVersion).apply();
-            Log.e(TAG, "PatchManager init iwatchVersion=" + iwatchVersion);
-        } else {
-            initPatchs();
-        }
-
         initIWatch(context);
+
+        initPatchs(); // 加载补丁到内存中: mPatchs
 
         return true;
     }
 
     /**
-     * load all patch, call when application start
+     * load all patch, call when application start，and fix all classes and methods
      */
-    public void loadPatch() { // TODO: 1/15/21 ing
-        mClassLoaderMap.put("*", mContext.getClassLoader()); // wildcard
-        Set<String> patchNames;
+    public void loadPatch() {
+        if (mPatch == null || !mPatch.canPatch()) {
+            resetAllPatch();
+            return;
+        }
+
+        mClassLoader = mContext.getClassLoader();
+
         List<String> classes;
-        for (Patch patch : mPatchs) {
-            patchNames = patch.getPatchNames();
-            for (String patchName : patchNames) {
-                classes = patch.getClasses(patchName);
-                iWatch.fix(patch.getFile(), mContext.getClassLoader(), classes);
-            }
+        Set<String> patchNames = mPatch.getPatchNames();
+        for (String patchName : patchNames) {
+            classes = mPatch.getClasses(patchName);
+            iWatch.fix(mPatch.getFile(), mContext.getClassLoader(), classes);
         }
     }
 
     /**
      * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
      * When a new patch file has been downloaded, it will become effective immediately by addPatch.
-     * @param path patch path
+     * @param patchPath path
      */
-    public void addPatch(String path) throws IOException {
-        File src = new File(path);
-        File dest = new File(mPatchDir, src.getName());
-        if (!src.exists()) {
-            /*Log.e(TAG, "addPath, FileNotFoundException", new FileNotFoundException(path));*/
+    public void addPatch(String patchPath) throws IOException {
+        File newPatchFile = new File(patchPath);
+        if (!newPatchFile.exists()) {
             return;
         }
-        if (dest.exists()) {
-            Log.d(TAG, "patch [" + path + "] has be loaded.");
+        File destPathchFile = new File(mPatchDir, newPatchFile.getName());
+        if (destPathchFile.exists()) {
+            Log.w(TAG, "patch [" + patchPath + "] has be loaded.");
             return;
         }
-        FileUtil.copyFile(src, dest); // copy to patch's directory
-        Patch patch = addPatch(dest);
-        if (patch != null) {
-            loadPatch(patch);
+
+        resetAllPatch(); // 清理带哦旧的path，重新load新的；恢复原始方法，重新hook新的方法
+
+        FileUtil.copyFile(newPatchFile, destPathchFile); // copy to patch's directory
+        boolean success = addPatch(destPathchFile);
+        if (success && mPatch != null) {
+            loadPatch(mPatch);
         }
     }
 
@@ -157,25 +150,31 @@ public final class PatchManager {
      * @param classLoader classloader
      */
     public void loadPatch(String patchName, ClassLoader classLoader) {
-        mClassLoaderMap.put(patchName, classLoader);
-        Set<String> patchNames;
+        if (mPatch == null || !mPatch.canPatch()) {
+            resetAllPatch();
+            return;
+        }
+
+        mClassLoader = classLoader;
         List<String> classes; // 该补丁文件(patchName)中所有的class
-        for (Patch patch : mPatchs) {
-            patchNames = patch.getPatchNames();
-            if (patchNames.contains(patchName)) {
-                classes = patch.getClasses(patchName);
-                iWatch.fix(patch.getFile(), classLoader, classes);
-            }
+        Set<String> patchNames = mPatch.getPatchNames();
+        if (patchNames.contains(patchName)) {
+            classes = mPatch.getClasses(patchName);
+            iWatch.fix(mPatch.getFile(), classLoader, classes);
         }
     }
 
+    private void initIWatch(Context context) {
+        iWatch = new IWatch(context);
+        iWatch.init();
+    }
+
     /**
-     * remove all patchs
+     * remove all patchs && resotore all origin methods.
      */
-    public void removeAllPatch() {
-        cleanPatch();
-        SharedPreferences sp = mContext.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
-        sp.edit().clear().apply();
+    private void resetAllPatch() {
+        iWatch.unhookAllMethod(); // 恢复原始函数
+        cleanPatch();             // 删除所有补丁
     }
 
     private void initPatchs() {
@@ -183,15 +182,14 @@ public final class PatchManager {
         if (files == null) {
             return;
         }
+        boolean success = false;
         for (File file : files) {
-            addPatch(file);
+            success = addPatch(file);
+            if (!success) {
+                break;
+            }
         }
-        Log.i(TAG, "initPatchs success");
-    }
-
-    private void initIWatch(Context context) {
-        iWatch = new IWatch(context);
-        iWatch.init();
+        Log.i(TAG, "initPatchs result=" + success);
     }
 
     /**
@@ -203,10 +201,10 @@ public final class PatchManager {
         ClassLoader classLoader;
         List<String> classes;
         for (String patchName : patchNames) {
-            if (mClassLoaderMap.containsKey("*")) {
+            if (mClassLoader == null) {
                 classLoader = mContext.getClassLoader();
             } else {
-                classLoader = mClassLoaderMap.get(patchName);
+                classLoader = mClassLoader;
             }
             if (classLoader != null) {
                 classes = patch.getClasses(patchName);
@@ -218,21 +216,29 @@ public final class PatchManager {
     /**
      * add patch file
      */
-    private Patch addPatch(File pathFile) {
-        Patch patch = null;
+    private boolean addPatch(File pathFile) {
+        boolean succe = false;
         if (pathFile.getName().endsWith(SUFFIX)) {
             try {
-                patch = new Patch(pathFile);
-                mPatchs.add(patch);
+                mPatch = new Patch(pathFile);
+                if (!mPatch.canPatch()) {
+                    resetAllPatch();
+                    mPatch = null;
+
+                    succe = false;
+                } else {
+                    succe = true;
+                }
             } catch (IOException e) {
                 Log.e(TAG, "addPatch", e);
+                succe = false;
             }
         }
-        return patch;
+        return succe;
     }
 
     private void cleanPatch() {
-        File[] files = mPatchDir.listFiles();
+        File[] files = mPatchDir.listFiles(); // 起始就一个 patch 文件
         if (files == null) {
             Log.e(TAG, "cleanPatch: files=null");
             return;
@@ -252,5 +258,9 @@ public final class PatchManager {
 
         iWatch.hook(className1, funcName1, paramTypes1, returnType1, isStatic1,
                     className2, funcName2, paramTypes2, returnType2, isStatic2);
+    }
+
+    public String getAppVersion() {
+        return mAppVersion;
     }
 }

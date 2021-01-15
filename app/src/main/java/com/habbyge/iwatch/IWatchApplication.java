@@ -18,7 +18,7 @@ public class IWatchApplication extends Application {
         super.onCreate();
 
         // 必须最先执行的初始化
-        boolean initRet = PatchManager.getInstance().init(getApplicationContext(), "0.1");
+        boolean initRet = PatchManager.getInstance().init(getApplicationContext(), "0.1", "");
         if (!initRet) {
             Log.e(TAG, "onCreate, init failure !");
             return;

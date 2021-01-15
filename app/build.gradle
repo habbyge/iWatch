@@ -26,6 +26,11 @@ android {
 //                abiFilters "arm64-v8a", "armeabi-v7a"
 //            }
         }
+
+        ndk {
+            ldLibs "log"
+            ldLibs "EGL"
+        }
     }
 
 //    signingConfig {

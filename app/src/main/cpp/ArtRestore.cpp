@@ -57,6 +57,10 @@ void ArtRestore::restoreAllArtMethod() {
 
   std::lock_guard<std::recursive_mutex> lockGuard(lock);
 
+  if (restoreMap.empty()) {
+    return;
+  }
+
   auto it = restoreMap.begin(); // std::map<std::string, ArtRestoreData*>::iterator
   while (it != restoreMap.end()) {
     doRestoreMethod(it->second->artMethodAddr, it->second->backupArtmethodAddr, artMethodSize);

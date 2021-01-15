@@ -77,8 +77,7 @@ public final class MethodHook {
         unhookMethod(className, name, sig);
     }
 
-    // TODO: 1/15/21 ing......
-    public static void restoreAllMethod() {
+    public static void unhookAllMethod() {
         unhookAllmethod();
     }
 
