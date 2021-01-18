@@ -11,6 +11,8 @@ import com.habbyge.iwatch.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -52,7 +54,7 @@ public final class PatchManager {
 
     private ClassLoader mClassLoader;
 
-    private IWatch iWatch;
+    private IWatch mIWatch;
 
     @SuppressLint("StaticFieldLeak")
     private static PatchManager mInstance;
@@ -114,7 +116,7 @@ public final class PatchManager {
         Set<String> patchNames = mPatch.getPatchNames();
         for (String patchName : patchNames) {
             classes = mPatch.getClasses(patchName);
-            iWatch.fix(mPatch.getFile(), mContext.getClassLoader(), classes);
+            mIWatch.fix(mPatch.getFile(), mContext.getClassLoader(), classes);
         }
     }
 
@@ -164,36 +166,47 @@ public final class PatchManager {
         Set<String> patchNames = mPatch.getPatchNames();
         if (patchNames.contains(patchName)) {
             classes = mPatch.getClasses(patchName);
-            iWatch.fix(mPatch.getFile(), classLoader, classes);
+            mIWatch.fix(mPatch.getFile(), classLoader, classes);
         }
     }
 
     private void initIWatch(Context context) {
-        iWatch = new IWatch(context);
-        iWatch.init();
+        mIWatch = new IWatch(context);
+        mIWatch.init();
     }
 
     /**
      * remove all patchs && resotore all origin methods.
      */
     private void resetAllPatch() {
-        iWatch.unhookAllMethod(); // 恢复原始函数
+        mIWatch.unhookAllMethod(); // 恢复原始函数
         cleanPatch();             // 删除所有补丁
     }
 
     private void initPatchs() {
         File[] files = mPatchDir.listFiles();
-        if (files == null) {
+        if (files == null || files.length <= 0) {
             return;
         }
+        Arrays.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File f1, File f2) {
+                return Long.compare(f2.lastModified(), f1.lastModified());
+            }
+        });
+
         boolean success = false;
         for (File file : files) {
-            success = addPatch(file);
-            if (!success) {
+            success = addPatch(file); // files[0] 是最新修改的文件，其他文件忽略掉
+            if (success) {
                 break;
             }
         }
-        Log.i(TAG, "initPatchs result=" + success);
+        if (!success) {
+            resetAllPatch();
+            mPatch = null;
+        }
+        Log.i(TAG, "initPatchs, success=" + success);
     }
 
     /**
@@ -212,7 +225,7 @@ public final class PatchManager {
             }
             if (classLoader != null) {
                 classes = patch.getClasses(patchName);
-                iWatch.fix(patch.getFile(), classLoader, classes);
+                mIWatch.fix(patch.getFile(), classLoader, classes);
             }
         }
     }
@@ -248,7 +261,7 @@ public final class PatchManager {
             return;
         }
         for (File file : files) {
-            iWatch.removeOptFile(file);
+            mIWatch.removeOptFile(file);
             if (!FileUtil.deleteFile(file)) {
                 Log.e(TAG, file.getName() + " delete error.");
             }
@@ -260,7 +273,7 @@ public final class PatchManager {
                         String className2, String funcName2, Class<?>[] paramTypes2,
                         Class<?> returnType2, boolean isStatic2) {
 
-        iWatch.hook(className1, funcName1, paramTypes1, returnType1, isStatic1,
+        mIWatch.hook(className1, funcName1, paramTypes1, returnType1, isStatic1,
                     className2, funcName2, paramTypes2, returnType2, isStatic2);
     }
 
