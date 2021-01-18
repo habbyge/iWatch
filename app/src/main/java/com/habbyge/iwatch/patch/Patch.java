@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -62,7 +64,9 @@ public class Patch implements Comparable<Patch> {
             Manifest manifest = new Manifest(inputStream);
             Attributes mainAttributes = manifest.getMainAttributes();
             mName = mainAttributes.getValue(PATCH_NAME);
-            mTime = new Date(mainAttributes.getValue(CREATED_TIME));
+            /*mTime = new Date(mainAttributes.getValue(CREATED_TIME));*/
+            mTime = new Date();
+            DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME));
 
             mVersion = mainAttributes.getValue(PATCH_VERSION);
             mBaseAppVersion = mainAttributes.getValue(BASE_APP_VERSION);
@@ -85,6 +89,8 @@ public class Patch implements Comparable<Patch> {
                     }
                 }
             }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
         } finally {
             if (jarFile != null) {
                 jarFile.close();
