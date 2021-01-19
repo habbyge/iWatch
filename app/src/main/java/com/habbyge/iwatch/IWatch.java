@@ -25,7 +25,7 @@ import dalvik.system.DexFile;
 public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
 
-    private static final String DIR = "ipatch_opt";
+    private static final String DIR = "apatch_opt";
 
     /**
      * context

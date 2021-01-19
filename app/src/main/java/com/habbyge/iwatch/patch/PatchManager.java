@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 // TODO: 除了提供 hook 功能之外，还需要提供 一键恢复出厂设置 的功能，免得出大坑。
 
@@ -40,15 +39,15 @@ public final class PatchManager {
     private static final String TAG = "iWatch.PatchManager";
 
     // patch extension
-    private static final String SUFFIX = ".ipatch"; // patch 文件的后缀
-    private static final String DIR = "ipatch";
+    private static final String SUFFIX = ".apatch"; // patch 文件的后缀
+    private static final String DIR = "apatch";
 
     private Context mContext; // 这里必须是 Application 的 Context
 
     private String mIWatchVersion = null;
     private String mAppVersion = null;
 
-    private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/ipatch
+    private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/apatch
     @Nullable
     private Patch mPatch;
 

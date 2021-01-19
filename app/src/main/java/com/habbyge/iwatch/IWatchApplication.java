@@ -8,7 +8,7 @@ import com.habbyge.iwatch.patch.PatchManager;
 public class IWatchApplication extends Application {
     private static final String TAG = "iWatch.IWatchApplication";
 
-    private static final String IPATCH_PATH = "/out.ipatch";
+    private static final String IPATCH_PATH = "/out.apatch";
 
     @Override
     public void onCreate() {
@@ -23,15 +23,15 @@ public class IWatchApplication extends Application {
 
         // FIXME: 这是一个测试用例：
 //        try {
-//            // .ipatch file path:
-//            // /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Documents/out.ipatch
+//            // .apatch file path:
+//            // /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Documents/out.apatch
 //            String patchPath = getApplicationContext().getExternalFilesDir(
 //                    Environment.DIRECTORY_DOCUMENTS) + IPATCH_PATH;
 //
 //            PatchManager.getInstance().addPatch(patchPath);
 //            Log.d(TAG, "ipatch: " + patchPath + " added.");
 //        } catch (IOException e) {
-//            Log.e(TAG, "out.ipatch", e);
+//            Log.e(TAG, "out.apatch", e);
 //        }
 
         // FIXME: 这是一个测试用例：
