@@ -35,8 +35,7 @@
 
 // jni.h 中的实现，在 Art 虚拟机中的目录是 art/runtime/jni/ 目录下，例如：art/runtime/jni/jni_internal.cc
 
-// TODO:
-//  dex diff 问题
+// dex diff
 
 // iwatch 思考的问题点 - done
 // 1. 需要加锁 + 条件变量来保护？？？？？？难做到......

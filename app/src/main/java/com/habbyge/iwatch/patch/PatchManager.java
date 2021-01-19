@@ -102,25 +102,6 @@ public final class PatchManager {
     }
 
     /**
-     * load all patch, call when application start，and fix all classes and methods
-     */
-    public void loadPatch() {
-        if (mPatch == null || !mPatch.canPatch()) {
-            resetAllPatch();
-            return;
-        }
-
-        mClassLoader = mContext.getClassLoader();
-
-        List<String> classes;
-        Set<String> patchNames = mPatch.getPatchNames();
-        for (String patchName : patchNames) {
-            classes = mPatch.getClasses(patchName);
-            mIWatch.fix(mPatch.getFile(), mContext.getClassLoader(), classes);
-        }
-    }
-
-    /**
      * 实时加载补丁、生效函数接口
      *
      * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
@@ -147,27 +128,20 @@ public final class PatchManager {
         }
     }
 
-    /**
-     * load patch, call when plugin be loaded. used for plugin architecture.</br>
-     * <p>
-     * need name and classloader of the plugin
-     *
-     * @param patchName   patch name
-     * @param classLoader classloader
-     */
-    public void loadPatch(String patchName, ClassLoader classLoader) {
+    public void loadPatch(ClassLoader classLoader) {
         if (mPatch == null || !mPatch.canPatch()) {
             resetAllPatch();
             return;
         }
 
         mClassLoader = classLoader;
-        List<String> classes; // 该补丁文件(patchName)中所有的class
-        Set<String> patchNames = mPatch.getPatchNames();
-        if (patchNames.contains(patchName)) {
-            classes = mPatch.getClasses(patchName);
-            mIWatch.fix(mPatch.getFile(), classLoader, classes);
+        List<String> classes = mPatch.getClasses();
+        if (classes == null || classes.isEmpty()) {
+            resetAllPatch();
+            mPatch = null;
+            return;
         }
+        mIWatch.fix(mPatch.getFile(), classLoader, classes);
     }
 
     private void initIWatch(Context context) {
@@ -180,14 +154,16 @@ public final class PatchManager {
      */
     private void resetAllPatch() {
         mIWatch.unhookAllMethod(); // 恢复原始函数
-        cleanPatch();             // 删除所有补丁
+        cleanPatch();              // 删除所有补丁
     }
 
     private void initPatchs() {
         File[] files = mPatchDir.listFiles();
         if (files == null || files.length <= 0) {
+            Log.i(TAG, "initPatchs, failure: patch files is NULL !");
             return;
         }
+        // 补丁 "从新到旧" 排序，只是用最新的补丁包，也就是说一个用户app只支持一个补丁
         Arrays.sort(files, new Comparator<File>() {
             @Override
             public int compare(File f1, File f2) {
@@ -205,8 +181,30 @@ public final class PatchManager {
         if (!success) {
             resetAllPatch();
             mPatch = null;
+            Log.e(TAG, "initPatchs, failure: all patch files is illegal !");
+            return;
         }
-        Log.i(TAG, "initPatchs, success=" + success);
+
+        boolean loadSuccess = loadPatch();
+        Log.i(TAG, "initPatchs, success: " + loadSuccess);
+    }
+
+    /**
+     * load all patch, call when application start，and fix all classes and methods
+     */
+    private boolean loadPatch() {
+        if (mPatch == null) {
+            return false;
+        }
+        mClassLoader = mContext.getClassLoader();
+        List<String> classes = mPatch.getClasses();
+        if (classes == null || classes.isEmpty()) {
+            resetAllPatch();
+            mPatch = null;
+            return false;
+        }
+        mIWatch.fix(mPatch.getFile(), mContext.getClassLoader(), classes);
+        return true;
     }
 
     /**
@@ -214,19 +212,15 @@ public final class PatchManager {
      * @param patch patch
      */
     private void loadPatch(Patch patch) {
-        Set<String> patchNames = patch.getPatchNames();
-        ClassLoader classLoader;
-        List<String> classes;
-        for (String patchName : patchNames) {
-            if (mClassLoader == null) {
-                classLoader = mContext.getClassLoader();
-            } else {
-                classLoader = mClassLoader;
+        ClassLoader classLoader = mClassLoader != null ? mClassLoader : mContext.getClassLoader();
+        if (classLoader != null) {
+            List<String> classes = patch.getClasses();
+            if (classes == null || classes.isEmpty()) {
+                resetAllPatch();
+                mPatch = null;
+                return;
             }
-            if (classLoader != null) {
-                classes = patch.getClasses(patchName);
-                mIWatch.fix(patch.getFile(), classLoader, classes);
-            }
+            mIWatch.fix(patch.getFile(), classLoader, classes);
         }
     }
 

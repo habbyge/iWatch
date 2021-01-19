@@ -11,21 +11,17 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-/**
+/**s
  * Created by habbyge on 2021/1/5.
  */
 public class Patch implements Comparable<Patch> {
     private static final String ENTRY_NAME = "META-INF/PATCH.MF";
-    private static final String CLASSES = "-Classes";
     private static final String PATCH_CLASSES = "Patch-Classes";
     private static final String CREATED_TIME = "Created-Time";
     private static final String PATCH_NAME = "Patch-Name";
@@ -39,10 +35,8 @@ public class Patch implements Comparable<Patch> {
     private String mVersion;
     private String mBaseAppVersion;
 
-    /**
-     * classes of patch: <PatchName, List<该patch文件中包括的所有class文件名>>
-     */
-    private Map<String, List<String>> mClassesMap;
+    // 该 Patch 中包含的所有Class
+    List<String> mClasses = null;
 
     public Patch(File file) throws IOException {
         mFile = file;
@@ -71,20 +65,14 @@ public class Patch implements Comparable<Patch> {
             mVersion = mainAttributes.getValue(PATCH_VERSION);
             mBaseAppVersion = mainAttributes.getValue(BASE_APP_VERSION);
 
-            mClassesMap = new HashMap<String, List<String>>();
             Attributes.Name attrName;
             String name;
-            List<String> classes;
             for (Object attr : mainAttributes.keySet()) {
-                attrName = (Attributes.Name) attr;
+                attrName = ((Attributes.Name) attr);
                 name = attrName.toString();
-                if (name.endsWith(CLASSES)) {
-                    classes = Arrays.asList(mainAttributes.getValue(attrName).split(","));
-                    if (name.equalsIgnoreCase(PATCH_CLASSES)) {
-                        mClassesMap.put(mName, classes);
-                    } else {
-                        mClassesMap.put(name.trim().substring(0, name.length() - 8), classes);
-                    }
+                if (PATCH_CLASSES.equalsIgnoreCase(name)) {
+                    mClasses = Arrays.asList(mainAttributes.getValue(attrName).split(","));
+                    break;
                 }
             }
         } catch (IOException | ParseException e) {
@@ -107,29 +95,13 @@ public class Patch implements Comparable<Patch> {
         return mFile;
     }
 
-    public Set<String> getPatchNames() {
-        return mClassesMap.keySet();
-    }
-
-    public List<String> getClasses(String patchName) {
-        return mClassesMap.get(patchName);
+    @Nullable
+    public List<String> getClasses() {
+        return mClasses;
     }
 
     public Date getTime() {
         return mTime;
-    }
-
-    @Nullable
-    public String getPatchVersion() {
-        return mVersion;
-    }
-
-    /**
-     * @return 该 patch 支持的 app 版本，即该补丁是基于哪个基线版本打出来的
-     */
-    @Nullable
-    public String getBaseAppVersion() {
-        return mBaseAppVersion;
     }
 
     @Override
