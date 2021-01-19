@@ -17,7 +17,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-/**s
+/**
  * Created by habbyge on 2021/1/5.
  */
 public class Patch implements Comparable<Patch> {
