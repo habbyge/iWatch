@@ -85,13 +85,22 @@ public final class IWatch {
         doFix(patchFile, cl, classNames);
     }
 
+    /**
+     * 修复函数的主要任务：
+     * 1. 校验补丁包：比对补丁包的签名和应用的签名是否一致
+     * 2. 使用 DexFile 和 自定义ClassLoader 来加载补丁包中class文件，与 DexClassLoader加载原理类似，而且
+     *    DexClassLoader 内部的加载逻辑也是使用了DexFile来进行操作的，而这里为什么要进行加载操作呢？因为我们
+     *    需要获取补丁类中需要修复的方法名称，而这个方法名称是通过修复方法的注解来获取到的，所以我们得先进行类的
+     *    加载然后获取到他的方法信息，最后通过分析注解获取方法名，这里用的是反射机制来进行操作的。
+     * 3.
+     */
     private void doFix(File patchFile, ClassLoader cl, List<String> classNames) {
         if (patchFile == null || !patchFile.exists()) {
             Log.e(TAG, "doFix, patchFile NOT exists");
             return;
         }
 
-        if (!mSecurityChecker.verifyApk(patchFile)) { // security check fail
+        if (!mSecurityChecker.verifyApk(patchFile)) { // 检查patch包完整性、签名
             Log.e(TAG, "doFix, mSecurityChecker.verifyApk failure: " + patchFile.getAbsolutePath());
             return;
         }
@@ -117,6 +126,7 @@ public final class IWatch {
                                                      + optfile.getAbsolutePath());
 
             // libcore/dalvik/src/main/java/dalvik/system/DexFile.java
+            // 使用 DexFile 来加载 patch 包文件，所以补丁包其实是一个包装了的dex文件
             final DexFile dexFile = DexFile.loadDex(patchFile.getAbsolutePath(),
                                                     optfile.getAbsolutePath(),
                                                     Context.MODE_PRIVATE);
@@ -126,7 +136,7 @@ public final class IWatch {
             }
 
             // 双亲机制，这里也是关键点之1/2，classLoader 决定的是该 补丁.apk 中被加载到内存中的class，
-            // 是否能够被原apk识别。
+            // 是否能够被原apk识别，技术原理与 DexClassLoader 相似.
             ClassLoader patchClassLoader = new ClassLoader(cl) {
 
                 @Override
