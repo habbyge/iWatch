@@ -15,18 +15,22 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-// TODO: 除了提供 hook 功能之外，还需要提供 一键恢复出厂设置 的功能，免得出大坑。
+// 需要注意:
+// 1. 除了提供 hook 功能之外，还需要提供 一键恢复出厂设置 的功能，免得出大坑：只要补丁版本与Base App版本不匹配，
+//    即恢复所有原始方法
 
-// TODO: iWatch 立项，还有一个理由：我们数据开发组接需求，是以周为单位，并不跟主线版本(包括tinker版本)，
-//  那么就必然需要一个 "热补丁" 来实时发包，另外，还必须与 tinker 互斥；
+// 2. iWatch 立项，还有两个理由：
+//    理由1: 我们数据开发组接需求，是以周为单位，并不跟主线版本(包括tinker版本)，那么就必然需要一个 "热补丁" 来
+//    实时发包，以达到跟你web/后台服务相同实时发布的功能，另外，还必须与 tinker 互斥；
+//    理由2: 应对数据上报需求的碎片化：时间上、需求本身都很碎;
 
-// TODO: 1/15/21 需要考虑 不同上报需求提出的时间是碎片化的，因此补丁也可以是多个同时生效，此时考虑是一个app版本
-//  只使用一个补丁好？还是一个app版本对应多个不同的补丁生效？
-//  从 结果来看，"一对多" 更好，但是有个问题是，如果两个不同的上报需求，需要同时修改同一个函数，那么就会因为不知道其他
-//  补丁的情况，而发生覆盖情况，因此从实用角度来看，"一对一" 模式更好。所以这里选择 "一对一"模式.
-//  一个用户(微信App)只让一个补丁生效，不允许多补丁存在，是 "一对一" 的关系.
+// 3. 需要考虑 不同上报需求提出的时间是碎片化的，因此补丁也可以是多个同时生效，此时考虑是一个app版本只使用一个补丁
+//    好？还是一个app版本对应多个不同的补丁生效？
+//    从 结果来看，"一对多" 更好，但是有个问题是，如果两个不同的上报需求，需要同时修改同一个函数，那么就会因为不知
+//    道其他补丁的情况，而发生覆盖情况，因此从实用角度来看，"一对一" 模式更好。所以这里选择 "一对一"模式.
+//    一个用户(微信App)只让一个补丁生效，不允许多补丁存在，是 "一对一" 的关系.
 
-// TODO: 需要考虑随时存在的 tinker 或 正常升级 导致的 微信 app 版本号改变情况，这个情况微信会重启，因此不会有问题.
+// 4. 需要考虑随时存在的 tinker 或 正常升级 导致的 微信 app 版本号改变情况，这个情况微信会重启，因此不会有问题.
 
 /**
  * Created by habbyge on 2021/1/5.
@@ -125,22 +129,6 @@ public final class PatchManager {
         if (success && mPatch != null) {
             loadPatch(mPatch);
         }
-    }
-
-    public void loadPatch(ClassLoader classLoader) {
-        if (mPatch == null || !mPatch.canPatch()) {
-            resetAllPatch();
-            return;
-        }
-
-        mClassLoader = classLoader;
-        List<String> classes = mPatch.getClasses();
-        if (classes == null || classes.isEmpty()) {
-            resetAllPatch();
-            mPatch = null;
-            return;
-        }
-        mIWatch.fix(mPatch.getFile(), classLoader, classes);
     }
 
     private void initIWatch(Context context) {

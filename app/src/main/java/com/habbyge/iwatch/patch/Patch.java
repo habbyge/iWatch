@@ -32,7 +32,7 @@ public class Patch implements Comparable<Patch> {
     private final File mFile;
     private String mName;
     private Date mTime;
-    private String mVersion;
+    private String mPatchVersion;
     private String mBaseAppVersion;
 
     // 该 Patch 中包含的所有Class
@@ -62,7 +62,7 @@ public class Patch implements Comparable<Patch> {
             mTime = new Date();
             DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME));
 
-            mVersion = mainAttributes.getValue(PATCH_VERSION);
+            mPatchVersion = mainAttributes.getValue(PATCH_VERSION);
             mBaseAppVersion = mainAttributes.getValue(BASE_APP_VERSION);
 
             Attributes.Name attrName;
