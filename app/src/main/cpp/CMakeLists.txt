@@ -13,7 +13,8 @@ set(SRC_LIST iwatch.cpp
              iwatch_impl.cpp
              ArtRestore.cpp
              field_hook.cpp
-             common/elfop.cpp)
+             common/elfop.cpp
+             common/elf_op.cpp)
 
 # 指定so生成到libs目录
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../libs/${ANDROID_ABI})
@@ -56,6 +57,7 @@ add_library(
 # Set the header files directory.
 include_directories(
     common/elfop.h
+    common/elf_op.h
     common/log.h
     common/constants.h
 
