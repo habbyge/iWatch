@@ -9,26 +9,8 @@ public final class ReflectUtil {
     private static final String TAG = "iWatch.ReflectUtil";
 
     public static final ClassLoader BOOTCLASSLOADER = ClassLoader.getSystemClassLoader();
-
-    /**
-     * <p>The package separator character: <code>'&#x2e;' == {@value}</code>.</p>
-     */
     public static final char PACKAGE_SEPARATOR_CHAR = '.';
-
-    /**
-     * <p>The package separator String: {@code "&#x2e;"}.</p>
-     */
-    public static final String PACKAGE_SEPARATOR = String.valueOf(PACKAGE_SEPARATOR_CHAR);
-
-    /**
-     * <p>The inner class separator character: <code>'$' == {@value}</code>.</p>
-     */
     public static final char INNER_CLASS_SEPARATOR_CHAR = '$';
-
-    /**
-     * <p>The inner class separator String: {@code "$"}.</p>
-     */
-    public static final String INNER_CLASS_SEPARATOR = String.valueOf(INNER_CLASS_SEPARATOR_CHAR);
 
     private ReflectUtil() {
     }
@@ -139,12 +121,6 @@ public final class ReflectUtil {
         }
     }
 
-    /**
-     * Converts a class name to a JLS style class name.
-     *
-     * @param className  the class name
-     * @return the converted name
-     */
     private static String toCanonicalName(String className) {
         className = StringUtil.deleteWhitespace(className);
         if (className == null) {
@@ -161,11 +137,6 @@ public final class ReflectUtil {
         return className;
     }
 
-    /**
-     * Thrown when a class loader is unable to find a class. Unlike {@link ClassNotFoundException},
-     * callers are not forced to explicitly catch this. If uncaught, the error will be passed to the
-     * next caller in the stack.
-     */
     public static final class ClassNotFoundError extends Error {
         private static final long serialVersionUID = -1070936889459514628L;
 
