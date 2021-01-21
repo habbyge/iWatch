@@ -340,7 +340,9 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
   jboolean isCopy;
   const char* srcClassStr = env->GetStringUTFChars(srcClass, &isCopy);
   std::string _class(srcClassStr);
-  std::replace(_class.begin(), _class.end(), '.', '/');
+  std::replace_if(_class.begin(), _class.end(), [](const char& ch)->bool {
+    return '.' == ch;
+  }, '/');
   env->ReleaseStringUTFChars(srcClass, srcClassStr);
 
   auto srcFuncStr = env->GetStringUTFChars(srcName, &isCopy);
@@ -430,7 +432,9 @@ long method_hookv2_impl(JNIEnv* env,
   jboolean isCopy;
   const char* class1Str = env->GetStringUTFChars(java_class1, &isCopy);
   std::string _class1(class1Str);
-  std::replace(_class1.begin(), _class1.end(), '.', '/');
+  std::replace_if(_class1.begin(), _class1.end(), [](const char& ch)->bool {
+    return '.' == ch;
+  }, '/');
   env->ReleaseStringUTFChars(java_class1, class1Str);
 
   const char* funcStr1 = env->GetStringUTFChars(name1, &isCopy);
@@ -466,7 +470,9 @@ long method_hookv2_impl(JNIEnv* env,
   const char* class2 = env->GetStringUTFChars(java_class2, &isCopy);
   jclass jclass2;
   std::string classStr2(class2);
-  std::replace(classStr2.begin(), classStr2.end(), '.', '/');
+  std::replace_if(classStr2.begin(), classStr2.end(), [](const char& ch)->bool {
+    return '.' == ch;
+  }, '/');
   try {
     jclass2 = env->FindClass(classStr2.c_str());
   } catch (std::exception& e) {
@@ -516,7 +522,9 @@ void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring s
   const char* sigStr = env->GetStringUTFChars(sig, &isCopy);
 
   std::string _class(classStr);
-  std::replace(_class.begin(), _class.end(), '.', '/');
+  std::replace_if(_class.begin(), _class.end(), [](const char& ch)->bool {
+    return '.' == ch;
+  }, '/');
   std::string _method(nameStr);
   std::string _descripor(sigStr); // 必须这样，才是左值
   artRestore->restoreArtMethod(_class, _method, _descripor);
@@ -580,7 +588,9 @@ long class_hook_impl(JNIEnv* env, jstring clazzName) {
   jboolean isCopy;
   const char* kClassName = env->GetStringUTFChars(clazzName, &isCopy);
   std::string kClassNameStr(kClassName);
-  std::replace(kClassNameStr.begin(), kClassNameStr.end(), '.', '/');
+  std::replace_if(kClassNameStr.begin(), kClassNameStr.end(), [](const char& ch)->bool {
+    return '.' == ch;
+  }, '/');
   logd("hookClass, className=%s", kClassNameStr.c_str());
   jclass kClass = env->FindClass(kClassNameStr.c_str());
   env->ReleaseStringUTFChars(clazzName, kClassName);
