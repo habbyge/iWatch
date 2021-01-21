@@ -64,49 +64,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 //                printf("Mali");
                 printf("Mali_Mango_Pidan_Habby");
-
-//                HookManager.get().fixMethod(
-//                        TestCase0.class, "printf", new Class<?>[] {String.class},
-//                        Fix0.class, "printf_Hook", new Class<?>[] {String.class});
-
-//                HookManager.get().fixMethod(
-//                        MainActivity2.class, "onResume", null,
-//                        MainActivity2Fix.class, "onResume", null);
-
-//                try {
-//                    Class<?> srcClass = Class.forName("com.habbyge.iwatch.MainActivity");
-//                    Class<?> dstClass = Class.forName("com.habbyge.iwatch.test.MainActivity2");
-//                    HookManager.get().fixMethod(
-//                            srcClass, "printf", new Class<?>[]{String.class},
-//                            dstClass, "printf_Hook", new Class<?>[]{String.class});
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-
-//                try {
-//                    Class<?> srcClass = Class.forName(
-//                            "com.habbyge.iwatch.MainActivity",
-//                            true, getClassLoader());
-//                    Class<?> dstClass = Class.forName(
-//                            "com.habbyge.iwatch.test.MainActivity2",
-//                            true, getClassLoader());
-//                    HookManager.get().fixMethod(
-//                            srcClass, "printf", new Class<?>[]{String.class},
-//                            dstClass, "printf_hook", new Class<?>[]{String.class});
-//                } catch (Exception e) {
-//                    Log.e(TAG, "hook fail: " + e.getMessage());
-//                }
-
-//                try {
-//                    Class<?> srcClass = MainActivity.class;
-//                    Class<?> dstClass = MainActivity2.class;
-//
-//                    HookManager.get().fixMethod(
-//                            srcClass, "printf", new Class<?>[]{String.class},
-//                            dstClass, "printf_hook", new Class<?>[]{String.class});
-//                } catch (Exception e) {
-//                    Log.e(TAG, "hook fail: " + e.getMessage());
-//                }
             }
         });
 
@@ -114,21 +71,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-//                try {
-//                    Field srcField = MainActivity.class.getDeclaredField("iStr");
-//                    srcField.setAccessible(true);
-//                    Field dstField = MainActivity.class.getDeclaredField("iStr_HOOK");
-//                    dstField.setAccessible(true);
-//                    HookManager.get().hookField(srcField, dstField);
-//
-//                    Field srcField1 = MainActivity.class.getDeclaredField("ix");
-//                    srcField1.setAccessible(true);
-//                    Field dstField1 = MainActivity.class.getDeclaredField("ix_HOOK");
-//                    dstField1.setAccessible(true);
-//                    HookManager.get().hookField(srcField1, dstField1);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
             }
         });
 
@@ -160,12 +102,6 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "printf: " + text);
         ix = 100;
     }
-
-//    @SuppressWarnings("all")
-//    public void printf_Hook(String iStr) {
-//        Log.i(TAG, "printf-Hook: " + iStr);
-//    }
-
 
     @Override
     protected void onResume() {
