@@ -8,59 +8,7 @@ import java.lang.reflect.Method;
 public final class ReflectUtil {
     private static final String TAG = "iWatch.ReflectUtil";
 
-    public static final ClassLoader BOOTCLASSLOADER = ClassLoader.getSystemClassLoader();
-    public static final char PACKAGE_SEPARATOR_CHAR = '.';
-    public static final char INNER_CLASS_SEPARATOR_CHAR = '$';
-
     private ReflectUtil() {
-    }
-
-    public static Class<?> findClass(String className, ClassLoader classLoader) {
-        if (classLoader == null)
-            classLoader = BOOTCLASSLOADER;
-        try {
-            return getClass(classLoader, className, false);
-        } catch (ClassNotFoundException e) {
-            Log.e(TAG, "findClass", e);
-            return null;
-        }
-    }
-
-    // Class loading
-    // ----------------------------------------------------------------------
-    /**
-     * Returns the class represented by {@code className} using the
-     * {@code classLoader}.  This implementation supports the syntaxes
-     * "{@code java.util.Map.Entry[]}", "{@code java.util.Map$Entry[]}",
-     * "{@code [Ljava.util.Map.Entry;}", and "{@code [Ljava.util.Map$Entry;}".
-     *
-     * @param classLoader  the class loader to use to load the class
-     * @param className  the class name
-     * @param initialize  whether the class must be initialized
-     * @return the class represented by {@code className} using the {@code classLoader}
-     * @throws ClassNotFoundException if the class is not found
-     */
-    public static Class<?> getClass(ClassLoader classLoader, String className,
-                                    boolean initialize) throws ClassNotFoundException {
-
-        try {
-            return Class.forName(toCanonicalName(className), initialize, classLoader);
-        } catch (ClassNotFoundException ex) {
-            // allow path separators (.) as inner class name separators
-            int lastDotIndex = className.lastIndexOf(PACKAGE_SEPARATOR_CHAR);
-
-            if (lastDotIndex != -1) {
-                try {
-                    return getClass(classLoader, className.substring(0, lastDotIndex) +
-                                    INNER_CLASS_SEPARATOR_CHAR + className.substring(lastDotIndex + 1),
-                                    initialize);
-                } catch (ClassNotFoundException ex2) { // NOPMD
-                    // ignore exception
-                }
-            }
-
-            throw ex;
-        }
     }
 
     public static Field findField(Class<?> clazz, String fieldName) {
@@ -103,7 +51,7 @@ public final class ReflectUtil {
     }
 
     private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName)
-                                                throws NoSuchFieldException {
+            throws NoSuchFieldException {
 
         try {
             return clazz.getDeclaredField(fieldName);
@@ -115,37 +63,10 @@ public final class ReflectUtil {
 
                 try {
                     return clazz.getDeclaredField(fieldName);
-                } catch (NoSuchFieldException ignored) {}
+                } catch (NoSuchFieldException ignored) {
+                }
             }
             throw e;
-        }
-    }
-
-    private static String toCanonicalName(String className) {
-        className = StringUtil.deleteWhitespace(className);
-        if (className == null) {
-            throw new NullPointerException("className must not be null.");
-        } else if (className.endsWith("[]")) { // 数组
-            StringBuilder classNameBuffer = new StringBuilder();
-            while (className.endsWith("[]")) { // 可能是多重数组
-                className = className.substring(0, className.length() - 2);
-                classNameBuffer.append("[");
-            }
-            classNameBuffer.append("L").append(className).append(";");
-            className = classNameBuffer.toString();
-        }
-        return className;
-    }
-
-    public static final class ClassNotFoundError extends Error {
-        private static final long serialVersionUID = -1070936889459514628L;
-
-        public ClassNotFoundError(Throwable cause) {
-            super(cause);
-        }
-
-        public ClassNotFoundError(String detailMessage, Throwable cause) {
-            super(detailMessage, cause);
         }
     }
 }

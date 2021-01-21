@@ -52,11 +52,12 @@ public final class Type {
 
     private static void getDescriptor(final StringBuilder buf, final Class<?> c) {
         Class<?> d = c;
-        if (d == null) {
-            return;
-        }
 
         while (true) {
+            if (d == null) {
+                return;
+            }
+
             if (d.isPrimitive()) {
                 char car;
                 if (d == Integer.TYPE) {

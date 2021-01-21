@@ -1,6 +1,5 @@
 package com.habbyge.iwatch.util;
 
-//@Immutable
 public class StringUtil {
     private static final int PAD_LIMIT = 8192;
 
@@ -14,24 +13,6 @@ public class StringUtil {
 
     public static boolean isNotEmpty(CharSequence cs) {
         return !StringUtil.isEmpty(cs);
-    }
-
-    public static String deleteWhitespace(String str) {
-        if (isEmpty(str)) {
-            return str;
-        }
-        int sz = str.length();
-        char[] chs = new char[sz];
-        int count = 0;
-        for (int i = 0; i < sz; i++) {
-            if (!Character.isWhitespace(str.charAt(i))) {
-                chs[count++] = str.charAt(i);
-            }
-        }
-        if (count == sz) {
-            return str;
-        }
-        return new String(chs, 0, count);
     }
 
     public static String removeEnd(String str, String remove) {
