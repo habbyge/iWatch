@@ -11,8 +11,8 @@ void* Elf::dlopen_elf(const char* filename, int flags) {
   if (get_sdk_level() >= 24) {
     return _dlopen(filename, flags);
   } else {
-    load_addr_ptr = dlopen(filename, flags);
-    return load_addr_ptr;
+    this->load_addr_ptr = dlopen(filename, flags);
+    return this->load_addr_ptr;
   }
 }
 
@@ -20,7 +20,7 @@ void* Elf::dlsym_elf(const char* symbol) {
   if (get_sdk_level() >= 24) {
     return _dlsym(symbol);
   } else {
-    return dlsym(load_addr_ptr, symbol);
+    return dlsym(this->load_addr_ptr, symbol);
   }
 }
 
@@ -28,7 +28,7 @@ int Elf::dlclose_elf() {
   if (get_sdk_level() >= 24) {
     return _dlclose();
   } else {
-    return dlclose(load_addr_ptr);
+    return dlclose(this->load_addr_ptr);
   }
 }
 
@@ -108,17 +108,17 @@ void* Elf::_dlopen(const char* filename, int flags) {
  * 2. sym->st_value 字段表示的是该字符对应的地址偏移.
  */
 void* Elf::_dlsym(const char* symbol_name) {
-  auto sym = reinterpret_cast<Elf_Sym*>(dynsym);
-  char* strings = reinterpret_cast<char*>(dynstr);
+  auto sym = reinterpret_cast<Elf_Sym*>(this->dynsym);
+  char* strings = reinterpret_cast<char*>(this->dynstr);
 
-  for (int i = 0; i < nsyms; ++i, ++sym) { // 遍历符号表
+  for (int i = 0; i < this->nsyms; ++i, ++sym) { // 遍历符号表
     if (strcmp(strings + sym->st_name, symbol_name) == 0) { // 找到该符号(函数符号)
       // NB: sym->st_value is an offset into the section for relocatables,
       // but a VMA for shared libs or exe files, so we have to subtract
       // the bias.
       // 在so库或可执行文件中，sym->st_value 表示符号的地址
       // ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset
-      void* ret = (char*) load_addr_ptr + sym->st_value - bias;
+      void* ret = (char*) this->load_addr_ptr + sym->st_value - this->bias;
       log_info("%s found at %p", symbol_name, ret);
       return ret;
     }
@@ -144,15 +144,15 @@ int Elf::get_sdk_level() {
 }
 
 int Elf::_dlclose() {
-  if (dynsym != nullptr) {
-    free(dynsym);    /* we're saving dynsym and dynstr */
-    dynsym = nullptr;
+  if (this->dynsym != nullptr) {
+    free(this->dynsym);    /* we're saving dynsym and dynstr */
+    this->dynsym = nullptr;
   }
-  if (dynstr != nullptr) {
-    free(dynstr);    /* from library file just in case */
-    dynstr = nullptr;
+  if (this->dynstr != nullptr) {
+    free(this->dynstr);    /* from library file just in case */
+    this->dynstr = nullptr;
   }
-  load_addr_ptr = nullptr;
+  this->load_addr_ptr = nullptr;
   return I_OK;
 }
 
@@ -248,7 +248,7 @@ void* Elf::initElf(const char* libpath) {
   }
   // FIXME：这里使用 mmap 的目的是为了获取到 libart.so 这个 elf 文件内各个符号的偏移量(基地址不同，但偏移量相同)
 
-  load_addr_ptr = (void*) load_addr;   // so库加载到该进程中的基地址
+  this->load_addr_ptr = (void*) load_addr;   // so库加载到该进程中的基地址
   shoff = ((char*) elf) + elf->e_shoff; // 节头表偏移量
 
   // 遍历节头表(Section Header Table)
@@ -258,39 +258,39 @@ void* Elf::initElf(const char* libpath) {
 
     switch (sh->sh_type) {
     case SHT_DYNSYM: { // 符号表 .dynsym
-      if (dynsym != nullptr) {
+      if (this->dynsym != nullptr) {
         fatal("%s: duplicate DYNSYM sections", libpath); /* .dynsym */
       }
-      dynsym = malloc(sh->sh_size);
-      if (dynsym == nullptr) {
+      this->dynsym = malloc(sh->sh_size);
+      if (this->dynsym == nullptr) {
         fatal("%s: no memory for .dynsym", libpath);
       }
-      memcpy(dynsym, ((char*) elf) + sh->sh_offset, sh->sh_size);
-      nsyms = sh->sh_size / sizeof(Elf_Sym);
+      memcpy(this->dynsym, ((char*) elf) + sh->sh_offset, sh->sh_size);
+      this->nsyms = sh->sh_size / sizeof(Elf_Sym);
     }
     break;
 
     case SHT_STRTAB: { // 字符串(名字)表 .dynstr
-      if (dynstr != nullptr) {
+      if (this->dynstr != nullptr) {
         break;    /* .dynstr is guaranteed to be the first STRTAB */
       }
-      dynstr = malloc(sh->sh_size);
-      if (dynstr == nullptr) {
+      this->dynstr = malloc(sh->sh_size);
+      if (this->dynstr == nullptr) {
         fatal("%s: no memory for .dynstr", libpath);
       }
-      memcpy(dynstr, ((char*) elf) + sh->sh_offset, sh->sh_size);
+      memcpy(this->dynstr, ((char*) elf) + sh->sh_offset, sh->sh_size);
     }
     break;
 
     case SHT_PROGBITS: {
-      if (dynstr == nullptr || dynsym == nullptr) {
+      if (this->dynstr == nullptr || this->dynsym == nullptr) {
         break;
       }
       // won't even bother checking against the section name
       // - sh_addr: 该节在 elf 文件被加载到进程地址空间中后的偏移量，其在进程中的真实地址是:
       //            load_addr + sh->sh_addr.
       // - sh_offset 在 elf 文件中的偏移量
-      bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset; // TODO: why ?
+      this->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset; // TODO: why ?
       i = elf->e_shnum;  /* exit for */
     }
     break;
@@ -301,13 +301,13 @@ void* Elf::initElf(const char* libpath) {
   munmap(elf, size); // 释放elf在mmap空间的映射
   elf = nullptr;
 
-  if (dynstr == nullptr || dynsym == nullptr) {
+  if (this->dynstr == nullptr || this->dynsym == nullptr) {
     fatal("dynamic sections not found in %s", libpath);
   }
 
 #undef fatal
-  log_dbg("%s: ok, dynsym = %p, dynstr = %p", libpath, dynsym, dynstr);
-  return load_addr_ptr;
+  log_dbg("%s: ok, dynsym = %p, dynstr = %p", libpath, this->dynsym, this->dynstr);
+  return this->load_addr_ptr;
 
 err_exit:
   if (fd >= 0) {

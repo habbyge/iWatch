@@ -261,9 +261,9 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 //                                                  IsIndexId1, IsIndexId2);
 
 //    void* context = dlopen_elf("libart.so", RTLD_NOW);
-    void* context = elfOp->dlopen_elf("libart.so", RTLD_NOW);
-    logi("dlopen_elf: %p", context);
-    if (context == nullptr) {
+    void* so_addr = elfOp->dlopen_elf("libart.so", RTLD_NOW);
+    logi("dlopen_elf: %p", so_addr);
+    if (so_addr == nullptr) {
       return;
     }
 
@@ -298,10 +298,10 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     // 是：自己以 "从简的方式" 定义其对应的参数类型在art目录中的形式即可，再直白点就是：查看art虚拟机源代码，根据
     // 需要抄过来其实现即可。
     // 方案1：
-    initArtMethod1(env, context, m1, m2);
+    initArtMethod1(env, so_addr, m1, m2);
 
     // 方案2
-    initArtMethod2(env, context);
+    initArtMethod2(env, so_addr);
 
 //    dlclose_elf(context); // 释放
     elfOp->dlclose_elf(); // 释放
