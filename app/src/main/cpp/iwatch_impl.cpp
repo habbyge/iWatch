@@ -104,7 +104,8 @@ FromReflectedMethod_t FromReflectedMethod;
 FindMethodJNI_t FindMethodJNI;
 // 同时使用 方案1 和 方案2，哪个生效用哪里，双保险!!!!!!
 
-ArtRestore* artRestore;
+std::shared_ptr<Elf> elfOp = nullptr;
+std::shared_ptr<ArtRestore> artRestore = nullptr;
 
 /**
  * 方案1
@@ -136,7 +137,8 @@ static void* getArtMethod(JNIEnv* env, jclass java_class, const char* name, cons
 
 static void initArtMethod1(JNIEnv* env, void* context, jobject m1, jobject m2) {
   try {
-    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(dlsym_elf(context, FromReflectedMethod_Sym));
+//    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(dlsym_elf(context, FromReflectedMethod_Sym));
+    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(elfOp->dlsym_elf(FromReflectedMethod_Sym));
     logi("initArtMethod1, FromReflectedMethod=%p", FromReflectedMethod);
     void* artMethod1 = getArtMethod(env, m1);
     logi("initArtMethod1, method1=%p, %p", artMethod1, m1);
@@ -158,7 +160,8 @@ static void initArtMethod1(JNIEnv* env, void* context, jobject m1, jobject m2) {
 static void initArtMethod2(JNIEnv* env, void* context) {
   try {
     jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
-    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(context, FindMethodJNI_Sym));
+//    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(context, FindMethodJNI_Sym));
+    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(elfOp->dlsym_elf(FindMethodJNI_Sym));
     logi("initArtMethod2, FindMethodJNI=%p", FindMethodJNI);
     void* artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);
     logi("initArtMethod2, artMethod11=%p", artMethod11);
@@ -184,7 +187,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 
   env->GetJavaVM(&vm);
 
-  artRestore = new ArtRestore();
+  elfOp = std::make_shared<Elf>();
+  artRestore = std::make_shared<ArtRestore>();
 
   // art::mirror::ArtMethod
 //  auto artMethod11 = env->FromReflectedMethod(m1);
@@ -256,7 +260,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 //                                                  reinterpret_cast<uintptr_t>(methodid2),
 //                                                  IsIndexId1, IsIndexId2);
 
-    void* context = dlopen_elf("libart.so", RTLD_NOW);
+//    void* context = dlopen_elf("libart.so", RTLD_NOW);
+    void* context = elfOp->dlopen_elf("libart.so", RTLD_NOW);
     logi("dlopen_elf: %p", context);
     if (context == nullptr) {
       return;
@@ -298,7 +303,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     // 方案2
     initArtMethod2(env, context);
 
-    dlclose_elf(context); // 释放
+//    dlclose_elf(context); // 释放
+    elfOp->dlclose_elf(); // 释放
 
     /*artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);*/
 //    artMethodSize = sizeof(art::mirror::ArtMethod_11); // 40-bytes

@@ -29,9 +29,9 @@ static int _dlclose(void* handle) {
   return I_OK;
 }
 
-/** 
+/**
  * 缺点: flags are ignored
- * 
+ *
  * API>=24 的 Android 系统，Google 限制不能使用dl库，那么可以通过 /proc/pid/maps 文件，
  * 来查找到对应so库文件，被加载到该进程中的基地址，从而把该文件使用 mmap() 映射到内存中，这里
  * 是为了获取 elf 文件中每个符号的相对偏移量，再加上 基地址，就是在进程地址空间中真正的地址;

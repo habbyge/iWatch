@@ -14,7 +14,8 @@
 #include <stddef.h>
 
 #include "common/log.h"
-#include "common/elfop.h"
+//#include "common/elfop.h"
+#include "common/elf_op.h"
 #include "art/art_method_11.h"
 #include "art/ScopedFastNativeObjectAccess.h"
 #include "art/scoped_thread_state_change.h"

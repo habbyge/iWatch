@@ -72,8 +72,8 @@ private:
   int _dlclose();
   void* _dlopen(const char* filename, int flags);
   void* _dlsym(const char* symbol_name);
-  int get_sdk_level();
-  const char* _dlerror();
+  static int get_sdk_level();
+  static const char* _dlerror();
 };
 
 #ifdef __cplusplus
