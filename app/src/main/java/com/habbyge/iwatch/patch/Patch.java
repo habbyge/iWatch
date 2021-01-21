@@ -59,8 +59,7 @@ public class Patch implements Comparable<Patch> {
             Attributes mainAttributes = manifest.getMainAttributes();
             mName = mainAttributes.getValue(PATCH_NAME);
             /*mTime = new Date(mainAttributes.getValue(CREATED_TIME));*/
-            mTime = new Date();
-            DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME));
+            mTime = DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME));
 
             mPatchVersion = mainAttributes.getValue(PATCH_VERSION);
             mBaseAppVersion = mainAttributes.getValue(BASE_APP_VERSION);
