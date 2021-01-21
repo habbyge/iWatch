@@ -44,7 +44,7 @@
  * 加载 Elf 文件到mmap后，解析后的结果
  */
 typedef struct elf_ctx {
-  void* load_addr; // so库文件加载到进程中的基地址，来自 /proc/pid/maps
+  void* load_addr; // so库文件加载到进程中的基地址，来自 /proc/pid/maps，这里无需释放
 
   void* dynstr; // 名称字符串表(Section)
 

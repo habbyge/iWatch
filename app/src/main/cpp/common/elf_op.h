@@ -50,7 +50,7 @@ class Elf {
 public:
   Elf() : load_addr_ptr(nullptr), dynstr(nullptr), dynsym(nullptr), nsyms(0), bias(0) {}
   ~Elf() {
-    _dlclose();
+    dlclose_elf();
   }
 
   void* dlopen_elf(const char* filename, int flags);
@@ -59,7 +59,7 @@ public:
   const char* dlerror_elf();
 
 private:
-  void* load_addr_ptr; // so库文件加载到进程中的基地址，来自 /proc/pid/maps
+  void* load_addr_ptr; // so库文件加载到进程中的基地址，来自 /proc/pid/maps，这里无需释放 just an address
 
   void* dynstr; // 名称字符串表(Section)
 

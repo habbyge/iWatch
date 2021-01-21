@@ -144,12 +144,15 @@ int Elf::get_sdk_level() {
 }
 
 int Elf::_dlclose() {
-  if (dynsym) {
+  if (dynsym != nullptr) {
     free(dynsym);    /* we're saving dynsym and dynstr */
+    dynsym = nullptr;
   }
-  if (dynstr) {
+  if (dynstr != nullptr) {
     free(dynstr);    /* from library file just in case */
+    dynstr = nullptr;
   }
+  load_addr_ptr = nullptr;
   return I_OK;
 }
 
