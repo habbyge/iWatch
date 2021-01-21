@@ -1,23 +1,23 @@
-package com.habbyge.iwatch;
+package com.habbyge.iwatch.test;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.Keep;
-import androidx.appcompat.app.AppCompatActivity;
 
+import com.habbyge.iwatch.MethodHook;
+import com.habbyge.iwatch.R;
 import com.habbyge.iwatch.patch.PatchManager;
-import com.habbyge.iwatch.test.TestCase0;
-import com.habbyge.iwatch.test.TestInlineCase;
 
 import java.util.Objects;
 
 /**
  * Created by habbyge on 2020/11/24.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private static final String TAG = "iWatch.MainActivity";
 
     // 字符-测试样例
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // 测试用例:
                 PatchManager.getInstance().testFix(
-                        "com.habbyge.iwatch.MainActivity", "printf",
+                        "com.habbyge.iwatch.test.MainActivity", "printf",
                         new Class<?>[]{String.class}, void.class, false,
 
                         "com.habbyge.iwatch.test.MainActivity2", "printf_hook",

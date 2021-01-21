@@ -36,7 +36,7 @@ public class IWatchApplication extends Application {
 
         // FIXME: 这是一个测试用例：
         PatchManager.getInstance().testFix(
-                "com.habbyge.iwatch.MainActivity", "onResume", null, void.class, false,
+                "com.habbyge.iwatch.test.MainActivity", "onResume", null, void.class, false,
                 "com.habbyge.iwatch.test.MainActivity2", "onResume", null, void.class, false);
     }
 }
