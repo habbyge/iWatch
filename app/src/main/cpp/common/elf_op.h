@@ -16,8 +16,6 @@
 #include <sys/system_properties.h>
 #include "log.h"
 
-int SDK_INT;
-
 #ifdef __LP64__
 #define Elf_Ehdr Elf64_Ehdr
   #define Elf_Shdr Elf64_Shdr
@@ -72,8 +70,10 @@ private:
   int _dlclose();
   void* _dlopen(const char* filename, int flags);
   void* _dlsym(const char* symbol_name);
-  static int get_sdk_level();
+  int get_sdk_level();
   static const char* _dlerror();
+
+  int SDK_INT;
 };
 
 #ifdef __cplusplus
