@@ -55,9 +55,9 @@ public final class PatchManager {
     @Nullable
     private Patch mPatch;
 
-    private ClassLoader mClassLoader;
-
     private IWatch mIWatch;
+
+    private ClassLoader mHostClassLoader;
 
     @SuppressLint("StaticFieldLeak")
     private static PatchManager mInstance;
@@ -183,7 +183,7 @@ public final class PatchManager {
         if (mPatch == null) {
             return false;
         }
-        mClassLoader = mContext.getClassLoader();
+        mHostClassLoader = mContext.getClassLoader();
         List<String> classes = mPatch.getClasses();
         if (classes == null || classes.isEmpty()) {
             resetAllPatch();
@@ -199,7 +199,7 @@ public final class PatchManager {
      * @param patch patch
      */
     private void loadPatch(Patch patch) {
-        ClassLoader classLoader = mClassLoader != null ? mClassLoader : mContext.getClassLoader();
+        ClassLoader classLoader = mHostClassLoader != null ? mHostClassLoader : mContext.getClassLoader();
         if (classLoader != null) {
             List<String> classes = patch.getClasses();
             if (classes == null || classes.isEmpty()) {
