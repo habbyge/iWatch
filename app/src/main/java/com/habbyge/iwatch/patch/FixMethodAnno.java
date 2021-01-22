@@ -21,9 +21,4 @@ public @interface FixMethodAnno {
      * @return 需要被 fix 的 origin method
      */
     String method();
-
-    /**
-     *  被fix的原始函数是否 static
-     */
-    boolean isStatic();
 }

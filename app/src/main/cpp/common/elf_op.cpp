@@ -4,6 +4,7 @@
 
 #include "elf_op.h"
 #include "constants.h"
+#include <functional>
 
 void* Elf::dlopen_elf(const char* filename, int flags) {
   log_info("dlopen: %s", filename);
@@ -169,14 +170,23 @@ void* Elf::initElf(const char* libpath) {
   // ELF文件头，这里是把so库文件使用 mmap() 系统调用，映射到这个地址
   auto elf = (Elf_Ehdr*) MAP_FAILED; // reinterpret_cast<void*>(-1)
 
-#define fatal(fmt, args...) do {    \
-            log_err(fmt,##args);    \
-            goto err_exit;          \
-        } while(0)
+  std::function<void* ()> exception_quit = [this, &fd, &elf, &size]() -> void* {
+    if (fd >= 0) {
+      close(fd);
+    }
+    if (elf != MAP_FAILED) {
+      munmap(elf, size);
+    }
+
+    this->dlclose_elf();
+
+    return nullptr;
+  };
 
   maps = fopen("/proc/self/maps", "r");
   if (maps == nullptr) {
-    fatal("failed to open maps");
+    log_err("failed to open maps");
+    return exception_quit();
   }
 
   // 查找到 libpath 这个so库的行
@@ -190,11 +200,13 @@ void* Elf::initElf(const char* libpath) {
   // FIXME: 前面是为了获取 libart.so 加载到进程中地址空间的内存起始地址和结束地址
 
   if (!found) {
-    fatal("%s not found in my userspace", libpath);
+    log_err("%s not found in my userspace", libpath);
+    return exception_quit();
   }
 
   if (std::sscanf(buff, "%lx", &load_addr) != 1) {
-    fatal("failed to read load address for %s", libpath);
+    log_err("failed to read load address for %s", libpath);
+    return exception_quit();
   }
 
   log_info("%s loaded in Android at 0x%08lx", libpath, load_addr);
@@ -203,11 +215,13 @@ void* Elf::initElf(const char* libpath) {
 
   fd = open(libpath, O_RDONLY);
   if (fd < 0) {
-    fatal("failed to open %s", libpath);
+    log_err("failed to open %s", libpath);
+    return exception_quit();
   }
   size = lseek(fd, 0, SEEK_END); // 索引到so库文件末尾
   if (size <= 0) {
-    fatal("lseek() failed for %s", libpath);
+    log_err("lseek() failed for %s", libpath);
+    return exception_quit();
   }
 
   // mmap()是Linux/Unix的系统调用，映射文件或设备到内存中，取消映射就是munmap()函数.
@@ -244,7 +258,8 @@ void* Elf::initElf(const char* libpath) {
   close(fd);
   fd = -1; // 安全防御性编程，防止fd被滥用，导致的一些未定义行为
   if (elf == MAP_FAILED) {
-    fatal("mmap() failed for %s", libpath);
+    log_err("mmap() failed for %s", libpath);
+    return exception_quit();
   }
   // FIXME：这里使用 mmap 的目的是为了获取到 libart.so 这个 elf 文件内各个符号的偏移量(基地址不同，但偏移量相同)
 
@@ -259,11 +274,13 @@ void* Elf::initElf(const char* libpath) {
     switch (sh->sh_type) {
     case SHT_DYNSYM: { // 符号表 .dynsym
       if (this->dynsym != nullptr) {
-        fatal("%s: duplicate DYNSYM sections", libpath); /* .dynsym */
+        log_err("%s: duplicate DYNSYM sections", libpath); /* .dynsym */
+        return exception_quit();
       }
       this->dynsym = malloc(sh->sh_size);
       if (this->dynsym == nullptr) {
-        fatal("%s: no memory for .dynsym", libpath);
+        log_err("%s: no memory for .dynsym", libpath);
+        return exception_quit();
       }
       memcpy(this->dynsym, ((char*) elf) + sh->sh_offset, sh->sh_size);
       this->nsyms = sh->sh_size / sizeof(Elf_Sym);
@@ -276,7 +293,8 @@ void* Elf::initElf(const char* libpath) {
       }
       this->dynstr = malloc(sh->sh_size);
       if (this->dynstr == nullptr) {
-        fatal("%s: no memory for .dynstr", libpath);
+        log_err("%s: no memory for .dynstr", libpath);
+        return exception_quit();
       }
       memcpy(this->dynstr, ((char*) elf) + sh->sh_offset, sh->sh_size);
     }
@@ -302,20 +320,11 @@ void* Elf::initElf(const char* libpath) {
   elf = nullptr;
 
   if (this->dynstr == nullptr || this->dynsym == nullptr) {
-    fatal("dynamic sections not found in %s", libpath);
+    log_err("dynamic sections not found in %s", libpath);
+    return exception_quit();
   }
 
 #undef fatal
   log_dbg("%s: ok, dynsym = %p, dynstr = %p", libpath, this->dynsym, this->dynstr);
   return this->load_addr_ptr;
-
-err_exit:
-  if (fd >= 0) {
-    close(fd);
-  }
-  if (elf != MAP_FAILED) {
-    munmap(elf, size);
-  }
-  dlclose_elf();
-  return nullptr;
 }

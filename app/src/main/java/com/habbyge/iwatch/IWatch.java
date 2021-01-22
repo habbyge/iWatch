@@ -12,6 +12,7 @@ import com.habbyge.iwatch.util.Type;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -189,7 +190,7 @@ public final class IWatch {
             }
             originClassName = fixMethodAnno._class();
             originMethodName = fixMethodAnno.method();
-            originStatic = fixMethodAnno.isStatic();
+            originStatic = Modifier.isStatic(method.getModifiers());
             if (StringUtil.isNotEmpty(originClassName) && StringUtil.isNotEmpty(originMethodName)) {
                 fixMethod(cl,
                         originClassName, originMethodName, method.getParameterTypes(),
