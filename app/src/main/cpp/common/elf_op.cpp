@@ -324,7 +324,6 @@ void* Elf::initElf(const char* libpath) {
     return exception_quit();
   }
 
-#undef fatal
   log_dbg("%s: ok, dynsym = %p, dynstr = %p", libpath, this->dynsym, this->dynstr);
   return this->load_addr_ptr;
 }
