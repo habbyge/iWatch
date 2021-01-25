@@ -137,9 +137,9 @@ static void* getArtMethod(JNIEnv* env, jclass java_class, const char* name, cons
   }
 }
 
-static void initArtMethod1(JNIEnv* env, void* context, jobject m1, jobject m2) {
+static void initArtMethod1(JNIEnv* env, void* so_addr, jobject m1, jobject m2) {
   try {
-//    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(dlsym_elf(context, FromReflectedMethod_Sym));
+//    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(dlsym_elf(so_addr, FromReflectedMethod_Sym));
     FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(elfOp->dlsym_elf(FromReflectedMethod_Sym));
     logi("initArtMethod1, FromReflectedMethod=%p", FromReflectedMethod);
     void* artMethod1 = getArtMethod(env, m1);
@@ -159,10 +159,10 @@ static void initArtMethod1(JNIEnv* env, void* context, jobject m1, jobject m2) {
   }
 }
 
-static void initArtMethod2(JNIEnv* env, void* context) {
+static void initArtMethod2(JNIEnv* env, void* so_addr) {
   try {
     jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
-//    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(context, FindMethodJNI_Sym));
+//    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(so_addr, FindMethodJNI_Sym));
     FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(elfOp->dlsym_elf(FindMethodJNI_Sym));
     logi("initArtMethod2, FindMethodJNI=%p", FindMethodJNI);
     void* artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);

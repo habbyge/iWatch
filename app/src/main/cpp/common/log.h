@@ -26,6 +26,7 @@ namespace iwatch {
 #define logv(...)  ((void)__android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__))
 #define logi(...)  ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 #define logd(...)  ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
+#define logw(...)  ((void)__android_log_print(ANDROID_LOG_WARN, TAG, __VA_ARGS__))
 #define loge(...)  ((void)__android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__))
 
 #else
@@ -34,6 +35,6 @@ namespace iwatch {
 #define log_err(fmt, args...)
 #endif
 
-}
+} // namespace iwatch
 
 #endif //METHODHOOK_LOG_H

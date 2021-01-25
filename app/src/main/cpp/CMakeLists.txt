@@ -11,6 +11,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -DANDROID_STL=c++_shared")
 
 set(SRC_LIST iwatch.cpp
              iwatch_impl.cpp
+             ArtHook.cpp
              ArtRestore.cpp
              field_hook.cpp
              common/elfop.cpp
@@ -69,6 +70,7 @@ include_directories(
 
     iwatch_impl.h
     ArtRestore.h
+    ArtHook.h
 )
 
 #if ("${ANDROID_ABI}" STREQUAL "x86_64")
@@ -116,7 +118,7 @@ find_library( # find_library 这个函数的意思是给系统的log库起个别
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
 # Link the Android NDK library with your native library.
-target_link_libraries( // # target_link_libraries 这个函数的意思是刚刚之前的命名的库一起link进去
+target_link_libraries( # target_link_libraries 这个函数的意思是刚刚之前的命名的库一起link进去
     # Specifies the target library.
     iWatch
 
