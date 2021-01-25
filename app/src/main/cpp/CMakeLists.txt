@@ -95,7 +95,7 @@ include_directories(
 ## you want to add. CMake verifies that the library exists before
 ## completing its build.
 ## Mention the Android NDK library name to locate.
-find_library(
+find_library( # find_library 这个函数的意思是给系统的log库起个别名，命名为log-lib。
     # 解决 cmake 找到 log-lib
 #    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/lib/
 #    PATHS /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/toolchains/
@@ -116,7 +116,7 @@ find_library(
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
 # Link the Android NDK library with your native library.
-target_link_libraries(
+target_link_libraries( // # target_link_libraries 这个函数的意思是刚刚之前的命名的库一起link进去
     # Specifies the target library.
     iWatch
 

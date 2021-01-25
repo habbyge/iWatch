@@ -29,7 +29,6 @@ android {
 
         ndk {
             ldLibs "log"
-            ldLibs "EGL"
         }
     }
 
