@@ -5,7 +5,11 @@
 #ifndef IWATCH_CONSTANTS_H
 #define IWATCH_CONSTANTS_H
 
+namespace iwatch {
+
 #define I_OK          (0)         /* no error */
 #define I_ERR         (-1)        /* generic error */
+
+}
 
 #endif //IWATCH_CONSTANTS_H

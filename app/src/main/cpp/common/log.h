@@ -7,6 +7,7 @@
 
 #include <android/log.h>
 
+namespace iwatch {
 
 #define TAG "iWatch"
 
@@ -29,8 +30,10 @@
 
 #else
 #define log_dbg(...)
-  #define log_info(fmt, args...)
-  #define log_err(fmt, args...)
+#define log_info(fmt, args...)
+#define log_err(fmt, args...)
 #endif
+
+}
 
 #endif //METHODHOOK_LOG_H

@@ -11,6 +11,8 @@
 #include "elfop.h"
 #include "constants.h"
 
+namespace iwatch {
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -358,3 +360,5 @@ const char* dlerror_elf() {
 #ifdef __cplusplus
 } // end of "extern "C""
 #endif
+
+} // namespace iwatch

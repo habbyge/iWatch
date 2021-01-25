@@ -20,6 +20,8 @@
 #include "art/ScopedFastNativeObjectAccess.h"
 #include "art/scoped_thread_state_change.h"
 
+namespace iwatch {
+
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
 static const char* computeArtMethodSize_ClassName = "com/habbyge/iwatch/ArtMethodSize";
 
@@ -98,5 +100,7 @@ void set_cur_thread_impl(JNIEnv* env, long threadAddr);
 #ifdef __cplusplus
 }
 #endif
+
+} // namespace iwatch
 
 #endif //IWATCH_IWATCH_H

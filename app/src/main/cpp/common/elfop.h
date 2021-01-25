@@ -16,6 +16,8 @@
 #include <sys/system_properties.h>
 #include "log.h"
 
+namespace iwatch {
+
 #ifdef __LP64__
   #define Elf_Ehdr Elf64_Ehdr
   #define Elf_Shdr Elf64_Shdr
@@ -70,5 +72,7 @@ const char* dlerror_elf();
 #ifdef __cplusplus
 }
 #endif
+
+} // namespace iwatch
 
 #endif // COMMON_ELF_OP_H

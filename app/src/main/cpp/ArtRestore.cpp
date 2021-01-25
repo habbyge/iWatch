@@ -5,6 +5,8 @@
 #include "ArtRestore.h"
 #include "iwatch_impl.h"
 
+namespace iwatch {
+
 // iwatch_impl.cpp
 //extern size_t artMethodSizeV1;
 //extern size_t artMethodSizeV2;
@@ -129,3 +131,5 @@ bool ArtRestore::inHooking(std::string& className, std::string& funcName, std::s
 inline size_t ArtRestore::getArtMethodSize() {
   return artMethodSizeV1 <= 0 ? artMethodSizeV2 : artMethodSizeV1;
 }
+
+} // namespace iwatch

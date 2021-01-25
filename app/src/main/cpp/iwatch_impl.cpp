@@ -54,6 +54,8 @@
  * 比起 ArtFix，iWatch 方案屏蔽细节、尽量通用，没有适配性。
  */
 
+namespace iwatch {
+
 static int sdkVersion = 0;
 static void* cur_thread = nullptr;
 static JavaVM* vm;
@@ -605,3 +607,5 @@ void set_cur_thread_impl(JNIEnv* env, long threadAddr) {
   clear_exception(env);
   logi("set_cur_thread, cur_thread=%p", cur_thread);
 }
+
+} // namespace iwatch

@@ -6,6 +6,8 @@
 #include "constants.h"
 #include <functional>
 
+namespace iwatch {
+
 void* Elf::dlopen_elf(const char* filename, int flags) {
   log_info("dlopen: %s", filename);
 
@@ -327,3 +329,5 @@ void* Elf::initElf(const char* libpath) {
   log_dbg("%s: ok, dynsym = %p, dynstr = %p", libpath, this->dynsym, this->dynstr);
   return this->load_addr_ptr;
 }
+
+} // namespace iwatch

@@ -13,6 +13,8 @@
 
 #include "common/log.h"
 
+namespace iwatch {
+
 typedef struct {
   long backupArtmethodAddr;
   long artMethodAddr;
@@ -51,5 +53,7 @@ private:
     return std::move(className + "$" + funcName + "$" + desciptor);
   }
 };
+
+} // namespace iwatch
 
 #endif // IWATCH_ARTRESTORE_H
