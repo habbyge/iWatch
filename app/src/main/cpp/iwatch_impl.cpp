@@ -3,6 +3,7 @@
 //
 
 #include "iwatch_impl.h"
+#include "ArtMethodHook.h"
 #include "ArtRestore.h"
 #include "common/constants.h"
 
@@ -93,7 +94,7 @@ static const int SDK_INT_ANDROID_10 = 29;
 // art/runtime/art_method.h
 // static ArtMethod* FromReflectedMethod(const ScopedObjectAccessAlreadyRunnable& soa, jobject jlr_method);
 // 好处是：static 函数
-FromReflectedMethod_t FromReflectedMethod;
+//FromReflectedMethod_t FromReflectedMethod;
 
 // 方案2:
 // art/runtime/jni/jni_internal.h
@@ -103,93 +104,20 @@ FromReflectedMethod_t FromReflectedMethod;
 //                         const char* sig,
 //                         bool is_static);
 // 好处是：不是class文件，是全局函数的非类文件
-FindMethodJNI_t FindMethodJNI;
+//FindMethodJNI_t FindMethodJNI;
 // 同时使用 方案1 和 方案2，哪个生效用哪里，双保险!!!!!!
 
 std::shared_ptr<Elf> elfOp = nullptr;
 std::shared_ptr<ArtRestore> artRestore = nullptr;
-
-/**
- * 方案1
- */
-static void* getArtMethod(JNIEnv* env, jobject method) {
-  try {
-    const art::ScopedFastNativeObjectAccess soa(env);
-    return FromReflectedMethod(soa, method);
-  } catch (std::exception& e) {
-    loge("getArtMethod1, eception: %s", e.what());
-    clear_exception(env);
-    return nullptr;
-  }
-}
-
-/**
- * 方案2
- */
-static void* getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static) {
-  try {
-    art::ScopedObjectAccess soa(env);
-    return FindMethodJNI(soa, java_class, name, sig, is_static);
-  } catch (std::exception& e) {
-    loge("getArtMethod2, eception: %s", e.what());
-    clear_exception(env);
-    return nullptr;
-  }
-}
-
-static void initArtMethod1(JNIEnv* env, void* so_addr, jobject m1, jobject m2) {
-  try {
-//    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(dlsym_elf(so_addr, FromReflectedMethod_Sym));
-    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(elfOp->dlsym_elf(FromReflectedMethod_Sym));
-    logi("initArtMethod1, FromReflectedMethod=%p", FromReflectedMethod);
-    void* artMethod1 = getArtMethod(env, m1);
-    logi("initArtMethod1, method1=%p, %p", artMethod1, m1);
-    void* artMethod2 = getArtMethod(env, m2);
-    // jmethodID, jmethodID, ArtMethod*, ArtMethod*
-    logi("initArtMethod1, method2=%p, %p", artMethod2, m2);
-
-    // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的：
-    // ArtMethod按照类中方法声明顺序依次紧密的排列在 methods_ 字段表示的内存中.
-    artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
-    logi("initArtMethod1, artMethodSizeV1 = %zu", artMethodSizeV1);
-  } catch (std::exception& e) {
-    loge("initArtMethod1, eception: %s", e.what());
-    clear_exception(env);
-    artMethodSizeV1 = -1;
-  }
-}
-
-static void initArtMethod2(JNIEnv* env, void* so_addr) {
-  try {
-    jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
-//    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(so_addr, FindMethodJNI_Sym));
-    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(elfOp->dlsym_elf(FindMethodJNI_Sym));
-    logi("initArtMethod2, FindMethodJNI=%p", FindMethodJNI);
-    void* artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);
-    logi("initArtMethod2, artMethod11=%p", artMethod11);
-    void* artMethod12 = getArtMethod(env, ArtMethodSizeClass, "func2", "()V", true);
-    // jmethodID, jmethodID, ArtMethod*, ArtMethod*
-    logi("initArtMethod2, artMethod22=%p", artMethod12);
-
-    // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的
-    artMethodSizeV2 = reinterpret_cast<size_t>(artMethod12) - reinterpret_cast<size_t>(artMethod11);
-    logi("initArtMethod2, artMethodSizeV2 = %zu", artMethodSizeV2);
-  } catch (std::exception& e) {
-    loge("initArtMethod2, eception: %s", e.what());
-    clear_exception(env);
-    artMethodSizeV2 = -1;
-  }
-}
+std::shared_ptr<ArtMethodHook> artMethodHook = nullptr;
 
 void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
-  artMethodSizeV1 = -1;
-  artMethodSizeV2 = -1;
-
   sdkVersion = sdkVersionCode;
 
   env->GetJavaVM(&vm);
 
   elfOp = std::make_shared<Elf>();
+  artMethodHook = std::make_shared<ArtMethodHook>();
   artRestore = std::make_shared<ArtRestore>();
 
   // art::mirror::ArtMethod
@@ -201,15 +129,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 //       (size_t) artMethod11);
 
   if (sdkVersionCode <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
-    jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
-    auto artMethod1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
-    auto artMethod2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
-    artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
-
-    // artMethodSize = sizeof(ArtMethod);
-    logi("artMethodSize-1 = %d, %zu, %zu, %zu", sdkVersionCode, artMethodSizeV1,
-                                                reinterpret_cast<size_t>(artMethod2),
-                                                reinterpret_cast<size_t>(artMethod1));
+    artMethodHook->initArtMethodLessEqual10(env);
   } else { // >= Android-11(api-30)
     loge("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
 
@@ -300,10 +220,10 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     // 是：自己以 "从简的方式" 定义其对应的参数类型在art目录中的形式即可，再直白点就是：查看art虚拟机源代码，根据
     // 需要抄过来其实现即可。
     // 方案1：
-    initArtMethod1(env, so_addr, m1, m2);
+    artMethodHook->initArtMethod1(env, elfOp, m1, m2);
 
     // 方案2
-    initArtMethod2(env, so_addr);
+    artMethodHook->initArtMethod2(env, elfOp);
 
 //    dlclose_elf(context); // 释放
     elfOp->dlclose_elf(); // 释放
@@ -377,8 +297,8 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
     // 排布依旧是线性分配的，这里没问题，问题是：从 FromReflectedMethod 这里获取地址是错误的(是个52/53很小的数值，
     // 一看就不是地址).
   } else {
-    srcArtMethod = getArtMethod(env, srcMethod);
-    dstArtMethod = getArtMethod(env, dstMethod);
+    srcArtMethod = artMethodHook->getArtMethod(env, srcMethod);
+    dstArtMethod = artMethodHook->getArtMethod(env, dstMethod);
     logd("method_hook(api>=30), srcArtMethod=%p, dstArtMethod=%p", srcArtMethod, dstArtMethod);
     if (srcArtMethod == nullptr || dstArtMethod == nullptr) {
       loge("method_hook(api>=30), srcArtMethod/dstArtMethod is nullptr !");
@@ -388,13 +308,14 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
   }
 
   int8_t* backupArtMethod = nullptr;
+  const size_t _artMethodSizeV1 = artMethodHook->getArtMethodSizeV1();
   try {
-    backupArtMethod = new int8_t[artMethodSizeV1];
+    backupArtMethod = new int8_t[_artMethodSizeV1];
     // 备份原方法
-    memcpy(backupArtMethod, srcArtMethod, artMethodSizeV1);
+    memcpy(backupArtMethod, srcArtMethod, _artMethodSizeV1);
     // 替换成新方法
-    memcpy(srcArtMethod, dstArtMethod, artMethodSizeV1);
-    logd("method_hook, coppy: artMethodSizeV1=%zu", artMethodSizeV1);
+    memcpy(srcArtMethod, dstArtMethod, _artMethodSizeV1);
+    logd("method_hook, coppy: artMethodSizeV1=%zu", _artMethodSizeV1);
   } catch (std::exception& e) {
     loge("method_hook copy: eception: %s", e.what());
     clear_exception(env);
@@ -458,7 +379,7 @@ long method_hookv2_impl(JNIEnv* env,
     return I_ERR;
   }
 
-  auto artMethod1 = getArtMethod(env, jclass1, funcStr1, descriptorStr1, is_static1);
+  auto artMethod1 = artMethodHook->getArtMethod(env, jclass1, funcStr1, descriptorStr1, is_static1);
 
   env->ReleaseStringUTFChars(name1, funcStr1);
   env->ReleaseStringUTFChars(sig1, descriptorStr1);
@@ -485,7 +406,7 @@ long method_hookv2_impl(JNIEnv* env,
 
   const char* name_str2 = env->GetStringUTFChars(name2, &isCopy);
   const char* sig_str2 = env->GetStringUTFChars(sig2, &isCopy);
-  auto artMethod2 = getArtMethod(env, jclass2, name_str2, sig_str2, is_static2);
+  auto artMethod2 = artMethodHook->getArtMethod(env, jclass2, name_str2, sig_str2, is_static2);
   env->ReleaseStringUTFChars(java_class2, class2);
   env->ReleaseStringUTFChars(name2, name_str2);
   env->ReleaseStringUTFChars(sig2, sig_str2);
@@ -496,10 +417,11 @@ long method_hookv2_impl(JNIEnv* env,
   }
 
   int8_t* backupArtMethod = nullptr;
+  const size_t _artMethodSizeV2 = artMethodHook->getArtMethodSizeV2();
   try {
-    backupArtMethod = new int8_t[artMethodSizeV2];
-    memcpy(backupArtMethod, artMethod1, artMethodSizeV2);
-    memcpy(artMethod1, artMethod2, artMethodSizeV2);
+    backupArtMethod = new int8_t[_artMethodSizeV2];
+    memcpy(backupArtMethod, artMethod1, _artMethodSizeV2);
+    memcpy(artMethod1, artMethod2, _artMethodSizeV2);
   } catch (std::exception& e) {
     loge("method_hookv2 copy: eception: %s", e.what());
     clear_exception(env);

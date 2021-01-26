@@ -11,9 +11,9 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -DANDROID_STL=c++_shared")
 
 set(SRC_LIST iwatch.cpp
              iwatch_impl.cpp
-             ArtHook.cpp
+             ArtMethodHook.cpp
              ArtRestore.cpp
-             field_hook.cpp
+             ArtHookField.cpp
              common/elfop.cpp
              common/elf_op.cpp)
 
@@ -70,7 +70,8 @@ include_directories(
 
     iwatch_impl.h
     ArtRestore.h
-    ArtHook.h
+    ArtMethodHook.h
+    ArtHookField.h
 )
 
 #if ("${ANDROID_ABI}" STREQUAL "x86_64")

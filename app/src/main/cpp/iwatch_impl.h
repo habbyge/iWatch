@@ -16,51 +16,10 @@
 #include "common/log.h"
 //#include "common/elfop.h"
 #include "common/elf_op.h"
-#include "art/art_method_11.h"
-#include "art/ScopedFastNativeObjectAccess.h"
-#include "art/scoped_thread_state_change.h"
 
 namespace iwatch {
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
-static const char* computeArtMethodSize_ClassName = "com/habbyge/iwatch/ArtMethodSize";
-
-static const char* FromReflectedMethod_Sym =
-    "_ZN3art9ArtMethod19FromReflectedMethodERKNS_33ScopedObjectAccessAlreadyRunnableEP8_jobject";
-// 真实返回值是：/*art::mirror::ArtMethod_11*/
-using FromReflectedMethod_t = void* (*)(const art::ScopedObjectAccessAlreadyRunnable& soa, jobject jlr_method);
-
-static const char* FindMethodJNI_Sym = "_ZN3art13FindMethodJNIERKNS_18ScopedObjectAccessEP7_jclassPKcS6_b";
-// 真实返回值是：/*art::mirror::ArtMethod_11*/
-using FindMethodJNI_t = void* (*)(const art::ScopedObjectAccess& soa,
-                                  jclass java_class,
-                                  const char* name,
-                                  const char* sig,
-                                  bool is_static);
-
-static size_t artMethodSizeV1;
-static size_t artMethodSizeV2;
-
-/**
- * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtMethod 大小，
- * 这里 jmethodID 就是 ArtMethod.
- * 比起 ArtFix，iWatch 方案屏蔽细节、尽量通用，没有适配性。
- */
-typedef struct {
-  jmethodID m1;
-  jmethodID m2;
-  size_t methodSize;
-} MethodHookClassInfo_t;
-
-/**
- * 这里仅仅只有一个目的，就是为了计算出不同平台下，每个 art::mirror::ArtFiled 大小，
- * 这里 jfieldID 就是 ArtFiled.
- */
-typedef struct {
-  jfieldID field1;
-  jfieldID field2;
-  size_t fieldSize;
-} FieldHookClassInfo_t;
 
 #ifdef __cplusplus
 extern "C" {
