@@ -284,8 +284,8 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
 
   if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10
     // art::mirror::ArtMethod
-    srcArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(srcMethod));
-    dstArtMethod = reinterpret_cast<void*>(env->FromReflectedMethod(dstMethod));
+    srcArtMethod = artMethodHook->getArtMethodLessEqual10(env, srcMethod);
+    dstArtMethod = artMethodHook->getArtMethodLessEqual10(env, dstMethod);
     logd("method_hook(api<=29), srcArtMethod=%p, dstArtMethod=%p", srcArtMethod, dstArtMethod);
     if (srcArtMethod == nullptr || dstArtMethod == nullptr) {
       loge("method_hook(api<=29), srcArtMethod/dstArtMethod is nullptr !");

@@ -74,77 +74,82 @@ void ArtMethodHook::initArtMethodLessEqual10(JNIEnv* env) {
                                           reinterpret_cast<size_t>(artMethod1));
 }
 
-  void ArtMethodHook::initArtMethod1(JNIEnv* env, std::shared_ptr<Elf> elf_op, jobject m1, jobject m2) {
-    try {
-//    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(
-//        dlsym_elf(elf_op->getLoadAddr(), FromReflectedMethod_Sym));
+void ArtMethodHook::initArtMethod1(JNIEnv* env, std::shared_ptr<Elf> elf_op, jobject m1, jobject m2) {
+  try {
+//   FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(
+//       dlsym_elf(elf_op->getLoadAddr(), FromReflectedMethod_Sym));
 
-      FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(elf_op->dlsym_elf(FromReflectedMethod_Sym));
-      logi("initArtMethod1, FromReflectedMethod=%p", FromReflectedMethod);
-      void* artMethod1 = getArtMethod(env, m1);
-      logi("initArtMethod1, method1=%p, %p", artMethod1, m1);
-      void* artMethod2 = getArtMethod(env, m2);
-      // jmethodID, jmethodID, ArtMethod*, ArtMethod*
-      logi("initArtMethod1, method2=%p, %p", artMethod2, m2);
+    FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(elf_op->dlsym_elf(FromReflectedMethod_Sym));
+    logi("initArtMethod1, FromReflectedMethod=%p", FromReflectedMethod);
+    void* artMethod1 = getArtMethod(env, m1);
+    logi("initArtMethod1, method1=%p, %p", artMethod1, m1);
+    void* artMethod2 = getArtMethod(env, m2);
+    // jmethodID, jmethodID, ArtMethod*, ArtMethod*
+    logi("initArtMethod1, method2=%p, %p", artMethod2, m2);
 
-      // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的：
-      // ArtMethod按照类中方法声明顺序依次紧密的排列在 methods_ 字段表示的内存中.
-      artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
-      logi("initArtMethod1, artMethodSizeV1 = %zu", artMethodSizeV1);
-    } catch (std::exception& e) {
-      loge("initArtMethod1, eception: %s", e.what());
-      clear_exception(env);
-      artMethodSizeV1 = -1;
-    }
+    // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的：
+    // ArtMethod按照类中方法声明顺序依次紧密的排列在 methods_ 字段表示的内存中.
+    artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
+    logi("initArtMethod1, artMethodSizeV1 = %zu", artMethodSizeV1);
+  } catch (std::exception& e) {
+    loge("initArtMethod1, eception: %s", e.what());
+    clear_exception(env);
+    artMethodSizeV1 = -1;
   }
+}
 
-  void ArtMethodHook::initArtMethod2(JNIEnv* env, std::shared_ptr<Elf> elf_op) {
-    try {
-      jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
+void ArtMethodHook::initArtMethod2(JNIEnv* env, std::shared_ptr<Elf> elf_op) {
+  try {
+    jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
 //    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(elf_op->getLoadAddr(), FindMethodJNI_Sym));
-      FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(elf_op->dlsym_elf(FindMethodJNI_Sym));
-      logi("initArtMethod2, FindMethodJNI=%p", FindMethodJNI);
-      void* artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);
-      logi("initArtMethod2, artMethod11=%p", artMethod11);
-      void* artMethod12 = getArtMethod(env, ArtMethodSizeClass, "func2", "()V", true);
-      // jmethodID, jmethodID, ArtMethod*, ArtMethod*
-      logi("initArtMethod2, artMethod22=%p", artMethod12);
+    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(elf_op->dlsym_elf(FindMethodJNI_Sym));
+    logi("initArtMethod2, FindMethodJNI=%p", FindMethodJNI);
+    void* artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);
+    logi("initArtMethod2, artMethod11=%p", artMethod11);
+    void* artMethod12 = getArtMethod(env, ArtMethodSizeClass, "func2", "()V", true);
+    // jmethodID, jmethodID, ArtMethod*, ArtMethod*
+    logi("initArtMethod2, artMethod22=%p", artMethod12);
 
-      // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的
-      artMethodSizeV2 = reinterpret_cast<size_t>(artMethod12) - reinterpret_cast<size_t>(artMethod11);
-      logi("initArtMethod2, artMethodSizeV2 = %zu", artMethodSizeV2);
-    } catch (std::exception& e) {
-      loge("initArtMethod2, eception: %s", e.what());
-      clear_exception(env);
-      artMethodSizeV2 = -1;
-    }
+    // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的
+    artMethodSizeV2 = reinterpret_cast<size_t>(artMethod12) - reinterpret_cast<size_t>(artMethod11);
+    logi("initArtMethod2, artMethodSizeV2 = %zu", artMethodSizeV2);
+  } catch (std::exception& e) {
+    loge("initArtMethod2, eception: %s", e.what());
+    clear_exception(env);
+    artMethodSizeV2 = -1;
   }
+}
+
+void* ArtMethodHook::getArtMethodLessEqual10(JNIEnv* env, jobject method) {
+  return reinterpret_cast<void*>(env->FromReflectedMethod(method));
+}
 
 /**
  * 方案1
  */
-  void* ArtMethodHook::getArtMethod(JNIEnv* env, jobject method) {
-    try {
-      const art::ScopedFastNativeObjectAccess soa(env);
-      return FromReflectedMethod(soa, method);
-    } catch (std::exception& e) {
-      loge("getArtMethod1, eception: %s", e.what());
-      clear_exception(env);
-      return nullptr;
-    }
+void* ArtMethodHook::getArtMethod(JNIEnv* env, jobject method) {
+  try {
+    const art::ScopedFastNativeObjectAccess soa(env);
+    return FromReflectedMethod(soa, method);
+  } catch (std::exception& e) {
+    loge("getArtMethod1, eception: %s", e.what());
+    clear_exception(env);
+    return nullptr;
   }
+}
 
 /**
  * 方案2
  */
-  void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static) {
-    try {
-      art::ScopedObjectAccess soa(env);
-      return FindMethodJNI(soa, java_class, name, sig, is_static);
-    } catch (std::exception& e) {
-      loge("getArtMethod2, eception: %s", e.what());
-      clear_exception(env);
-      return nullptr;
-    }
+void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static) {
+  try {
+    art::ScopedObjectAccess soa(env);
+    return FindMethodJNI(soa, java_class, name, sig, is_static);
+  } catch (std::exception& e) {
+    loge("getArtMethod2, eception: %s", e.what());
+    clear_exception(env);
+    return nullptr;
   }
+}
+
 } // namespace iwatch

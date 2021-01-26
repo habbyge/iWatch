@@ -111,10 +111,10 @@ public:
   virtual ~ArtMethodHook() {}
 
   void initArtMethodLessEqual10(JNIEnv* env);
-
   void initArtMethod1(JNIEnv* env, std::shared_ptr<Elf> elf_op, jobject m1, jobject m2);
   void initArtMethod2(JNIEnv* env, std::shared_ptr<Elf> elf_op);
 
+  void* getArtMethodLessEqual10(JNIEnv* env, jobject method);
   void* getArtMethod(JNIEnv* env, jobject method);
   void* getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static);
 
