@@ -8,7 +8,6 @@
 namespace iwatch {
 
 class ArtHookField {
-
 };
 
 } // namespace iwatch

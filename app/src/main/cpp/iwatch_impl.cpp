@@ -5,6 +5,8 @@
 #include "iwatch_impl.h"
 #include "ArtMethodHook.h"
 #include "ArtRestore.h"
+#include "ArtHookField.h"
+
 #include "common/constants.h"
 
 //#include <art/runtime/jni/jni_internal.h>
