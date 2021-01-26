@@ -26,8 +26,9 @@ ArtRestore::~ArtRestore() {
   restoreMap.clear();
 }
 
-void ArtRestore::save(std::string& className, std::string& funcName, std::string& desciptor,
-                      long backupArtmethodAddr, long artMethodAddr) {
+void ArtRestore::save(std::string& className, std::string& funcName,
+                      std::string& desciptor, long backupArtmethodAddr,
+                      long artMethodAddr) {
 
   if (className.empty() || funcName.empty() || desciptor.empty()) {
     return;
@@ -126,10 +127,6 @@ bool ArtRestore::inHooking(std::string& className, std::string& funcName, std::s
   auto it = restoreMap.find(key);
   auto hooking = (it != restoreMap.end());
   return hooking;
-}
-
-inline size_t ArtRestore::getArtMethodSize() {
-  return artMethodSizeV1 <= 0 ? artMethodSizeV2 : artMethodSizeV1;
 }
 
 } // namespace iwatch

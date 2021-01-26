@@ -56,6 +56,8 @@ long class_hook_impl(JNIEnv* env, jstring clazzName);
 
 void set_cur_thread_impl(JNIEnv* env, long threadAddr);
 
+inline size_t getArtMethodSize();
+
 #ifdef __cplusplus
 }
 #endif

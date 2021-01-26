@@ -530,4 +530,8 @@ void set_cur_thread_impl(JNIEnv* env, long threadAddr) {
   logi("set_cur_thread, cur_thread=%p", cur_thread);
 }
 
+size_t getArtMethodSize() {
+  return artMethodHook->getArtMethodSize();
+}
+
 } // namespace iwatch
