@@ -51,7 +51,7 @@ static void* getArtCtx(const char* libpath, int flags) {
   char* shoff;
 
   // ELF文件头，这里是把so库文件使用 mmap() 系统调用，映射到这个地址
-  auto elf = (Elf_Ehdr*) MAP_FAILED; // reinterpret_cast<void*>(-1)
+  auto elf = reinterpret_cast<Elf_Ehdr*>(MAP_FAILED); // reinterpret_cast<void*>(-1)
 
 #define fatal(fmt, args...) do {    \
             log_err(fmt,##args);    \
@@ -124,7 +124,7 @@ static void* getArtCtx(const char* libpath, int flags) {
   // 要映射到内存中的文件描述符。如果使用匿名内存映射时，即flags中设置了MAP_ANONYMOUS，fd设为-1
   // - 参数offset：
   // 文件映射的偏移量，通常设置为0，代表从文件最前方开始对应，offset必须是分页大小的整数倍
-  elf = (Elf_Ehdr*) mmap(nullptr, size, PROT_READ, MAP_SHARED, fd, 0);
+  elf = reinterpret_cast<Elf_Ehdr*>(mmap(nullptr, size, PROT_READ, MAP_SHARED, fd, 0));
   close(fd);
   fd = -1; // 安全防御性编程，防止fd被滥用，导致的一些未定义行为
   if (elf == MAP_FAILED) {
@@ -137,8 +137,8 @@ static void* getArtCtx(const char* libpath, int flags) {
     fatal("no memory for %s", libpath);
   }
 
-  ctx->load_addr = (void*) load_addr;   // so库加载到该进程中的基地址
-  shoff = ((char*) elf) + elf->e_shoff; // 节头表偏移量
+  ctx->load_addr = reinterpret_cast<int8_t*>(load_addr);   // so库加载到该进程中的基地址
+  shoff = reinterpret_cast<int8_t*>(elf) + elf->e_shoff; // 节头表偏移量
 
   // 遍历节头表(Section Header Table)
   for (i = 0; i < elf->e_shnum; i++, shoff += elf->e_shentsize) {

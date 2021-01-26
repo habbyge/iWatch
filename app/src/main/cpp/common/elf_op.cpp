@@ -19,11 +19,11 @@ void* Elf::dlopen_elf(const char* filename, int flags) {
   }
 }
 
-void* Elf::dlsym_elf(const char* symbol) {
+void* Elf::dlsym_elf(const char* symbol_name) {
   if (get_sdk_level() >= 24) {
-    return _dlsym(symbol);
+    return _dlsym(symbol_name);
   } else {
-    return dlsym(this->load_addr_ptr, symbol);
+    return dlsym(this->load_addr_ptr, symbol_name);
   }
 }
 
@@ -121,9 +121,9 @@ void* Elf::_dlsym(const char* symbol_name) {
       // the bias.
       // 在so库或可执行文件中，sym->st_value 表示符号的地址
       // ctx->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset
-      void* ret = (char*) this->load_addr_ptr + sym->st_value - this->bias;
-      log_info("%s found at %p", symbol_name, ret);
-      return ret;
+      void* symbol_addr = reinterpret_cast<int8_t*>(this->load_addr_ptr) + sym->st_value - this->bias;
+      log_info("%s found at %p", symbol_name, symbol_addr);
+      return symbol_addr;
     }
   }
   return nullptr;
@@ -170,7 +170,7 @@ void* Elf::initElf(const char* libpath) {
   char* shoff;
 
   // ELF文件头，这里是把so库文件使用 mmap() 系统调用，映射到这个地址
-  auto elf = (Elf_Ehdr*) MAP_FAILED; // reinterpret_cast<void*>(-1)
+  auto elf = reinterpret_cast<Elf_Ehdr*>(MAP_FAILED); // reinterpret_cast<void*>(-1)
 
   std::function<void* ()> exception_quit = [this, &fd, &elf, &size]() -> void* {
     if (fd >= 0) {
@@ -256,7 +256,7 @@ void* Elf::initElf(const char* libpath) {
   // 要映射到内存中的文件描述符。如果使用匿名内存映射时，即flags中设置了MAP_ANONYMOUS，fd设为-1
   // - 参数offset：
   // 文件映射的偏移量，通常设置为0，代表从文件最前方开始对应，offset必须是分页大小的整数倍
-  elf = (Elf_Ehdr*) mmap(nullptr, size, PROT_READ, MAP_SHARED, fd, 0);
+  elf = reinterpret_cast<Elf_Ehdr*>(mmap(nullptr, size, PROT_READ, MAP_SHARED, fd, 0));
   close(fd);
   fd = -1; // 安全防御性编程，防止fd被滥用，导致的一些未定义行为
   if (elf == MAP_FAILED) {
@@ -265,12 +265,12 @@ void* Elf::initElf(const char* libpath) {
   }
   // FIXME：这里使用 mmap 的目的是为了获取到 libart.so 这个 elf 文件内各个符号的偏移量(基地址不同，但偏移量相同)
 
-  this->load_addr_ptr = (void*) load_addr;   // so库加载到该进程中的基地址
-  shoff = ((char*) elf) + elf->e_shoff; // 节头表偏移量
+  this->load_addr_ptr = reinterpret_cast<void*>(load_addr); // so库加载到该进程中的基地址
+  shoff = reinterpret_cast<int8_t*>(elf) + elf->e_shoff; // 节头表偏移量
 
   // 遍历节头表(Section Header Table)
   for (i = 0; i < elf->e_shnum; i++, shoff += elf->e_shentsize) {
-    auto sh = (Elf_Shdr*) shoff; // 节头
+    auto sh = reinterpret_cast<Elf_Shdr*>(shoff); // 节头
     log_dbg("%s: i=%d shdr=%p type=%x", __func__, i, sh, sh->sh_type);
 
     switch (sh->sh_type) {
@@ -284,7 +284,7 @@ void* Elf::initElf(const char* libpath) {
         log_err("%s: no memory for .dynsym", libpath);
         return exception_quit();
       }
-      memcpy(this->dynsym, ((char*) elf) + sh->sh_offset, sh->sh_size);
+      memcpy(this->dynsym, reinterpret_cast<int8_t*>(elf) + sh->sh_offset, sh->sh_size);
       this->nsyms = sh->sh_size / sizeof(Elf_Sym);
     }
     break;
@@ -298,7 +298,7 @@ void* Elf::initElf(const char* libpath) {
         log_err("%s: no memory for .dynstr", libpath);
         return exception_quit();
       }
-      memcpy(this->dynstr, ((char*) elf) + sh->sh_offset, sh->sh_size);
+      memcpy(this->dynstr, reinterpret_cast<int8_t*>(elf) + sh->sh_offset, sh->sh_size);
     }
     break;
 
@@ -310,7 +310,8 @@ void* Elf::initElf(const char* libpath) {
       // - sh_addr: 该节在 elf 文件被加载到进程地址空间中后的偏移量，其在进程中的真实地址是:
       //            load_addr + sh->sh_addr.
       // - sh_offset 在 elf 文件中的偏移量
-      this->bias = (off_t) sh->sh_addr - (off_t) sh->sh_offset; // TODO: why ?
+      // TODO: why ?
+      this->bias = reinterpret_cast<off_t>(sh->sh_addr) - reinterpret_cast<off_t>(sh->sh_offset);
       i = elf->e_shnum;  /* exit for */
     }
     break;

@@ -54,13 +54,14 @@ public:
   }
 
   void* dlopen_elf(const char* filename, int flags);
-  void* dlsym_elf(const char* symbol);
+  void* dlsym_elf(const char* symbol_name);
   int dlclose_elf();
   const char* dlerror_elf();
 
   inline void* getLoadAddr() {
     return load_addr_ptr;
   }
+  
 private:
   void* load_addr_ptr; // so库文件加载到进程中的基地址，来自 /proc/pid/maps，这里无需释放 just an address
 
