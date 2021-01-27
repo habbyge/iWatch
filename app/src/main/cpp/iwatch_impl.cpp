@@ -262,6 +262,9 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
 
   jboolean isCopy;
   const char* srcClassStr = env->GetStringUTFChars(srcClass, &isCopy);
+  if (srcClassStr == nullptr) {
+    return I_ERR;
+  }
   std::string _class(srcClassStr);
   std::replace_if(_class.begin(), _class.end(), [](const char& ch)->bool {
     return '.' == ch;
@@ -269,10 +272,16 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
   env->ReleaseStringUTFChars(srcClass, srcClassStr);
 
   auto srcFuncStr = env->GetStringUTFChars(srcName, &isCopy);
+  if (srcFuncStr == nullptr) {
+    return I_ERR;
+  }
   std::string _func(srcFuncStr);
   env->ReleaseStringUTFChars(srcName, srcFuncStr);
 
   auto srcDescStr = env->GetStringUTFChars(srcSig, &isCopy);
+  if (srcDescStr == nullptr) {
+    return I_ERR;
+  }
   std::string _descriptor(srcDescStr);
   env->ReleaseStringUTFChars(srcSig, srcDescStr);
 
@@ -355,6 +364,9 @@ long method_hookv2_impl(JNIEnv* env,
 
   jboolean isCopy;
   const char* class1Str = env->GetStringUTFChars(java_class1, &isCopy);
+  if (class1Str == nullptr) {
+    return I_ERR;
+  }
   std::string _class1(class1Str);
   std::replace_if(_class1.begin(), _class1.end(), [](const char& ch)->bool {
     return '.' == ch;
@@ -362,9 +374,15 @@ long method_hookv2_impl(JNIEnv* env,
   env->ReleaseStringUTFChars(java_class1, class1Str);
 
   const char* funcStr1 = env->GetStringUTFChars(name1, &isCopy);
+  if (funcStr1 == nullptr) {
+    return I_ERR;
+  }
   std::string _func1(funcStr1);
 
   const char* descriptorStr1 = env->GetStringUTFChars(sig1, &isCopy);
+  if (descriptorStr1 == nullptr) {
+    return I_ERR;
+  }
   std::string _descriptor1(descriptorStr1);
 
   if (artRestore->inHooking(_class1, _func1, _descriptor1)) {
@@ -393,6 +411,9 @@ long method_hookv2_impl(JNIEnv* env,
   }
 
   const char* class2 = env->GetStringUTFChars(java_class2, &isCopy);
+  if (class2 == nullptr) {
+    return I_ERR;
+  }
   jclass jclass2;
   std::string classStr2(class2);
   std::replace_if(classStr2.begin(), classStr2.end(), [](const char& ch)->bool {
@@ -407,7 +428,13 @@ long method_hookv2_impl(JNIEnv* env,
   }
 
   const char* name_str2 = env->GetStringUTFChars(name2, &isCopy);
+  if (name_str2 == nullptr) {
+    return I_ERR;
+  }
   const char* sig_str2 = env->GetStringUTFChars(sig2, &isCopy);
+  if (sig_str2 == nullptr) {
+    return I_ERR;
+  }
   auto artMethod2 = artMethodHook->getArtMethod(env, jclass2, name_str2, sig_str2, is_static2);
   env->DeleteLocalRef(jclass2);
   env->ReleaseStringUTFChars(java_class2, class2);
@@ -445,8 +472,17 @@ long method_hookv2_impl(JNIEnv* env,
 void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring sig) {
   jboolean isCopy;
   const char* classStr = env->GetStringUTFChars(className, &isCopy);
+  if (classStr == nullptr) {
+    return;
+  }
   const char* nameStr = env->GetStringUTFChars(name, &isCopy);
+  if (nameStr == nullptr) {
+    return;
+  }
   const char* sigStr = env->GetStringUTFChars(sig, &isCopy);
+  if (sigStr == nullptr) {
+    return;
+  }
 
   std::string _class(classStr);
   std::replace_if(_class.begin(), _class.end(), [](const char& ch)->bool {
@@ -514,6 +550,9 @@ static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtF
 long class_hook_impl(JNIEnv* env, jstring clazzName) {
   jboolean isCopy;
   const char* kClassName = env->GetStringUTFChars(clazzName, &isCopy);
+  if (kClassName == nullptr) {
+    return -1L;
+  }
   std::string kClassNameStr(kClassName);
   std::replace_if(kClassNameStr.begin(), kClassNameStr.end(), [](const char& ch)->bool {
     return '.' == ch;
