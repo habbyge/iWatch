@@ -46,10 +46,11 @@ namespace iwatch {
 extern "C" {
 #endif
 
-class Elf {
+class Elf final {
 public:
   Elf() : load_addr_ptr(nullptr), dynstr(nullptr), dynsym(nullptr), nsyms(0), bias(0) {}
-  ~Elf() {
+
+  virtual ~Elf() {
     dlclose_elf();
   }
 

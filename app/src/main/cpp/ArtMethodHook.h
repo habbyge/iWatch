@@ -61,7 +61,7 @@ using FindMethodJNI_t = void* (*)(const art::ScopedObjectAccess& soa,
                                   const char* sig,
                                   bool is_static);
 
-class ArtMethodHook {
+class ArtMethodHook final {
 public:
   ArtMethodHook() : artMethodSizeV1(-1), artMethodSizeV2(-1) {}
 
