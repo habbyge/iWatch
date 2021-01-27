@@ -48,7 +48,7 @@ static void* getArtCtx(const char* libpath, int flags) {
   int i;
   int fd = -1;
   bool found = false;
-  char* shoff;
+  int8_t* shoff;
 
   // ELF文件头，这里是把so库文件使用 mmap() 系统调用，映射到这个地址
   auto elf = reinterpret_cast<Elf_Ehdr*>(MAP_FAILED); // reinterpret_cast<void*>(-1)

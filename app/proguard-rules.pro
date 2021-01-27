@@ -21,9 +21,6 @@
 #-renamesourcefileattribute SourceFile
 
 -keep class * extends java.lang.annotation.Annotation
--keepclasseswithmembernames class * {
-  native <methods>;
-}
 #-keep class com.habbyge.iwatch.** { *; }
 
 #（Basic 包名不混合大小写
@@ -37,16 +34,16 @@
 # through the ProGuard optimize and preverify steps (and performs some
 # of these optimizations on its own).
 #（Basic）不进行优化
--dontoptimize
+#-dontoptimize
 #（Basic）不进行预检验
--dontpreverify
+#-dontpreverify
 # Note that if you want to enable optimization, you cannot just
 # include optimization flags in your own project configuration file;
 # instead you will need to point to the
 # "proguard-android-optimize.txt" file instead of this one from your
 # project.properties file.
 
-#混淆注意事项第一条，保留四大组件及Android的其它组件
+# 混淆注意事项第一条，保留四大组件及Android的其它组件
 -keep public class * extends android.app.Activity
 #（Basic）
 -keepclassmembers class * extends android.app.Activity {

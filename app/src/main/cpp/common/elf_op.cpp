@@ -167,7 +167,7 @@ void* Elf::initElf(const char* libpath) {
   int i;
   int fd = -1;
   bool found = false;
-  char* shoff;
+  int8_t* shoff;
 
   // ELF文件头，这里是把so库文件使用 mmap() 系统调用，映射到这个地址
   auto elf = reinterpret_cast<Elf_Ehdr*>(MAP_FAILED); // reinterpret_cast<void*>(-1)
@@ -309,9 +309,8 @@ void* Elf::initElf(const char* libpath) {
       // won't even bother checking against the section name
       // - sh_addr: 该节在 elf 文件被加载到进程地址空间中后的偏移量，其在进程中的真实地址是:
       //            load_addr + sh->sh_addr.
-      // - sh_offset 在 elf 文件中的偏移量
-      // TODO: why ?
-      this->bias = reinterpret_cast<off_t>(sh->sh_addr) - reinterpret_cast<off_t>(sh->sh_offset);
+      // - sh_offset 在 elf 文件中的偏移量 TODO: why ?
+      this->bias = static_cast<off_t>(sh->sh_addr) - static_cast<off_t>(sh->sh_offset);
       i = elf->e_shnum;  /* exit for */
     }
     break;
