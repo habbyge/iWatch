@@ -173,6 +173,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
     auto jmethodID1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
     auto jmethodID2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+    env->DeleteLocalRef(ArtMethodSizeClass);
 
 //    auto IsIndexId1 = (reinterpret_cast<uintptr_t>(methodid1) % 2) != 0;
 //    auto IsIndexId2 = (reinterpret_cast<uintptr_t>(methodid2) % 2) != 0;
@@ -380,6 +381,7 @@ long method_hookv2_impl(JNIEnv* env,
   }
 
   auto artMethod1 = artMethodHook->getArtMethod(env, jclass1, funcStr1, descriptorStr1, is_static1);
+  env->DeleteLocalRef(jclass1);
 
   env->ReleaseStringUTFChars(name1, funcStr1);
   env->ReleaseStringUTFChars(sig1, descriptorStr1);
@@ -407,6 +409,7 @@ long method_hookv2_impl(JNIEnv* env,
   const char* name_str2 = env->GetStringUTFChars(name2, &isCopy);
   const char* sig_str2 = env->GetStringUTFChars(sig2, &isCopy);
   auto artMethod2 = artMethodHook->getArtMethod(env, jclass2, name_str2, sig_str2, is_static2);
+  env->DeleteLocalRef(jclass2);
   env->ReleaseStringUTFChars(java_class2, class2);
   env->ReleaseStringUTFChars(name2, name_str2);
   env->ReleaseStringUTFChars(sig2, sig_str2);

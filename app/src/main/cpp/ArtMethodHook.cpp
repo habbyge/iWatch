@@ -66,6 +66,7 @@ void ArtMethodHook::initArtMethodLessEqual10(JNIEnv* env) {
   jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
   auto artMethod1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
   auto artMethod2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+  env->DeleteLocalRef(ArtMethodSizeClass); // 速度释放局部引用，避免阻碍Java层gc该对象
   artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
 
   // artMethodSize = sizeof(ArtMethod);
@@ -107,6 +108,7 @@ void ArtMethodHook::initArtMethod2(JNIEnv* env, std::shared_ptr<Elf> elf_op) {
     void* artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);
     logi("initArtMethod2, artMethod11=%p", artMethod11);
     void* artMethod12 = getArtMethod(env, ArtMethodSizeClass, "func2", "()V", true);
+    env->DeleteLocalRef(ArtMethodSizeClass);
     // jmethodID, jmethodID, ArtMethod*, ArtMethod*
     logi("initArtMethod2, artMethod22=%p", artMethod12);
 
