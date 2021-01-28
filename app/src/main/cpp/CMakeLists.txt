@@ -123,7 +123,11 @@ target_link_libraries( # target_link_libraries 这个函数的意思是刚刚之
     # Specifies the target library.
     iWatch
 
+    android
+
     # Links the target library to the log library
     # included in the NDK.
+    # // Path to a library.
+    # log-lib:FILEPATH=/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-arm64/usr/lib64/liblog.so
     ${log-lib}
 )
