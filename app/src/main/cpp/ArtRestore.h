@@ -34,7 +34,7 @@ public:
   void restoreArtMethod(std::string& className, std::string& funcName, std::string& desciptor);
   void restoreAllArtMethod();
 
-  bool inHooking(std::string& className, std::string& funcName, std::string& desciptor);
+  bool inHooking(std::string& className, std::string& funcName, std::string& desciptor) const;
 
 private:
   // 这里可能存在并发(来自Java层)，需要互斥访问.

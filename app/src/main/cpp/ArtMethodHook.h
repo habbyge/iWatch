@@ -76,15 +76,15 @@ public:
   void* getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static);
 
 
-  inline size_t getArtMethodSizeV1() {
+  inline size_t getArtMethodSizeV1() const {
     return artMethodSizeV1;
   }
 
-  inline size_t getArtMethodSizeV2() {
+  inline size_t getArtMethodSizeV2() const {
     return artMethodSizeV2;
   }
 
-  inline size_t getArtMethodSize() {
+  inline size_t getArtMethodSize() const {
     return artMethodSizeV1 <= 0 ? artMethodSizeV2 : artMethodSizeV1;
   }
 

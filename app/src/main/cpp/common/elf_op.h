@@ -63,7 +63,7 @@ public:
   int dlclose_elf();
   const char* dlerror_elf();
 
-  inline void* getLoadAddr() {
+  inline void* getLoadAddr() const {
     return load_addr_ptr;
   }
   
