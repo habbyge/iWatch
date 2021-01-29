@@ -34,7 +34,7 @@ public:
   void restoreArtMethod(std::string& className, std::string& funcName, std::string& desciptor);
   void restoreAllArtMethod();
 
-  bool inHooking(std::string& className, std::string& funcName, std::string& desciptor) const;
+  bool inHooking(std::string& className, std::string& funcName, std::string& desciptor);
 
 private:
   // 这里可能存在并发(来自Java层)，需要互斥访问.
@@ -47,7 +47,7 @@ private:
   void restoreArtMethod(std::string&& key);
   static void doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, size_t artMethodSize);
 
-  inline std::string&& getKey(std::string& className, std::string& funcName, std::string& desciptor) {
+  inline std::string&& getKey(std::string& className, std::string& funcName, std::string& desciptor) const {
     return std::move(className + "$" + funcName + "$" + desciptor);
   }
 };

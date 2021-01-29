@@ -119,7 +119,7 @@ void ArtRestore::doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, s
 /**
  * 判断该方法是否已经 hook 了，防止重复
  */
-bool ArtRestore::inHooking(std::string& className, std::string& funcName, std::string& desciptor) const {
+bool ArtRestore::inHooking(std::string& className, std::string& funcName, std::string& desciptor) {
   std::string&& key = getKey(className, funcName, desciptor);
 
   std::lock_guard<std::recursive_mutex> lockGuard(lock);
