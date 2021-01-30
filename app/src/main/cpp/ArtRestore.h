@@ -47,8 +47,8 @@ private:
   void restoreArtMethod(std::string&& key);
   static void doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, size_t artMethodSize);
 
-  inline std::string&& getKey(std::string& className, std::string& funcName, std::string& desciptor) const {
-    return std::move(className + "$" + funcName + "$" + desciptor);
+  inline std::string getKey(std::string& className, std::string& funcName, std::string& desciptor) const noexcept {
+    return className + "$" + funcName + "$" + desciptor;
   }
 };
 
