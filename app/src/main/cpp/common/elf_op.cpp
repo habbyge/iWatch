@@ -49,7 +49,7 @@ void* Elf::_dlopen(const char* filename, int flags) {
   } else { // so库的非完整路径
     char buf[512] = {0};
 
-    // sysmtem
+    // Android-11: apex/com.android.art/lib(64)
     memset(buf, 0, sizeof(buf));
     strcpy(buf, kApexLibDir_11);
     strcat(buf, filename); // 生成so库完整路径
