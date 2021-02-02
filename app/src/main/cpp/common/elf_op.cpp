@@ -211,6 +211,7 @@ void* Elf::initElf(const char* libpath) {
     return exception_quit();
   }
 
+  // /apex/com.android.art/lib64/libart.so
   log_info("%s loaded in Android at 0x%08lx", libpath, load_addr);
 
   // Now, mmap the same library once again
