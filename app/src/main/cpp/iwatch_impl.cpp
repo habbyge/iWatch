@@ -526,7 +526,7 @@ long field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField) {
   // art::mirror::ArtField
   void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
   void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
-  int* backupArtField = new int[fieldHookClassInfo.fieldSize];
+  int8_t* backupArtField = new int8_t[fieldHookClassInfo.fieldSize];
 
   memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
   memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
@@ -534,7 +534,7 @@ long field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField) {
   logv("hook_field: Success !");
   clear_exception(env);
 
-  return reinterpret_cast<jlong>(backupArtField); // TODO: ing 记得 delete[] 掉
+  return reinterpret_cast<jlong>(backupArtField); // TODO: 记得 delete[] 掉
 }
 
 static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtFieldPtr) {
