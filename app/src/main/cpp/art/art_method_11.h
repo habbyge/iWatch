@@ -2,6 +2,8 @@
 // Created by 葛祥林 on 12/22/20.
 //
 
+#pragma once
+
 #ifndef IWATCH_ART_METHOD_11_H
 #define IWATCH_ART_METHOD_11_H
 

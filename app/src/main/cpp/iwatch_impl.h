@@ -2,6 +2,8 @@
 // Created by 葛祥林 on 1/8/21.
 //
 
+#pragma once
+
 #ifndef IWATCH_IWATCH_H
 #define IWATCH_IWATCH_H
 

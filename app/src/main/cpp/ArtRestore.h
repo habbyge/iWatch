@@ -2,6 +2,8 @@
 // Created by 葛祥林 on 1/9/21.
 //
 
+#pragma once
+
 #ifndef IWATCH_ARTRESTORE_H
 #define IWATCH_ARTRESTORE_H
 

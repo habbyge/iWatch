@@ -2,6 +2,8 @@
 // Created by 葛祥林 on 1/4/21.
 //
 
+#pragma once
+
 #ifndef IWATCH_JNIENVEXT_H
 #define IWATCH_JNIENVEXT_H
 

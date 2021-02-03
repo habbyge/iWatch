@@ -2,6 +2,8 @@
 // Created by 葛祥林 on 2020/11/25.
 //
 
+#pragma once
+
 #ifndef METHODHOOK_LOG_H
 #define METHODHOOK_LOG_H
 

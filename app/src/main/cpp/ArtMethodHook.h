@@ -2,6 +2,8 @@
 // Created by habbyge on 1/26/21.
 //
 
+#pragma once
+
 #ifndef IWATCH_ARTMETHODHOOK_H
 #define IWATCH_ARTMETHODHOOK_H
 

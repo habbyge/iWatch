@@ -6,6 +6,8 @@
  * 这里的 ELF(so库文件) 解析符号的方案，稍微修改就能实现对 Native(C/C++) 函数的 Hook.
  */
 
+#pragma once
+
 #ifndef IWATCH_ELF_OP_H
 #define IWATCH_ELF_OP_H
 
