@@ -15,8 +15,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import dalvik.system.DexFile;
 
@@ -28,26 +26,10 @@ public final class IWatch {
 
     private static final String DIR = "apatch_opt";
 
-    /**
-     * context
-     */
-    private final Context mContext;
-
-    /**
-     * classes will be fixed
-     * <className@classloader, fixClass>
-     */
-    private static final Map<String, Class<?>> mFixedClass = new ConcurrentHashMap<>();
-
-    /**
-     * security check
-     */
+    private final Context mContext; // must be application context
     private final SecurityChecker mSecurityChecker;
 
-    /**
-     * optimize directory
-     */
-    private final File mOptDir;
+    private final File mOptDir; // optimize directory
 
     public IWatch(Context context) {
         mContext = context;
@@ -71,6 +53,7 @@ public final class IWatch {
      * fix all class of this patch.apk.
      * @param patchPath patch path
      */
+    @SuppressWarnings("unused")
     public synchronized void fix(String patchPath) {
         doFix(new File(patchPath), mContext.getClassLoader(), null);
     }
@@ -94,6 +77,7 @@ public final class IWatch {
      *    需要获取补丁类中需要修复的方法名称，而这个方法名称是通过修复方法的注解来获取到的，所以我们得先进行类的
      *    加载然后获取到他的方法信息，最后通过分析注解获取方法名，这里用的是反射机制来进行操作的。
      * 3.
+     * @param classNames patchFile 中需要被 patch 的 类
      */
     private void doFix(File patchFile, ClassLoader cl, List<String> classNames) {
         if (patchFile == null || !patchFile.exists()) {
@@ -138,20 +122,18 @@ public final class IWatch {
 
             // 双亲机制，这里也是关键点之1/2，classLoader 决定的是该 补丁.apk 中被加载到内存中的class，
             // 是否能够被原apk识别，技术原理与 DexClassLoader 相似.
-            ClassLoader patchClassLoader = new ClassLoader(cl) {
+            final ClassLoader patchCl = new ClassLoader(cl) {
 
                 @Override
                 protected Class<?> findClass(String className) throws ClassNotFoundException {
                     Class<?> clazz = dexFile.loadClass(className, this);
-                    final String packagePath = "com.habbyge.iwatch";
-                    if (clazz == null && className.startsWith(packagePath)) {
-                        return Class.forName(className);// annotation’s class
-                        // not found
+                    if (clazz == null && className.startsWith("com.habbyge.iwatch")) {
+                        return Class.forName(className); // annotation’s class
                     }
-                    if (clazz == null) {
+                    if (clazz == null) { // not found
                         throw new ClassNotFoundException(className);
                     }
-                    Log.i(TAG, "patchClassLoader, fincClass=" + clazz.getName());
+                    Log.i(TAG, "patchCl, fincClass=" + clazz.getName());
                     return clazz;
                 }
             };
@@ -163,9 +145,11 @@ public final class IWatch {
                 if (classNames != null && !classNames.contains(entry)) {
                     continue; // skip, not need fix
                 }
-                clazz = dexFile.loadClass(entry, patchClassLoader);
+                clazz = dexFile.loadClass(entry, patchCl);
+                // 这里之后，patch中的类在其自定义的ClassLoader中已经加载完毕了，即在虚拟机(Art)中的地址已经确定了,
+                // 这样就可可以直接执行后续的地址替换了，跟 ClassLoader 无关了.
                 if (clazz != null) {
-                    fixClass(clazz, cl);
+                    fixClass(cl, clazz);
                 }
             }
         } catch (IOException e) {
@@ -173,11 +157,7 @@ public final class IWatch {
         }
     }
 
-    /**
-     * fix class
-     * @param clazz patch.apk 中的 class
-     */
-    private void fixClass(Class<?> clazz, ClassLoader cl) {
+    private void fixClass(ClassLoader cl, Class<?> clazz) {
         Method[] methods = clazz.getDeclaredMethods();
         FixMethodAnno fixMethodAnno;
         String originClassName;
@@ -192,7 +172,12 @@ public final class IWatch {
             originMethodName = fixMethodAnno.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (StringUtil.isNotEmpty(originClassName) && StringUtil.isNotEmpty(originMethodName)) {
-                fixMethod(cl,
+                if (fixMethod1(cl, originClassName, originMethodName, method)) {
+                    return;
+                }
+
+// TODO: 2021/2/23 继续方案2
+                fixMethod2(
                         originClassName, originMethodName, method.getParameterTypes(),
                         method.getReturnType(), originStatic,
                         clazz.getCanonicalName(), method.getName(), method.getParameterTypes(),
@@ -202,23 +187,27 @@ public final class IWatch {
     }
 
     /**
+     * @param cl 宿主 ClassLoader
+     * @return 是否 fix 成功
+     */
+    private boolean fixMethod1(ClassLoader cl, String className1, String funcName1, Method method2) {
+        Class<?>[] paramTypes = method2.getParameterTypes();
+        String desc = Type.getMethodDescriptor(method2.getReturnType(), paramTypes);
+        Method method1 = ReflectUtil.findMethod(cl, className1, funcName1, paramTypes);
+        boolean ret = MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
+        Log.i(TAG, "fixMethod1 ret=" + ret);
+        return ret;
+    }
+
+    /**
      * fix method, 2 -> 1
      */
-    private void fixMethod(ClassLoader cl, String className1, String funcName1,
-                           Class<?>[] paramTypes1, Class<?> returnType1, boolean isStatic1,
-                           String className2, String funcName2, Class<?>[] paramTypes2,
-                           Class<?> returnType2, boolean isStatic2) {
-
+    private void fixMethod2(String className1, String funcName1,
+                            Class<?>[] paramTypes1, Class<?> returnType1, boolean isStatic1,
+                            String className2, String funcName2, Class<?>[] paramTypes2,
+                            Class<?> returnType2, boolean isStatic2) {
+// TODO: 2021/2/23 ing......
         try {
-            String key = className1 + "@" + cl.toString();
-            Class<?> class1 = mFixedClass.get(key);
-            if (class1 == null) { // class not load
-                Class<?> _class1 = cl.loadClass(className1);
-                // initialize target class
-                class1 = Class.forName(_class1.getName(), true, _class1.getClassLoader());
-            }
-            mFixedClass.put(key, class1);
-
             hook(className1, funcName1, paramTypes1, returnType1, isStatic1,
                  className2, funcName2, paramTypes2, returnType2, isStatic2);
         } catch (Exception e) {
