@@ -11,7 +11,6 @@ import com.habbyge.iwatch.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -58,8 +57,6 @@ public final class PatchManager {
 
     private IWatch mIWatch;
 
-    private ClassLoader mHostClassLoader;
-
     @SuppressLint("StaticFieldLeak")
     private static PatchManager mInstance;
 
@@ -88,7 +85,7 @@ public final class PatchManager {
         mIWatchVersion = iwatchVersion;
         mAppVersion = appVersion;
 
-        mPatchDir = new File(mContext.getFilesDir(), DIR);
+        mPatchDir = new File(context.getFilesDir(), DIR);
         if (!mPatchDir.exists() && !mPatchDir.mkdirs()) {// make directory fail
             Log.e(TAG, "patch dir create error.");
             return false;
@@ -184,7 +181,6 @@ public final class PatchManager {
         if (mPatch == null) {
             return false;
         }
-        mHostClassLoader = mContext.getClassLoader();
         List<String> classes = mPatch.getClasses();
         if (classes == null || classes.isEmpty()) {
             resetAllPatch();

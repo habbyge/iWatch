@@ -399,7 +399,7 @@ long method_hookv2_impl(JNIEnv* env,
 
   jclass jclass1;
   try {
-    // todo ing 这里有问题，拿到的是宿主的ClassLoader，需要使用的是patch中的ClassLoader，3个思路来解决问题：
+    // 这里拿到的是宿主的ClassLoader
     jclass1 = env->FindClass(_class1.c_str());
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-1: %s", e.what());
@@ -429,7 +429,7 @@ long method_hookv2_impl(JNIEnv* env,
     return '.' == ch;
   }, '/');
   try {
-    jclass2 = env->FindClass(classStr2.c_str());
+    jclass2 = env->FindClass(classStr2.c_str()); // 这里拿到的是patch中的ClassLoader
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-2: %s", e.what());
     clear_exception(env);
