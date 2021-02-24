@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Created by habbyge on 2021/1/5.
@@ -42,5 +45,14 @@ public class FileUtil {
 			}
 		}
 		return file.delete();
+	}
+
+	public static Enumeration<JarEntry> parseJarFile(File jarInputFile) {
+		try {
+			JarFile jarFile = new JarFile(jarInputFile); // JarFile
+			return jarFile.entries();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }

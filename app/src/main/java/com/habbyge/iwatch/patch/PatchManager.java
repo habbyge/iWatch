@@ -11,6 +11,7 @@ import com.habbyge.iwatch.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -190,7 +191,7 @@ public final class PatchManager {
             mPatch = null;
             return false;
         }
-        mIWatch.fix(mPatch.getFile(), mContext.getClassLoader(), classes);
+        mIWatch.fix(mPatch.getFile(), classes);
         return true;
     }
 
@@ -199,16 +200,13 @@ public final class PatchManager {
      * @param patch patch
      */
     private void loadPatch(Patch patch) {
-        ClassLoader classLoader = mHostClassLoader != null ? mHostClassLoader : mContext.getClassLoader();
-        if (classLoader != null) {
-            List<String> classes = patch.getClasses();
-            if (classes == null || classes.isEmpty()) {
-                resetAllPatch();
-                mPatch = null;
-                return;
-            }
-            mIWatch.fix(patch.getFile(), classLoader, classes);
+        List<String> classes = patch.getClasses();
+        if (classes == null || classes.isEmpty()) {
+            resetAllPatch();
+            mPatch = null;
+            return;
         }
+        mIWatch.fix(patch.getFile(), classes);
     }
 
     /**
@@ -254,8 +252,13 @@ public final class PatchManager {
                         String className2, String funcName2, Class<?>[] paramTypes2,
                         Class<?> returnType2, boolean isStatic2) {
 
-        mIWatch.hook(className1, funcName1, paramTypes1, returnType1, isStatic1,
-                    className2, funcName2, paramTypes2, returnType2, isStatic2);
+        try {
+            Class<?> class2 = Class.forName(className2);
+            Method method2 = class2.getDeclaredMethod(funcName2, paramTypes2);
+            mIWatch.fixMethod1(PatchManager.class.getClassLoader(), className1, funcName1, method2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public String getAppVersion() {

@@ -268,7 +268,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
     return I_ERR;
   }
   std::string _class(srcClassStr);
-  std::replace_if(_class.begin(), _class.end(), [](const char& ch)->bool {
+  std::replace_if(_class.begin(), _class.end(), [](const char& ch) -> bool {
     return '.' == ch;
   }, '/');
   env->ReleaseStringUTFChars(srcClass, srcClassStr);
@@ -392,7 +392,8 @@ long method_hookv2_impl(JNIEnv* env,
   }
 
   jclass jclass1;
-  try { // todo ing 这里有问题，拿到的是宿主的ClassLoader，需要使用的是patch中的ClassLoader
+  try {
+    // todo ing 这里有问题，拿到的是宿主的ClassLoader，需要使用的是patch中的ClassLoader，3个思路来解决问题：
     jclass1 = env->FindClass(_class1.c_str());
   } catch (std::exception& e) {
     loge("method_hookv2 FindClass-1: %s", e.what());
