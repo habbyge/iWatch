@@ -20,6 +20,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-applymapping mapping.txt # todo
+-ignorewarnings
+
 -keep class * extends java.lang.annotation.Annotation
 #-keep class com.habbyge.iwatch.** { *; }
 

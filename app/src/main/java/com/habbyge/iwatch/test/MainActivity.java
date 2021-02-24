@@ -46,8 +46,6 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "btnClick click !");
-
                 // 测试用例:
                 PatchManager.getInstance().testFix(
                         "com.habbyge.iwatch.test.MainActivity", "printf",
@@ -62,8 +60,8 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-//                printf("Mali");
-                printf("Mali_Mango_Pidan_Habby");
+                printf("Mali");
+//                printf("Mali_Mango_Pidan_Habby");
             }
         });
 
@@ -94,6 +92,11 @@ public class MainActivity extends Activity {
                 new TestInlineCase().getIx();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     @Keep

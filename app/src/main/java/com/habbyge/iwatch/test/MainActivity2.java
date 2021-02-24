@@ -14,6 +14,11 @@ public class MainActivity2 extends Activity {
         Log.d(TAG, "onResume......");
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
     @Keep
     @SuppressWarnings("all")
     public void printf_hook(String text) {
