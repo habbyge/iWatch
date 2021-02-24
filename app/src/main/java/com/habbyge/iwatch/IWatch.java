@@ -3,7 +3,6 @@ package com.habbyge.iwatch;
 import android.content.Context;
 import android.util.Log;
 
-import com.habbyge.iwatch.loader.SecurityChecker;
 import com.habbyge.iwatch.patch.FixMethodAnno;
 import com.habbyge.iwatch.util.FileUtil;
 import com.habbyge.iwatch.util.ReflectUtil;
@@ -25,44 +24,21 @@ import dalvik.system.DexClassLoader;
 public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
 
-    private static final String DIR = "apatch_opt";
-
-    private final SecurityChecker mSecurityChecker;
-
-    private final File mOptDir; // optimize directory
+//    private final SecurityChecker mSecurityChecker;
 
     public IWatch(Context context) {
-        mSecurityChecker = new SecurityChecker(context);
-        mOptDir = new File(context.getFilesDir(), DIR);
-        if (!mOptDir.exists() && !mOptDir.mkdirs()) { // make directory fail
-            Log.e(TAG, "opt dir create error.");
-        } else if (!mOptDir.isDirectory()) {// not directory
-            boolean ret = mOptDir.delete();
-            Log.i(TAG, "mOptDir.delete(): " + ret);
-        }
-        Log.i(TAG, "mOptDir=" + mOptDir.getAbsolutePath());
+//        mSecurityChecker = new SecurityChecker(context);
     }
 
     public void init() {
         MethodHook.init();
     }
 
-    /**
-     * fix all class of this patch.apk.
-     *
-     * @param patchPath patch path
-     */
     @SuppressWarnings("unused")
     public synchronized void fix(String patchPath) {
         doFix(new File(patchPath), null);
     }
 
-    /**
-     * fix
-     *
-     * @param patchFile  patch file
-     * @param classNames class names of patch.apk
-     */
     public synchronized void fix(File patchFile, List<String> classNames) {
         doFix(patchFile, classNames);
     }
@@ -84,36 +60,16 @@ public final class IWatch {
             return;
         }
 
-        if (!mSecurityChecker.verifyApk(patchFile)) { // 检查patch包完整性、签名
+        /*if (!mSecurityChecker.verifyApk(patchFile)) { // 检查patch包完整性、签名
             Log.e(TAG, "doFix, mSecurityChecker.verifyApk failure: " + patchFile.getAbsolutePath());
             return;
-        }
+        }*/
 
         try {
-            File optfile = new File(mOptDir, patchFile.getName());
-            boolean saveFingerprint = true;
-            if (optfile.exists()) {
-                // need to verify fingerprint when the optimize file exist,
-                // prevent someone attack on jailbreak device with
-                // Vulnerability-Parasyte.
-                // btw:exaggerated android Vulnerability-Parasyte
-                // http://secauo.com/Exaggerated-Android-Vulnerability-Parasyte.html
-
-                if (mSecurityChecker.verifyOpt(optfile)) {
-                    Log.i(TAG, "doFix, mSecurityChecker.verifyOpt=" + optfile.getAbsolutePath());
-                    saveFingerprint = false;
-                } else if (!optfile.delete()) {
-                    return;
-                }
-            }
-            if (saveFingerprint) {
-                mSecurityChecker.saveOptSig(optfile);
-            }
-
             String patchFilePath = patchFile.getAbsolutePath();
-            Log.i(TAG, "doFix, patchFile, optFile: " + patchFilePath + ", " + optfile.getAbsolutePath());
+            Log.i(TAG, "doFix, patchFile: " + patchFilePath);
             final ClassLoader cl = IWatch.class.getClassLoader();
-            final DexClassLoader dexCl = new DexClassLoader(patchFilePath, optfile.getAbsolutePath(), null, cl);
+            final DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
             Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile(patchFile);
             if (jarEntries == null) {
                 Log.e(TAG, "doFix, jarEntries is NULL");
@@ -123,6 +79,7 @@ public final class IWatch {
             String entry;
             while (jarEntries.hasMoreElements()) {
                 entry = jarEntries.nextElement().getName();
+                // TODO: 2021/2/24 这里 entry 可能以 ".class" 为后缀，可能需要先删除之，再匹配、加载
                 if (classNames != null && !classNames.contains(entry)) {
                     continue; // skip, not need fix
                 }
@@ -158,8 +115,16 @@ public final class IWatch {
                     Log.i(TAG, "fixMethod1 success !");
                     continue;
                 }
-
-                // TODO: 2021/2/23 继续 方案2:
+                // 方案2:
+                // 通过阅读 DexClassLoader.loadClass()源码
+                // (libcore/dalvik/src/main/java/dalvik/system/DexClassLoader.java)，可知：
+                // 一个class在虚拟机(Art)中的标识是其: 全路径名@classLoader，那么我们通过自定义DexClassLoader
+                // 加载的patch中的class，在Art虚拟机中已经是我们自定义的classLoader了，因此这里是可用于处理补丁包
+                // 中的类的。
+                // 其中使用到 ClassLoader 的地方是：DexPathList.findClass()，初始化其ClassLoader是在DexPathList
+                // 构造函数中，直接在 DexClassLoader 中赋值this，也就是我们自定义的 ClassLoader.
+                // 上面已经loadCLass过补丁中的class，那么第2次使用时，直接从缓存中读取即可。
+                // DexFile在Art中的实现对应：art/runtime/native/dalvik_system_DexFile.cc 中的 DexFile_defineClassNative函数
                 if (fixMethod2(
                         originClassName, originMethodName, method.getParameterTypes(),
                         method.getReturnType(), originStatic,
@@ -187,7 +152,7 @@ public final class IWatch {
                                Class<?>[] paramTypes1, Class<?> returnType1, boolean isStatic1,
                                String className2, String funcName2, Class<?>[] paramTypes2,
                                Class<?> returnType2, boolean isStatic2) {
-// TODO: 2021/2/23 ing......
+
         if (StringUtil.isEmpty(className1) || StringUtil.isEmpty(funcName1)
                 || StringUtil.isEmpty(className2) || StringUtil.isEmpty(funcName2)
                 || returnType1 == null || returnType2 == null) {
@@ -205,15 +170,15 @@ public final class IWatch {
         MethodHook.unhookAllMethod();
     }
 
-    /**
-     * delete optimize file of patch file
-     *
-     * @param file patch file
-     */
-    public synchronized void removeOptFile(File file) {
-        File optfile = new File(mOptDir, file.getName());
-        if (optfile.exists() && !optfile.delete()) {
-            Log.e(TAG, optfile.getName() + " delete error.");
-        }
-    }
+//    /**
+//     * delete optimize file of patch file
+//     *
+//     * @param file patch file
+//     */
+//    public synchronized void removeOptFile(File file) {
+//        File optfile = new File(mOptDir, file.getName());
+//        if (optfile.exists() && !optfile.delete()) {
+//            Log.e(TAG, optfile.getName() + " delete error.");
+//        }
+//    }
 }

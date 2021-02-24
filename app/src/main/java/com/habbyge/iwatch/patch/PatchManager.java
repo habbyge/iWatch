@@ -240,7 +240,7 @@ public final class PatchManager {
             return;
         }
         for (File file : files) {
-            mIWatch.removeOptFile(file);
+//            mIWatch.removeOptFile(file);
             if (!FileUtil.deleteFile(file)) {
                 Log.e(TAG, file.getName() + " delete error.");
             }
