@@ -252,13 +252,19 @@ public final class PatchManager {
                         String className2, String funcName2, Class<?>[] paramTypes2,
                         Class<?> returnType2, boolean isStatic2) {
 
-        try {
-            Class<?> class2 = Class.forName(className2);
-            Method method2 = class2.getDeclaredMethod(funcName2, paramTypes2);
-            mIWatch.fixMethod1(PatchManager.class.getClassLoader(), className1, funcName1, method2);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Class<?> class2 = Class.forName(className2);
+//            Method method2 = class2.getDeclaredMethod(funcName2, paramTypes2);
+//            mIWatch.fixMethod1(PatchManager.class.getClassLoader(), className1, funcName1, method2);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            mIWatch.fixMethod2(className1, funcName1, paramTypes1, returnType1, isStatic1,
+//                               className2, funcName2, paramTypes2, returnType2, isStatic2);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     public String getAppVersion() {

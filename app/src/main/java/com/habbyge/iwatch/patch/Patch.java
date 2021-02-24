@@ -38,12 +38,6 @@ public class Patch implements Comparable<Patch> {
     // 该 Patch 中包含的所有Class
     List<String> mClasses = null;
 
-    // TODO: 1/21/21 如何加载补丁中的class：
-    //  通过构造 补丁apk 中的 DexClassLoader 来加载 补丁apk 中的类；
-    //  DexClassLoader 的 parent 设置为 宿主程序 的 classloader，即可将 宿主程序 和 补丁程序 中的 class 贯通；
-    //  这里：生成 patch.apk 包时，会把补丁包中需要修改的类，改成_CF结尾的类名，所以不会有重复类。
-    private ClassLoader mClassLoader;
-
     public Patch(File file) throws IOException {
         mFile = file;
         init();
