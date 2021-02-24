@@ -345,6 +345,12 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring sr
   return backupArtMethodAddr;
 }
 
+/**
+ * method1 来自 宿主，使用宿主默认的ClassLoader；
+ * method2 来自于patch(补丁)，使用补丁中自定义的DexClassLoader，在执行这个函数(里面需要使用ClassLoader)
+ * 之前已经由自定义的DexClassLoader.loadClass加载过一次了，在art虚拟机中已经缓存了 class全路径名@classsLoader，
+ * 所以这里可以直接从缓存中取到该class对应的classLoader加载.
+ */
 long method_hookv2_impl(JNIEnv* env,
                         jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
                         jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
