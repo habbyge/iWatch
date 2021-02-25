@@ -157,12 +157,17 @@ public final class PatchManager {
         });
 
         boolean success = false;
+        File file;
         for (int i = 0; i < files.length; ++i) {
+            file = files[i];
+            if (!file.exists()) {
+                continue;
+            }
             if (i == 0) { // files[0] 是最新修改的文件
-                success = addPatch(files[i]);
+                success = addPatch(file);
             } else { // 旧的补丁文件删掉之
                 // noinspection ResultOfMethodCallIgnored
-                files[i].delete();
+                file.delete();
             }
         }
         if (!success) {
