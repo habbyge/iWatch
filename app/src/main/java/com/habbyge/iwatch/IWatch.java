@@ -1,6 +1,5 @@
 package com.habbyge.iwatch;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.habbyge.iwatch.patch.FixMethodAnno;

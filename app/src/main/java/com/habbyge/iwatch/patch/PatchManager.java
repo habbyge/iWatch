@@ -104,7 +104,6 @@ public final class PatchManager {
      *
      * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
      * When a new patch file has been downloaded, it will become effective immediately by addPatch.
-     * @param patchPath path
      */
     public void addPatch(String patchPath) throws IOException {
         File newPatchFile = new File(patchPath);
@@ -120,6 +119,7 @@ public final class PatchManager {
         resetAllPatch(); // 清理带哦旧的path，重新load新的；恢复原始方法，重新hook新的方法
 
         FileUtil.copyFile(newPatchFile, destPathchFile); // copy to patch's directory
+        FileUtil.deleteFile(newPatchFile); // 删除下载下来的patch文件
         boolean success = addPatch(destPathchFile);
         if (success && mPatch != null) {
             loadPatch(mPatch);
@@ -243,7 +243,6 @@ public final class PatchManager {
             return;
         }
         for (File file : files) {
-//            mIWatch.removeOptFile(file);
             if (!FileUtil.deleteFile(file)) {
                 Log.e(TAG, file.getName() + " delete error.");
             }
