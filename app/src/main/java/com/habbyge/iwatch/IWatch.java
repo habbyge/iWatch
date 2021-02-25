@@ -75,20 +75,27 @@ public final class IWatch {
                 return;
             }
             Class<?> clazz;
-            String entry;
-            while (jarEntries.hasMoreElements()) {
-                entry = jarEntries.nextElement().getName();
-                // TODO: 2021/2/24 这里 entry 可能以 ".class" 为后缀，可能需要先删除之，再匹配、加载
-                if (classNames != null && !classNames.contains(entry)) {
-                    continue; // skip, not need fix
-                }
-                clazz = dexCl.loadClass(entry);
-                // 这里之后，patch中的类在其自定义的ClassLoader中已经加载完毕了，即在虚拟机(Art)中的地址已经确定了,
-                // 这样就可可以直接执行后续的地址替换了，跟 ClassLoader 无关了.
+            for (String className : classNames) {
+                clazz = dexCl.loadClass(className);
                 if (clazz != null) {
                     fixClass(cl, clazz);
                 }
             }
+
+//            Class<?> clazz
+//            String entry;
+//            while (jarEntries.hasMoreElements()) { // 这里应该是.dex文件
+//                entry = jarEntries.nextElement().getName();
+//                if (classNames != null && !classNames.contains(entry)) {
+//                    continue; // skip, not need fix
+//                }
+//                clazz = dexCl.loadClass(entry);
+//                // 这里之后，patch中的类在其自定义的ClassLoader中已经加载完毕了，即在虚拟机(Art)中的地址已经确定了,
+//                // 这样就可可以直接执行后续的地址替换了，跟 ClassLoader 无关了.
+//                if (clazz != null) {
+//                    fixClass(cl, clazz);
+//                }
+//            }
         } catch (Exception e) {
             Log.e(TAG, "pacth", e);
         }

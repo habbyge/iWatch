@@ -57,12 +57,11 @@ public class Patch implements Comparable<Patch> {
             inputStream = jarFile.getInputStream(entry);
             Manifest manifest = new Manifest(inputStream);
             Attributes mainAttributes = manifest.getMainAttributes();
-            mName = mainAttributes.getValue(PATCH_NAME);
-            /*mTime = new Date(mainAttributes.getValue(CREATED_TIME));*/
-            mTime = DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME));
+            mName = mainAttributes.getValue(PATCH_NAME); // 补丁包名
+            mTime = DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME)); // 补丁创建时间
 
-            mPatchVersion = mainAttributes.getValue(PATCH_VERSION);
-            mBaseAppVersion = mainAttributes.getValue(BASE_APP_VERSION);
+            mPatchVersion = mainAttributes.getValue(PATCH_VERSION); // 补丁版本
+            mBaseAppVersion = mainAttributes.getValue(BASE_APP_VERSION); // 宿主app版本
 
             Attributes.Name attrName;
             String name;
@@ -84,6 +83,10 @@ public class Patch implements Comparable<Patch> {
                 inputStream.close();
             }
         }
+    }
+
+    public String geVersion() {
+        return mPatchVersion;
     }
 
     public String getName() {
