@@ -26,7 +26,7 @@ public final class IWatch {
 
 //    private final SecurityChecker mSecurityChecker;
 
-    public IWatch(Context context) {
+    public IWatch() {
 //        mSecurityChecker = new SecurityChecker(context);
     }
 

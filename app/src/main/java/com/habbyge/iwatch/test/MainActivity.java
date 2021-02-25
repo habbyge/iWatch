@@ -10,7 +10,6 @@ import androidx.annotation.Keep;
 
 import com.habbyge.iwatch.MethodHook;
 import com.habbyge.iwatch.R;
-import com.habbyge.iwatch.patch.PatchManager;
 
 import java.util.Objects;
 
@@ -46,13 +45,13 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                // 测试用例:
-                PatchManager.getInstance().testFix(
-                        "com.habbyge.iwatch.test.MainActivity", "printf",
-                        new Class<?>[]{String.class}, void.class, false,
-
-                        "com.habbyge.iwatch.test.MainActivity2", "printf_hook",
-                        new Class<?>[]{String.class}, void.class, false);
+                // fixme 测试用例:
+//                PatchManager.getInstance().testFix(
+//                        "com.habbyge.iwatch.test.MainActivity", "printf",
+//                        new Class<?>[]{String.class}, void.class, false,
+//
+//                        "com.habbyge.iwatch.test.MainActivity2", "printf_hook",
+//                        new Class<?>[]{String.class}, void.class, false);
             }
         });
 
@@ -105,7 +104,7 @@ public class MainActivity extends Activity {
 
     @Keep
     @SuppressWarnings("all")
-    public void printf(String text) {
+    private void printf(String text) {
         Log.i(TAG, "printf: " + text);
         ix = 100;
     }

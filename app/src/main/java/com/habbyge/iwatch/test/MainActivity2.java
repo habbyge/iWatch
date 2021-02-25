@@ -19,9 +19,13 @@ public class MainActivity2 extends Activity {
         super.onPause();
     }
 
+    private void testLog(String text) {
+        Log.d(TAG, "printf_hook: " + "l love my family !! "+ ", " + text);
+    }
+
     @Keep
     @SuppressWarnings("all")
-    public void printf_hook(String text) {
-        Log.d(TAG, "printf_hook: " + "l love my family !! "+ ", " + text);
+    private void printf_hook(String text) {
+        testLog(text);
     }
 }
