@@ -60,8 +60,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                printf("Mali");
-//                printf("Mali_Mango_Pidan_Habby");
+                printf("Mali_Mango_Pidan_Habby");
             }
         });
 
@@ -97,6 +96,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
     }
 
     @Keep
