@@ -8,8 +8,6 @@ import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -29,8 +27,8 @@ public class Patch implements Comparable<Patch> {
     private static final String CREATED_TIME = "Created-Time";
     private static final String PATCH_NAME = "Patch-Name";
 
-    private static final String PATCH_VERSION = "Patch-Version";
-    private static final String BASE_APP_VERSION = "Base-App-Version";
+    private static final String PATCH_VERSION = "From-File";
+    private static final String BASE_APP_VERSION = "To-File";
 
     private final File mFile;
     private String mName;
@@ -50,11 +48,23 @@ public class Patch implements Comparable<Patch> {
      * Patch 包解析构造成 Patch 类对象时，主要是解析 patch 包中的 META-INF/PATCH.MF 文件，将该文件中
      * Patch-Classes 项对应的值解析出来，在前面 apkpatch 工具实现分析一文中有介绍，这个字段对应的值是将
      * 修复的 Class 以英文逗号分隔组成。
+     *
+     * META-INF/PATCH.MF 中内容：
+     * Manifest-Version: 1.0
+     * Patch-Name: app-release-2
+     * Created-Time: 26 Feb 2021 07:10:21 GMT
+     * From-File: app-release-2.apk
+     * To-File: app-release-1.apk
+     * Patch-Classes: com.habbyge.iwatch.test.MainActivity$4_CF,com.habbyge.i
+     *  watch.test.MainActivity$5_CF
+     * Created-By: 1.0 (ApkPatch)
+     *
+     * 其中: "From-File" 表示: 修复包名-补丁版本号.apk "To-File" 表示: 基础包名-版本号.apk
      */
     private void init() throws IOException {
         JarFile jarFile = null;
         InputStream inputStream = null;
-        try { // TODO: 2021/2/25 这里可能有改变...... 
+        try {
             jarFile = new JarFile(mFile);
             JarEntry entry = jarFile.getJarEntry(ENTRY_NAME);
             inputStream = jarFile.getInputStream(entry);
@@ -62,10 +72,10 @@ public class Patch implements Comparable<Patch> {
             Attributes mainAttributes = manifest.getMainAttributes();
             mName = mainAttributes.getValue(PATCH_NAME); // 补丁包名
             // 补丁创建时间
-            mTime = DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME));
+            mTime = new Date(mainAttributes.getValue(CREATED_TIME)); // 26 Feb 2021 16:22:33 GMT
 
-            mPatchVersion = mainAttributes.getValue(PATCH_VERSION); // 补丁版本
-            mBaseAppVersion = mainAttributes.getValue(BASE_APP_VERSION); // 宿主app版本
+            mPatchVersion = getVersion(mainAttributes.getValue(PATCH_VERSION)); // 补丁版本
+            mBaseAppVersion = getVersion(mainAttributes.getValue(BASE_APP_VERSION)); // 宿主app版本
 
             Log.i(TAG, "init, mName=" + mName + ", mTime=" + mTime
                     + ", mPatchVersion=" + mPatchVersion
@@ -82,7 +92,7 @@ public class Patch implements Comparable<Patch> {
                     break;
                 }
             }
-        } catch (IOException | ParseException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         } finally {
             if (jarFile != null) {
@@ -126,5 +136,14 @@ public class Patch implements Comparable<Patch> {
             return false;
         }
         return appVersion.equals(mBaseAppVersion);
+    }
+
+    private String getVersion(String str) {
+        if (TextUtils.isEmpty(str)) {
+            return "";
+        }
+        int index1 = str.lastIndexOf("-");
+        int index2 = str.length() - ".apk".length();
+        return str.substring(index1, index2);
     }
 }

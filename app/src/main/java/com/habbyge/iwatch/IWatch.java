@@ -1,11 +1,11 @@
 package com.habbyge.iwatch;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.habbyge.iwatch.patch.FixMethodAnno;
 import com.habbyge.iwatch.util.FileUtil;
 import com.habbyge.iwatch.util.ReflectUtil;
-import com.habbyge.iwatch.util.StringUtil;
 import com.habbyge.iwatch.util.Type;
 
 import java.io.File;
@@ -110,7 +110,7 @@ public final class IWatch {
             originClassName = fixMethodAnno._class();
             originMethodName = fixMethodAnno.method();
             originStatic = Modifier.isStatic(method.getModifiers());
-            if (StringUtil.isNotEmpty(originClassName) && StringUtil.isNotEmpty(originMethodName)) {
+            if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
                 // 方案1:
                 if (fixMethod1(cl, originClassName, originMethodName, method)) {
                     Log.i(TAG, "fixMethod1 success !");
@@ -155,8 +155,8 @@ public final class IWatch {
                                String className2, String funcName2, Class<?>[] paramTypes2,
                                Class<?> returnType2, boolean isStatic2) {
 
-        if (StringUtil.isEmpty(className1) || StringUtil.isEmpty(funcName1)
-                || StringUtil.isEmpty(className2) || StringUtil.isEmpty(funcName2)
+        if (TextUtils.isEmpty(className1) || TextUtils.isEmpty(funcName1)
+                || TextUtils.isEmpty(className2) || TextUtils.isEmpty(funcName2)
                 || returnType1 == null || returnType2 == null) {
 
             throw new NullPointerException("IWatch.hook, param is null");
