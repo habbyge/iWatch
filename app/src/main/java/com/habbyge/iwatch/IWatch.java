@@ -142,10 +142,11 @@ public final class IWatch {
      * @param cl 宿主 ClassLoader
      * @return 是否 fix 成功
      */
-    private boolean fixMethod1(ClassLoader cl, String className1, String funcName1, Method method2) {
+    public boolean fixMethod1(ClassLoader cl, String className1, String funcName1, Method method2) {
         Class<?>[] paramTypes = method2.getParameterTypes();
         String desc = Type.getMethodDescriptor(method2.getReturnType(), paramTypes);
         Method method1 = ReflectUtil.findMethod(cl, className1, funcName1, paramTypes);
+        method2.setAccessible(true);
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
     }
 
@@ -170,16 +171,4 @@ public final class IWatch {
     public void unhookAllMethod() {
         MethodHook.unhookAllMethod();
     }
-
-//    /**
-//     * delete optimize file of patch file
-//     *
-//     * @param file patch file
-//     */
-//    public synchronized void removeOptFile(File file) {
-//        File optfile = new File(mOptDir, file.getName());
-//        if (optfile.exists() && !optfile.delete()) {
-//            Log.e(TAG, optfile.getName() + " delete error.");
-//        }
-//    }
 }

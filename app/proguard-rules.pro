@@ -58,10 +58,10 @@
 -keep public class * extends android.content.ContentProvider
 -keep public class * extends android.app.backup.BackupAgentHelper
 -keep public class * extends android.preference.Preference
-#（Basic）
--keep public class com.google.vending.licensing.ILicensingService
-#（Basic）
--keep public class com.android.vending.licensing.ILicensingService
+
+-keep class androidx.**{*;}
+-keep class com.google.**{*;}
+
 #（Basic）混淆注意事项第二条，保持 native 方法不被混淆
 -keepclasseswithmembernames class * {
     native <methods>;

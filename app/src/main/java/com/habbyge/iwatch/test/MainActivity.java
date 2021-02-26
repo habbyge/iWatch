@@ -11,13 +11,12 @@ import android.widget.Button;
 import androidx.annotation.Keep;
 import androidx.core.app.ActivityCompat;
 
-import com.habbyge.iwatch.MethodHook;
 import com.habbyge.iwatch.R;
+import com.habbyge.iwatch.patch.PatchManager;
 import com.habbyge.iwatch.util.FileUtil;
 
 import java.io.File;
 import java.util.Enumeration;
-import java.util.Objects;
 import java.util.jar.JarEntry;
 
 import dalvik.system.DexClassLoader;
@@ -122,12 +121,12 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 // fixme 测试用例:
-//                PatchManager.getInstance().testFix(
-//                        "com.habbyge.iwatch.test.MainActivity", "printf",
-//                        new Class<?>[]{String.class}, void.class, false,
-//
-//                        "com.habbyge.iwatch.test.MainActivity2", "printf_hook",
-//                        new Class<?>[]{String.class}, void.class, false);
+                PatchManager.getInstance().testFix(
+                        "com.habbyge.iwatch.test.MainActivity", "printf",
+                        new Class<?>[]{String.class}, void.class, false,
+
+                        "com.habbyge.iwatch.test.MainActivity2", "printf_hook",
+                        new Class<?>[]{String.class}, void.class, false);
             }
         });
 
@@ -152,14 +151,16 @@ public class MainActivity extends Activity {
         btnHookClass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MethodHook.hookClass2(Objects.requireNonNull(TestCase0.class.getCanonicalName()));
+//                MethodHook.hookClass2(Objects.requireNonNull(TestCase0.class.getCanonicalName()));
+                Log.i(TAG, "btnHookClass.onClick, hook success !");
             }
         });
 
         btnHookClickLsn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) { // 被替换 onClick() 函数的样例
-                Log.i(TAG, "onClick, this=" + this.getClass().getName());
+                /*Log.i(TAG, "onClick, this=" + this.getClass().getName());*/
+                Log.i(TAG, "btnHookClickLsn.onClick, hook success !");
             }
         });
 

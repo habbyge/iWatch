@@ -1,6 +1,7 @@
 package com.habbyge.iwatch.patch;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -21,6 +22,8 @@ import java.util.jar.Manifest;
  * Created by habbyge on 2021/1/5.
  */
 public class Patch implements Comparable<Patch> {
+    private static final String TAG = "iWatch.Patch";
+
     private static final String ENTRY_NAME = "META-INF/PATCH.MF";
     private static final String PATCH_CLASSES = "Patch-Classes";
     private static final String CREATED_TIME = "Created-Time";
@@ -58,10 +61,15 @@ public class Patch implements Comparable<Patch> {
             Manifest manifest = new Manifest(inputStream);
             Attributes mainAttributes = manifest.getMainAttributes();
             mName = mainAttributes.getValue(PATCH_NAME); // 补丁包名
-            mTime = DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME)); // 补丁创建时间
+            // 补丁创建时间
+            mTime = DateFormat.getTimeInstance().parse(mainAttributes.getValue(CREATED_TIME));
 
             mPatchVersion = mainAttributes.getValue(PATCH_VERSION); // 补丁版本
             mBaseAppVersion = mainAttributes.getValue(BASE_APP_VERSION); // 宿主app版本
+
+            Log.i(TAG, "init, mName=" + mName + ", mTime=" + mTime
+                    + ", mPatchVersion=" + mPatchVersion
+                    + ", mBaseAppVersion=" + mBaseAppVersion);
 
             Attributes.Name attrName;
             String name;
@@ -70,6 +78,7 @@ public class Patch implements Comparable<Patch> {
                 name = attrName.toString();
                 if (PATCH_CLASSES.equalsIgnoreCase(name)) {
                     mClasses = Arrays.asList(mainAttributes.getValue(attrName).split(","));
+                    Log.i(TAG, "init, mClasses=" + mClasses.size());
                     break;
                 }
             }
