@@ -8,7 +8,7 @@ import com.habbyge.iwatch.patch.PatchManager;
 public class IWatchApplication extends Application {
     private static final String TAG = "iWatch.IWatchApplication";
 
-    private static final String IPATCH_PATH = "/out.apatch";
+//    private static final String IPATCH_PATH = "/out.apatch";
 
     @Override
     public void onCreate() {

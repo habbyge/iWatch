@@ -227,10 +227,4 @@ public class MainActivity extends Activity {
         Log.i(TAG, "printf: " + text);
         ix = 100;
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(TAG, "onResume ix = " + ix);
-    }
 }
