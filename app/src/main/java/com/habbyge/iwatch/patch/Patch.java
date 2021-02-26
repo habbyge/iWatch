@@ -143,7 +143,13 @@ public class Patch implements Comparable<Patch> {
             return "";
         }
         int index1 = str.lastIndexOf("-");
+        if (index1 < 0) {
+            return "";
+        }
         int index2 = str.length() - ".apk".length();
-        return str.substring(index1, index2);
+        if (index2 < 0) {
+            return "";
+        }
+        return index1 + 1 < index2 ? str.substring(index1 + 1, index2) : "";
     }
 }

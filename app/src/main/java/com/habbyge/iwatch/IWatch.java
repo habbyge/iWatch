@@ -3,12 +3,14 @@ package com.habbyge.iwatch;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.alipay.euler.andfix.annotation.MethodReplace;
 import com.habbyge.iwatch.patch.FixMethodAnno;
 import com.habbyge.iwatch.util.FileUtil;
 import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
@@ -24,9 +26,11 @@ public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
 
 //    private final SecurityChecker mSecurityChecker;
+    private final boolean mTest;
 
-    public IWatch() {
+    public IWatch(boolean test) {
 //        mSecurityChecker = new SecurityChecker(context);
+        mTest = test;
     }
 
     public void init() {
@@ -69,6 +73,7 @@ public final class IWatch {
                 Log.e(TAG, "doFix, jarEntries is NULL");
                 return;
             }
+
             Class<?> clazz;
             for (String className : classNames) {
                 clazz = dexCl.loadClass(className);
@@ -97,6 +102,14 @@ public final class IWatch {
     }
 
     private void fixClass(ClassLoader cl, Class<?> clazz) {
+        if (mTest) {
+            doFixClassTest(cl, clazz);
+        } else {
+            doFixClass(cl, clazz);
+        }
+    }
+
+    private void doFixClass(ClassLoader cl, Class<?> clazz) {
         Method[] methods = clazz.getDeclaredMethods();
         FixMethodAnno fixMethodAnno;
         String originClassName;
@@ -109,6 +122,58 @@ public final class IWatch {
             }
             originClassName = fixMethodAnno._class();
             originMethodName = fixMethodAnno.method();
+            originStatic = Modifier.isStatic(method.getModifiers());
+            if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
+                // 方案1:
+                if (fixMethod1(cl, originClassName, originMethodName, method)) {
+                    Log.i(TAG, "fixMethod1 success !");
+                    continue;
+                }
+                // 方案2:
+                // 通过阅读 DexClassLoader.loadClass()源码
+                // (libcore/dalvik/src/main/java/dalvik/system/DexClassLoader.java)，可知：
+                // 一个class在虚拟机(Art)中的标识是其: 全路径名@classLoader，那么我们通过自定义DexClassLoader
+                // 加载的patch中的class，在Art虚拟机中已经是我们自定义的classLoader了，因此这里是可用于处理补丁包
+                // 中的类的。
+                // 其中使用到 ClassLoader 的地方是：DexPathList.findClass()，初始化其ClassLoader是在DexPathList
+                // 构造函数中，直接在 DexClassLoader 中赋值this，也就是我们自定义的 ClassLoader.
+                // 上面已经loadCLass过补丁中的class，那么第2次使用时，直接从缓存中读取即可。
+                // DexFile在Art中的实现对应：art/runtime/native/dalvik_system_DexFile.cc 中的 DexFile_defineClassNative函数
+                if (fixMethod2(
+                        originClassName, originMethodName, method.getParameterTypes(),
+                        method.getReturnType(), originStatic,
+                        clazz.getCanonicalName(), method.getName(), method.getParameterTypes(),
+                        method.getReturnType(), originStatic)) {
+
+                    Log.i(TAG, "fixMethod2 success !");
+                }
+            }
+        }
+    }
+
+    private void doFixClassTest(ClassLoader cl, Class<?> clazz) {
+        Method[] methods = clazz.getDeclaredMethods();
+
+        // TODO: 2021/2/26
+
+        MethodReplace methodReplace;
+        String originClassName;
+        String originMethodName;
+        boolean originStatic;
+        for (Method method : methods) {
+            // 这里可能拿到为null，因为可能是一个接口方法或父类方法，因此必须拿到其真正实现类中的该方法
+            methodReplace = method.getAnnotation(MethodReplace.class);
+
+            Log.w(TAG, "doFixClassTest, clazz= " + clazz.getName() +
+                    ", method=" + method.getName() +
+                    ", annotation=" + (methodReplace == null ? "nullptr" : "not"));
+
+// TODO: 2021/2/26 ing......
+            if (methodReplace == null) {
+                continue;
+            }
+            originClassName = methodReplace.clazz();
+            originMethodName = methodReplace.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
                 // 方案1:

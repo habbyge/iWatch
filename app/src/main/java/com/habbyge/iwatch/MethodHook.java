@@ -31,9 +31,6 @@ import java.lang.reflect.Method;
 public final class MethodHook {
     private static final String TAG = "iWatch.MethodHook";
 
-//    private long backupOriMethod = -1L;
-//    private Method oriMethod = null;
-
     private MethodHook() {
     }
 

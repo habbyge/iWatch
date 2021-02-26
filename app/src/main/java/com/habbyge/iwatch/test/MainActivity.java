@@ -174,6 +174,7 @@ public class MainActivity extends Activity {
 //
 //                        "com.habbyge.iwatch.test.MainActivity2", "printf_hook",
 //                        new Class<?>[]{String.class}, void.class, false);
+                Log.i(TAG, "old-btnClick, onClick success !");
             }
         });
 
@@ -182,6 +183,8 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 printf("Mali_Mango_Pidan_Habby");
+
+                Log.i(TAG, "old-btnClick, onClick success !");
             }
         });
 

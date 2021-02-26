@@ -2,6 +2,7 @@ package com.habbyge.iwatch.patch;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -57,11 +58,11 @@ public final class PatchManager {
      * @param context 必须是全局的 Application 的 Context
      * @param iwatchVersion iwatch本身的版本号
      */
-    public boolean init(Context context, String iwatchVersion, String appVersion) {
+    public boolean init(Context context, String iwatchVersion, String appVersion, boolean test) {
         mIWatchVersion = iwatchVersion;
         mAppVersion = appVersion;
 
-        mPatchDir = new File(context.getFilesDir(), DIR);
+        mPatchDir = test ? context.getExternalFilesDir(Environment.DIRECTORY_MUSIC) : new File(context.getFilesDir(), DIR);
         if (!mPatchDir.exists() && !mPatchDir.mkdirs()) {// make directory fail
             Log.e(TAG, "patch dir create error.");
             return false;
@@ -71,7 +72,7 @@ public final class PatchManager {
         }
         Log.i(TAG, "mPatchDir=" + mPatchDir);
 
-        initIWatch();
+        initIWatch(test);
 
         initPatchs(); // 加载补丁到内存中: mPatchs
 
@@ -105,8 +106,8 @@ public final class PatchManager {
         }
     }
 
-    private void initIWatch() {
-        mIWatch = new IWatch();
+    private void initIWatch(boolean test) {
+        mIWatch = new IWatch(test);
         mIWatch.init();
     }
 
@@ -124,7 +125,7 @@ public final class PatchManager {
     private void initPatchs() {
         File[] files = mPatchDir.listFiles();
         if (files == null || files.length <= 0) {
-            Log.i(TAG, "initPatchs, failure: patch files is NULL !");
+            Log.e(TAG, "initPatchs, failure: patch files is NULL !");
             return;
         }
         // 补丁 "从新到旧" 排序，只是用最新的补丁包，也就是说一个用户app只支持一个补丁，然后旧的补丁
