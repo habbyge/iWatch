@@ -33,11 +33,6 @@ public final class IWatch {
         MethodHook.init();
     }
 
-    @SuppressWarnings("unused")
-    public synchronized void fix(String patchPath) {
-        doFix(new File(patchPath), null);
-    }
-
     public synchronized void fix(File patchFile, List<String> classNames) {
         doFix(patchFile, classNames);
     }

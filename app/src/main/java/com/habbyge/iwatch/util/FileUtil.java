@@ -1,5 +1,7 @@
 package com.habbyge.iwatch.util;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -52,6 +54,7 @@ public class FileUtil {
 			JarFile jarFile = new JarFile(jarInputFile); // JarFile
 			return jarFile.entries();
 		} catch (Exception e) {
+			Log.e("iWatch.FileUtil", "parseJarFile, exception: " + e.getMessage());
 			return null;
 		}
 	}

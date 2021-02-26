@@ -51,7 +51,7 @@ public class Patch implements Comparable<Patch> {
     private void init() throws IOException {
         JarFile jarFile = null;
         InputStream inputStream = null;
-        try {
+        try { // TODO: 2021/2/25 这里可能有改变...... 
             jarFile = new JarFile(mFile);
             JarEntry entry = jarFile.getJarEntry(ENTRY_NAME);
             inputStream = jarFile.getInputStream(entry);
