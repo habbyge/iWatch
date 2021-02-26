@@ -21,7 +21,7 @@ public class IWatchApplication extends Application {
             return;
         }
 
-        // FIXME: 这是一个测试用例：
+        // 这是一个测试用例：
 //        try {
 //            // .apatch file path:
 //            // /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Documents/out.apatch
@@ -34,7 +34,7 @@ public class IWatchApplication extends Application {
 //            Log.e(TAG, "out.apatch", e);
 //        }
 
-        // FIXME: 这是一个测试用例：
+        // 这是一个测试用例：
 //        PatchManager.getInstance().testFix(
 //                "com.habbyge.iwatch.test.MainActivity", "onResume", null, void.class, false,
 //                "com.habbyge.iwatch.test.MainActivity2", "onResume", null, void.class, false);

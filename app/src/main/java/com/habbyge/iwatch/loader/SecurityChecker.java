@@ -197,9 +197,7 @@ public class SecurityChecker {
 
 			mDebuggable = cert.getSubjectX500Principal().equals(DEBUG_DN);
 			mPublicKey = cert.getPublicKey();
-		} catch (NameNotFoundException e) {
-			Log.e(TAG, "init", e);
-		} catch (CertificateException e) {
+		} catch (NameNotFoundException | CertificateException e) {
 			Log.e(TAG, "init", e);
 		}
 	}

@@ -9,7 +9,6 @@ import android.widget.Button;
 import androidx.annotation.Keep;
 
 import com.habbyge.iwatch.R;
-import com.habbyge.iwatch.patch.PatchManager;
 
 /**
  * Created by habbyge on 2020/11/24.
@@ -168,13 +167,13 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                // fixme 测试用例:
-                PatchManager.getInstance().testFix(
-                        "com.habbyge.iwatch.test.MainActivity", "printf",
-                        new Class<?>[]{String.class}, void.class, false,
-
-                        "com.habbyge.iwatch.test.MainActivity2", "printf_hook",
-                        new Class<?>[]{String.class}, void.class, false);
+                // 测试用例:
+//                PatchManager.getInstance().testFix(
+//                        "com.habbyge.iwatch.test.MainActivity", "printf",
+//                        new Class<?>[]{String.class}, void.class, false,
+//
+//                        "com.habbyge.iwatch.test.MainActivity2", "printf_hook",
+//                        new Class<?>[]{String.class}, void.class, false);
             }
         });
 
@@ -190,7 +189,7 @@ public class MainActivity extends Activity {
 //
 //            @Override
 //            public void onClick(View v) {
-//                // TODO: 2021/2/25 测试加载patch的样例：
+//                // 2021/2/25 测试加载patch的样例：
 //                // /sdcard/boot-arm64-v8-base-0x28000150.apk 这是一个补丁包
 ////                test4LoadPatch();
 //                test4LoadPatch2();
