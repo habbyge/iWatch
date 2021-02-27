@@ -10,7 +10,6 @@ import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
@@ -154,19 +153,18 @@ public final class IWatch {
     private void doFixClassTest(ClassLoader cl, Class<?> clazz) {
         Method[] methods = clazz.getDeclaredMethods();
 
-        // TODO: 2021/2/26
-
         MethodReplace methodReplace;
         String originClassName;
         String originMethodName;
         boolean originStatic;
         for (Method method : methods) {
             // 这里可能拿到为null，因为可能是一个接口方法或父类方法，因此必须拿到其真正实现类中的该方法
-            methodReplace = method.getAnnotation(MethodReplace.class);
+            method.setAccessible(true); // TODO: 2021/2/27 ing 
+            methodReplace = method.getAnnotation(MethodReplace.class); // TODO: 2021/2/27
 
             Log.w(TAG, "doFixClassTest, clazz= " + clazz.getName() +
                     ", method=" + method.getName() +
-                    ", annotation=" + (methodReplace == null ? "nullptr" : "not"));
+                    ", annotation=" + (methodReplace == null ? "nullptr" : "not nullptr"));
 
 // TODO: 2021/2/26 ing......
             if (methodReplace == null) {
