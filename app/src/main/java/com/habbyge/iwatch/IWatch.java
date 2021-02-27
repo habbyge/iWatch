@@ -40,6 +40,9 @@ public final class IWatch {
         doFix(patchFile, classNames);
     }
 
+    private Class<?> mMethodReplaceClass = null;
+    private Class<?> mFixMethodAnnoClass = null;
+
     /**
      * 修复函数的主要任务：
      * 1. 校验补丁包：比对补丁包的签名和应用的签名是否一致
@@ -73,6 +76,16 @@ public final class IWatch {
                 return;
             }
 
+            if (mTest) {
+                if (mMethodReplaceClass == null) {
+                    mMethodReplaceClass = Class.forName("com.alipay.euler.andfix.annotation.MethodReplace", true, dexCl);
+                }
+            } else {
+                if  (mFixMethodAnnoClass == null) {
+                    mFixMethodAnnoClass = Class.forName("com.habbyge.iwatch.patch.FixMethodAnno", true, dexCl);
+                }
+            }
+
             Class<?> clazz;
             for (String className : classNames) {
                 clazz = dexCl.loadClass(className);
@@ -80,21 +93,6 @@ public final class IWatch {
                     fixClass(cl, clazz);
                 }
             }
-
-//            Class<?> clazz
-//            String entry;
-//            while (jarEntries.hasMoreElements()) { // 这里应该是.dex文件
-//                entry = jarEntries.nextElement().getName();
-//                if (classNames != null && !classNames.contains(entry)) {
-//                    continue; // skip, not need fix
-//                }
-//                clazz = dexCl.loadClass(entry);
-//                // 这里之后，patch中的类在其自定义的ClassLoader中已经加载完毕了，即在虚拟机(Art)中的地址已经确定了,
-//                // 这样就可可以直接执行后续的地址替换了，跟 ClassLoader 无关了.
-//                if (clazz != null) {
-//                    fixClass(cl, clazz);
-//                }
-//            }
         } catch (Exception e) {
             Log.e(TAG, "pacth", e);
         }
@@ -115,7 +113,11 @@ public final class IWatch {
         String originMethodName;
         boolean originStatic;
         for (Method method : methods) {
-            fixMethodAnno = method.getAnnotation(FixMethodAnno.class);
+            /*fixMethodAnno = method.getAnnotation(FixMethodAnno.class);*/
+            fixMethodAnno = method.getAnnotation((Class<FixMethodAnno>) mFixMethodAnnoClass);
+            Log.w(TAG, "doFixClass, clazz=" + clazz.getName() +
+                    ", method=" + method.getName() +
+                    ", annotation=" + (fixMethodAnno == null ? "nullptr" : "not nullptr"));
             if (fixMethodAnno == null) {
                 continue;
             }
@@ -158,15 +160,12 @@ public final class IWatch {
         String originMethodName;
         boolean originStatic;
         for (Method method : methods) {
-            // 这里可能拿到为null，因为可能是一个接口方法或父类方法，因此必须拿到其真正实现类中的该方法
-            method.setAccessible(true); // TODO: 2021/2/27 ing 
-            methodReplace = method.getAnnotation(MethodReplace.class); // TODO: 2021/2/27
-
-            Log.w(TAG, "doFixClassTest, clazz= " + clazz.getName() +
+            // 这里会拿到为null，因为这里需要patch中的DexClassLoader
+            /*methodReplace = method.getAnnotation(MethodReplace.class);*/
+            methodReplace = method.getAnnotation((Class<MethodReplace>) mMethodReplaceClass);
+            Log.w(TAG, "doFixClassTest, clazz=" + clazz.getName() +
                     ", method=" + method.getName() +
                     ", annotation=" + (methodReplace == null ? "nullptr" : "not nullptr"));
-
-// TODO: 2021/2/26 ing......
             if (methodReplace == null) {
                 continue;
             }
