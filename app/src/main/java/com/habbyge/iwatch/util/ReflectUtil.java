@@ -29,16 +29,6 @@ public final class ReflectUtil {
         }
     }
 
-//    public static Method findMethod(String className, String methodName, Class<?>... parameterTypes) {
-//        try {
-//            Class<?> _class = Class.forName(className);
-//            return findMethod(_class, methodName, parameterTypes);
-//        } catch (ClassNotFoundException e) {
-//            Log.e(TAG, "findMethod-1", e);
-//            return null;
-//        }
-//    }
-
     public static Method findMethod(ClassLoader cl, String className, String methodName, Class<?>... parameterTypes) {
         try {
             Class<?> _class = Class.forName(className, true, cl);

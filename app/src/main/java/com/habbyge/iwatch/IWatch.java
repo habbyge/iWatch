@@ -114,6 +114,7 @@ public final class IWatch {
         boolean originStatic;
         for (Method method : methods) {
             /*fixMethodAnno = method.getAnnotation(FixMethodAnno.class);*/
+            // noinspection unchecked
             fixMethodAnno = method.getAnnotation((Class<FixMethodAnno>) mFixMethodAnnoClass);
             Log.w(TAG, "doFixClass, clazz=" + clazz.getName() +
                     ", method=" + method.getName() +
@@ -162,6 +163,7 @@ public final class IWatch {
         for (Method method : methods) {
             // 这里会拿到为null，因为这里需要patch中的DexClassLoader
             /*methodReplace = method.getAnnotation(MethodReplace.class);*/
+            // noinspection unchecked
             methodReplace = method.getAnnotation((Class<MethodReplace>) mMethodReplaceClass);
             Log.w(TAG, "doFixClassTest, clazz=" + clazz.getName() +
                     ", method=" + method.getName() +
