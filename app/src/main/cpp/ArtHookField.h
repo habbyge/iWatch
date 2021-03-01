@@ -11,6 +11,12 @@
 
 namespace iwatch {
 
+static constexpr uint32_t kAccPublic =       0x0001;  // class, field, method, ic
+static constexpr uint32_t kAccPrivate =      0x0002;  // field, method, ic
+static constexpr uint32_t kAccProtected =    0x0004;  // field, method, ic
+                                                      // ......
+static constexpr uint32_t kAccJavaFlagsMask = 0xffff; // bits set from Java sources (low 16)
+
 /**
  * access_flags_ 在 ArtField 中的偏移量满足：android-5.0 ~ android-11.0
  */
