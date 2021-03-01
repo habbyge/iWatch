@@ -12,12 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IWatch">
 
-        <activity
-            android:name=".test.MainActivity2"
-            android:label="@string/title_activity_main2"
-            android:theme="@style/Theme.IWatch.NoActionBar">
-        </activity>
-
         <activity android:name=".test.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

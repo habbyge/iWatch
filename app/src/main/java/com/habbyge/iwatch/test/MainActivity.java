@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "new-btnClick, onClick success !");
+                Log.i(TAG, "Old-Before-Fix, btnClick, onClick success !");
             }
         });
 
@@ -52,6 +52,8 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
+                Log.i(TAG, "Old-Before-Fix, btnHookMethod, onClick success !");
+
                 // TODO: 2021/2/28
                 //  2021-02-28 00:16:21.685 26799-26799/? E/AndroidRuntime: FATAL EXCEPTION: main
                 //    Process: com.habbyge.iwatch, PID: 26799
@@ -69,7 +71,6 @@ public class MainActivity extends Activity {
                 //        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
                 //        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
                 printf("Mali_Mango_Pidan_Habby");
-                Log.i(TAG, "new-btnClick, onClick success !");
             }
         });
     }
