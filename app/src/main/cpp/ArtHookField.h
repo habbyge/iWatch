@@ -7,10 +7,23 @@
 #ifndef IWATCH_ARTHOOKFIELD_H
 #define IWATCH_ARTHOOKFIELD_H
 
+#include <stdint.h>
+
 namespace iwatch {
 
+/**
+ * access_flags_ 在 ArtField 中的偏移量满足：android-5.0 ~ android-11.0
+ */
 class ArtHookField final {
+public:
+  inline static void addAccessFlags(int access_flag, void* artField) {
+    *reinterpret_cast<uint32_t*>((reinterpret_cast<uint32_t>(artField) + 1)) |= access_flag;
+  }
 
+private:
+  uint32_t reference_;
+  uint32_t access_flags_ = 0;
+  // ...... 不关注
 };
 
 } // namespace iwatch
