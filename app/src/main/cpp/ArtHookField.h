@@ -23,7 +23,7 @@ static constexpr uint32_t kAccJavaFlagsMask = 0xffff; // bits set from Java sour
 class ArtHookField final {
 public:
   inline static void addAccessFlags(int access_flag, void* artField) {
-    *reinterpret_cast<uint32_t*>((reinterpret_cast<uint32_t>(artField) + 1)) |= access_flag;
+    *reinterpret_cast<uint32_t*>((reinterpret_cast<uint32_t*>(artField) + 1)) |= access_flag;
   }
 
 private:
