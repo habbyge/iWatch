@@ -67,8 +67,8 @@ public class MainActivity extends Activity {
 //  解决方案: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  要求调用的原始类中的字段和方法必须是public的，因为，Patch中的修复方法所属的类是修复后的类(原始类名_CF)，
 //  虽然传入的对象依旧是旧的原始对象，但是类名已经不同了，会导致只能访问public的字段和方法(相当于在A类中调用B类中方法，所以只能访问public).
-                ix = 1000; // 需要public
-                ix_HOOK = 1000;
+//                ix = 1000; // 需要public
+//                ix_HOOK = 1000;
 //                printf("Mango_Pidan_Mali_Habby-New!!");
 
 // TODO: 2021/3/1

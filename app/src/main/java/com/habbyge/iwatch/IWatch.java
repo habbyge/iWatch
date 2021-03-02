@@ -272,7 +272,7 @@ public final class IWatch {
         Method[] methods = Class1.getDeclaredMethods();
         if (methods.length > 0) {
             for (Method method : methods) {
-                method.setAccessible(true);
+                MethodHook.setMethodAccessPublic(method);
             }
         }
     }
@@ -289,6 +289,7 @@ public final class IWatch {
         if (methods.length > 0) {
             for (Method method : methods) {
                 method.setAccessible(true);
+                MethodHook.setMethodAccessPublic(method);
             }
         }
     }

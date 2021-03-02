@@ -62,8 +62,6 @@ namespace iwatch {
 static void* cur_thread = nullptr;
 static JavaVM* vm;
 
-static const int SDK_INT_ANDROID_10 = 29;
-
 //using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
 //addWeakGlobalRef_t addWeakGlobalRef;
 
@@ -527,6 +525,12 @@ void set_field_public(JNIEnv* env, jobject field) {
     }
   }
 
+  iwatch::clear_exception(env);
+}
+
+void set_method_public(JNIEnv* env, jobject method) {
+  // art::mirror::ArtMethod
+  artMethodHook->setAccessPublic(env, method);
   iwatch::clear_exception(env);
 }
 

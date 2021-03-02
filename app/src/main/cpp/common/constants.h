@@ -13,6 +13,12 @@ namespace iwatch {
 #define I_ERR         (-1)        /* generic error */
 
 extern int sdkVersion;
+static constexpr int SDK_INT_ANDROID_5_0 = 21;
+static constexpr int SDK_INT_ANDROID_5_1 = 22;
+static constexpr int SDK_INT_ANDROID_6_0 = 23;
+static constexpr int SDK_INT_ANDROID_7_0 = 24;
+static constexpr int SDK_INT_ANDROID_10 = 29;
+static constexpr int SDK_INT_ANDROID_11 = 30;
 
 static constexpr uint32_t kAccPublic =       0x0001;  // class, field, method, ic
 static constexpr uint32_t kAccPrivate =      0x0002;  // field, method, ic

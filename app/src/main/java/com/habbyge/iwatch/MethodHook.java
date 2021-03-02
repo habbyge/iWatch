@@ -101,6 +101,10 @@ public final class MethodHook {
 
     @Keep
     public static native void setFieldAccessPublic(Field field);
+
+    @Keep
+    public static native void setMethodAccessPublic(Method method);
+
     @Keep
     private static native long hookClass(String className);
     @Keep
