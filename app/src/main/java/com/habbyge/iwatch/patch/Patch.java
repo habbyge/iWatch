@@ -55,8 +55,7 @@ public class Patch implements Comparable<Patch> {
      * Created-Time: 26 Feb 2021 07:10:21 GMT
      * From-File: app-release-2.apk
      * To-File: app-release-1.apk
-     * Patch-Classes: com.habbyge.iwatch.test.MainActivity$4_CF,com.habbyge.i
-     *  watch.test.MainActivity$5_CF
+     * Patch-Classes: com.habbyge.sample.MainActivity$4_CF,com.habbyge.iwatch.MainActivity$5_CF
      * Created-By: 1.0 (ApkPatch)
      *
      * 其中: "From-File" 表示: 修复包名-补丁版本号.apk "To-File" 表示: 基础包名-版本号.apk

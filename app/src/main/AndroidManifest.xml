@@ -4,7 +4,7 @@
     package="com.habbyge.iwatch">
 
     <application
-        android:name=".IWatchApplication"
+        android:name="com.habbyge.sample.IWatchApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IWatch">
 
-        <activity android:name=".test.MainActivity">
+        <activity android:name="com.habbyge.sample.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

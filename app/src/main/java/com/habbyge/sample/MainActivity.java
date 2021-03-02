@@ -1,4 +1,4 @@
-package com.habbyge.iwatch.test;
+package com.habbyge.sample;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -57,11 +57,11 @@ public class MainActivity extends Activity {
 // TODO: 2021/3/1
 //  2021-03-01 10:55:55.022 23916-23916/? E/AndroidRuntime: FATAL EXCEPTION: main
 //  Process: com.habbyge.iwatch, PID: 23916
-//  java.lang.IllegalAccessError: Method 'void com.habbyge.iwatch.test.MainActivity.a(java.lang.String)'
-//  is inaccessible to class 'com.habbyge.iwatch.test.MainActivity$2_CF'
-//  (declaration of 'com.habbyge.iwatch.test.MainActivity$2_CF' appears in
+//  java.lang.IllegalAccessError: Method 'void com.habbyge.sample.MainActivity.a(java.lang.String)'
+//  is inaccessible to class 'com.habbyge.sample.MainActivity$2_CF'
+//  (declaration of 'com.habbyge.sample.MainActivity$2_CF' appears in
 //  /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/app-release-2-4c68d301e8924fcd37a28f04a32da936.apatch)
-//  at com.habbyge.iwatch.test.MainActivity$2_CF.onClick(MainActivity.java:73)
+//  at com.habbyge.sample.MainActivity$2_CF.onClick(MainActivity.java:73)
 //  解决方案: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  要求调用的原始类中的字段和方法必须是public的，因为，Patch中的修复方法所属的类是修复后的类(原始类名_CF)，
 //  虽然传入的对象依旧是旧的原始对象，但是类名已经不同了，会导致只能访问public的字段和方法(相当于在A类中调用B类中方法，所以只能访问public).
@@ -73,9 +73,9 @@ public class MainActivity extends Activity {
 //  2021-03-01 17:38:28.774 15008-15008/? E/AndroidRuntime: FATAL EXCEPTION: main
 //  Process: com.habbyge.iwatch, PID: 15008
 //  java.lang.NoClassDefFoundError: Failed resolution of: Lcom/habbyge/iwatch/test/a;
-//  at com.habbyge.iwatch.test.MainActivity$1_CF.onClick(MainActivity.java:71)
-//  Caused by: java.lang.ClassNotFoundException: com.habbyge.iwatch.test.a
-//  at com.habbyge.iwatch.test.MainActivity$1_CF.onClick(MainActivity.java:71)
+//  at com.habbyge.sample.MainActivity$1_CF.onClick(MainActivity.java:71)
+//  Caused by: java.lang.ClassNotFoundException: com.habbyge.sample.a
+//  at com.habbyge.sample.MainActivity$1_CF.onClick(MainActivity.java:71)
 //  解决方案: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  用Patch中的自定义的DexClassLoader来load patch中新增的类，在这里(这里本质上patch类中)是获取不到非DexClassLoader加载
 //  过的类的，所以，必须在框架(具体是iwatch.java)中生成DexClassLoader的地方加载补丁中的所有class.

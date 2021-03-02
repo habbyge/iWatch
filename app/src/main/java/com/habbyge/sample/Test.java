@@ -1,4 +1,4 @@
-package com.habbyge.iwatch.test;
+package com.habbyge.sample;
 
 import android.util.Log;
 
