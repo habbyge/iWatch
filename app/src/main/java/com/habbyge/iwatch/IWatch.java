@@ -69,13 +69,6 @@ public final class IWatch {
                 Log.e(TAG, "doFix, jarEntries is NULL");
                 return;
             }
-            // TODO: 2021/3/2 这里利用 jarEntries 字段来查看 patch 中所有的 class 文件？？？？？？
-            JarEntry entry;
-            while (jarEntries.hasMoreElements()) {
-                entry = jarEntries.nextElement();
-                Log.d(TAG, "fix: patch entry=" + entry.getName());
-            }
-            // TODO: 2021/3/2 这里利用 jarEntries 字段来查看 patch 中所有的 class 文件？？？？？？
 
             // 加载FixMethodAnno/MethodReplace的ClassLoader必须是补丁的DexClassLoader，如果直接写 FixMethodAnno.class，
             // 则是来自于宿主app.apk的ClassLoader，在patch中是识别不到的，因为写在补丁中的注解(Annotation)是来自于补丁，传递
@@ -94,7 +87,7 @@ public final class IWatch {
             for (String className : classNames) {
                 clazz = dexCl.loadClass(className);
                 if (clazz != null) {
-                    fixClass(cl, clazz);
+                    fixClass(cl, dexCl, clazz);
                 }
             }
         } catch (Exception e) {
@@ -102,15 +95,15 @@ public final class IWatch {
         }
     }
 
-    private void fixClass(ClassLoader cl, Class<?> clazz) {
+    private void fixClass(ClassLoader cl, DexClassLoader dexCl, Class<?> clazz) {
         if (mTest) {
-            doFixClassTest(cl, clazz);
+            doFixClassTest(cl, dexCl, clazz);
         } else {
-            doFixClass(cl, clazz);
+            doFixClass(cl, dexCl, clazz);
         }
     }
 
-    private void doFixClass(ClassLoader cl, Class<?> clazz) {
+    private void doFixClass(ClassLoader cl, DexClassLoader dexCl, Class<?> clazz) {
         Method[] methods = setAccessPublic(clazz);
 
         FixMethodAnno fixMethodAnno;
@@ -131,7 +124,7 @@ public final class IWatch {
             originMethodName = fixMethodAnno.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
-                setAccessPublic(cl, originClassName); // 这里需要让原始class中的所有字段和方法为public
+                setAccessPublic(cl, dexCl, originClassName); // 这里需要让原始class中的所有字段和方法为public
 
                 // 方案1:
                 if (fixMethod1(cl, originClassName, originMethodName, method)) {
@@ -160,7 +153,7 @@ public final class IWatch {
         }
     }
 
-    private void doFixClassTest(ClassLoader cl, Class<?> clazz) {
+    private void doFixClassTest(ClassLoader cl, DexClassLoader dexCl, Class<?> clazz) {
         Method[] methods = setAccessPublic(clazz);
         Log.d(TAG, "doFixClassTest, methods=" + methods.length);
 
@@ -188,7 +181,7 @@ public final class IWatch {
             originMethodName = methodReplace.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
-                setAccessPublic(cl, originClassName); // 这里需要让原始class中的所有字段和方法为public
+                setAccessPublic(cl, dexCl, originClassName); // 这里需要让原始class中的所有字段和方法为public
 
                 // 方案1:
                 if (fixMethod1(cl, originClassName, originMethodName, method)) {
@@ -251,34 +244,37 @@ public final class IWatch {
         MethodHook.unhookAllMethod();
     }
 
-    private void setAccessPublic(ClassLoader cl, String className) {
-        Class<?> Class1;
+    private void setAccessPublic(ClassLoader cl, DexClassLoader dexCl, String className) {
+        Class<?> class1;
         try {
-            Class1 = cl.loadClass(className);
+            class1 = cl.loadClass(className);
         } catch (ClassNotFoundException e) {
             Log.e(TAG, "setAccessPublic, exception: " + e.getMessage());
             return;
         }
-
-        Field[] fields1 = Class1.getDeclaredFields();
+        Field[] fields1 = class1.getDeclaredFields();
         if (fields1.length > 0) {
             for (Field field : fields1) {
+                field.setAccessible(true);
                 MethodHook.setFieldAccessPublic(field);
             }
         }
-
-        Method[] methods = Class1.getDeclaredMethods();
+        Method[] methods = class1.getDeclaredMethods();
         if (methods.length > 0) {
             for (Method method : methods) {
+                method.setAccessible(true);
                 MethodHook.setMethodAccessPublic(method);
             }
         }
+
+        /*setDexClassLoader(dexCl, class1);*/
     }
 
     private Method[] setAccessPublic(Class<?> clazz) {
         Field[] fields2 = clazz.getDeclaredFields();
         if (fields2.length > 0) {
             for (Field field : fields2) {
+                field.setAccessible(true);
                 MethodHook.setFieldAccessPublic(field);
             }
         }
@@ -292,4 +288,15 @@ public final class IWatch {
         }
         return methods;
     }
+
+    /*private void setDexClassLoader(DexClassLoader dexCl, Class<?> clazz) {
+        try {
+            //noinspection JavaReflectionMemberAccess
+            Field field = Class.class.getDeclaredField("classLoader");
+            field.setAccessible(true);
+            field.set(clazz, dexCl);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Log.e(TAG, "setDexClassLoader, exception: " + e.getMessage());
+        }
+    }*/
 }

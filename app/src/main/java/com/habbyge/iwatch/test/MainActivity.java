@@ -6,8 +6,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import androidx.annotation.Keep;
-
 import com.habbyge.iwatch.R;
 
 /**
@@ -54,7 +52,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "Old-Fix, btnHookMethod, onClick success !");
+                Log.i(TAG, "new-Fix, btnHookMethod, onClick success !");
 
 // TODO: 2021/3/1
 //  2021-03-01 10:55:55.022 23916-23916/? E/AndroidRuntime: FATAL EXCEPTION: main
@@ -67,9 +65,9 @@ public class MainActivity extends Activity {
 //  解决方案: ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  要求调用的原始类中的字段和方法必须是public的，因为，Patch中的修复方法所属的类是修复后的类(原始类名_CF)，
 //  虽然传入的对象依旧是旧的原始对象，但是类名已经不同了，会导致只能访问public的字段和方法(相当于在A类中调用B类中方法，所以只能访问public).
-//                ix = 1000; // 需要public
-//                ix_HOOK = 1000;
-//                printf("Mango_Pidan_Mali_Habby-New!!");
+//                ix = 1000; // 这里有坑，
+//                ix_HOOK = 1000; // 这里有坑
+                printf("Mango_Pidan_Mali_Habby-New!!");
 
 // TODO: 2021/3/1
 //  2021-03-01 17:38:28.774 15008-15008/? E/AndroidRuntime: FATAL EXCEPTION: main
@@ -89,10 +87,9 @@ public class MainActivity extends Activity {
 //  生成补丁时，需要diff，
     }
 
-    @Keep
     @SuppressWarnings("all")
     private void printf(String text) {
         Log.i(TAG, "printf: " + text + ", ix=" + ix + ", ix_HOOK=" + ix_HOOK);
-        ix = 100;
+        ix = 100; // todo
     }
 }
