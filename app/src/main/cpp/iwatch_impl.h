@@ -54,6 +54,7 @@ void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring s
 void restore_all_method_impl(JNIEnv* env);
 
 void set_field_public(JNIEnv* env, jobject field);
+
 long class_hook_impl(JNIEnv* env, jstring clazzName);
 
 void set_cur_thread_impl(JNIEnv* env, long threadAddr);

@@ -521,13 +521,10 @@ void set_field_public(JNIEnv* env, jobject field) {
   } else {
     void* artFieldAddr = ArtHookField::getArtField(env, field);
     if (artFieldAddr == nullptr) {
-      logi("set_field_public, artFieldAddr=nullptr");
-    }
-    if (artFieldAddr == nullptr) {
       loge("set_field_public: failure !");
     } else {
       logi("set_field_public, artFieldAddr=%p", artFieldAddr);
-      // TODO: ing......
+      ArtHookField::addAccessFlagsPublic(artFieldAddr);
     }
   }
 
