@@ -110,6 +110,8 @@ std::shared_ptr<Elf> elfOp = nullptr;
 std::shared_ptr<ArtRestore> artRestore = nullptr;
 std::shared_ptr<ArtMethodHook> artMethodHook = nullptr;
 
+int sdkVersion = 0;
+
 void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
   sdkVersion = sdkVersionCode;
 
@@ -126,12 +128,10 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 //  logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
 //       (size_t) artMethod22,
 //       (size_t) artMethod11);
-
+  logw("iwatch init, sdkVersion: %d", sdkVersionCode);
   if (sdkVersionCode <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
     artMethodHook->initArtMethodLessEqual10(env);
   } else { // >= Android-11(api-30)
-    logw("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
-
     // 在 <= Android-10之前的版本，jni id 都是kPointer类型的，在 Andorid-11 之后都是 kIndices 类型了，
     // 所以，>= Android-11 的版本中，jmethodID != ArtMethod*了，art源码中是：art/runtime/jni_id_type.h
     // enum class JniIdType {

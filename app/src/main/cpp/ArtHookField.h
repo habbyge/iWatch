@@ -44,7 +44,7 @@ public:
   inline static void addAccessFlagsPublic(void* artField) {
     uint32_t* access_flags_ptr = reinterpret_cast<uint32_t*>(artField) + 1;
     *access_flags_ptr = (*access_flags_ptr) & (~kAccPrivate) | kAccPublic;
-    logw("initArtField, access_flags_ptr=%p, access_flags=%ud", access_flags_ptr, *access_flags_ptr);
+    logw("addAccessFlagsPublic, access_flags_ptr=%p, access_flags=%ud", access_flags_ptr, *access_flags_ptr);
   }
 
 private:

@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "New-Fix, btnHookMethod, onClick success !");
+                Log.i(TAG, "Old-Fix, btnHookMethod, onClick success !");
 
 // TODO: 2021/3/1
 //  2021-03-01 10:55:55.022 23916-23916/? E/AndroidRuntime: FATAL EXCEPTION: main

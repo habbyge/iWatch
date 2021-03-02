@@ -111,9 +111,8 @@ public final class IWatch {
     }
 
     private void doFixClass(ClassLoader cl, Class<?> clazz) {
-        setAccessPublic(clazz);
+        Method[] methods = setAccessPublic(clazz);
 
-        Method[] methods = clazz.getDeclaredMethods();
         FixMethodAnno fixMethodAnno;
         String originClassName;
         String originMethodName;
@@ -162,16 +161,15 @@ public final class IWatch {
     }
 
     private void doFixClassTest(ClassLoader cl, Class<?> clazz) {
-        setAccessPublic(clazz);
-        Method[] methods = clazz.getDeclaredMethods();
+        Method[] methods = setAccessPublic(clazz);
+        Log.d(TAG, "doFixClassTest, methods=" + methods.length);
 
         MethodReplace methodReplace;
         String originClassName;
         String originMethodName;
         boolean originStatic;
-        for (Method method : methods) {
-            method.setAccessible(true);
 
+        for (Method method : methods) {
             // 这里会拿到为null，因为这里需要patch中的DexClassLoader
             /*methodReplace = method.getAnnotation(MethodReplace.class);*/
             // noinspection unchecked
@@ -277,7 +275,7 @@ public final class IWatch {
         }
     }
 
-    private void setAccessPublic(Class<?> clazz) {
+    private Method[] setAccessPublic(Class<?> clazz) {
         Field[] fields2 = clazz.getDeclaredFields();
         if (fields2.length > 0) {
             for (Field field : fields2) {
@@ -292,5 +290,6 @@ public final class IWatch {
                 MethodHook.setMethodAccessPublic(method);
             }
         }
+        return methods;
     }
 }

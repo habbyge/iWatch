@@ -158,7 +158,7 @@ void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* na
  * http://aosp.opersys.com/ 中查看各个版本的art_method.h 得到：
  */
 void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
-  int step = 0;
+  int step = 1;
   if (sdkVersion == SDK_INT_ANDROID_5_0) { // 5.0.x
     step = 10;
   } else if (sdkVersion >= SDK_INT_ANDROID_5_1 && sdkVersion <= SDK_INT_ANDROID_6_0) { // 5.1.x ~ 6.0.x
@@ -169,7 +169,7 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
 
   void* artMethod;
   if (sdkVersion <= SDK_INT_ANDROID_10) {
-    artMethod = getArtMethodLessEqual10(env, method):
+    artMethod = getArtMethodLessEqual10(env, method);
   } else {
     artMethod = getArtMethod(env, method);
   }
@@ -177,7 +177,7 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
   uint32_t* access_flags_ptr = reinterpret_cast<uint32_t*>(artMethod) + step;
   *access_flags_ptr = (*access_flags_ptr) & (~kAccPrivate) | kAccPublic;
 
-  logw("setAccessPublic, sdkVersion=%d, access_flags_ptr=%p, access_flags=%ud",
+  logw("ArtMethodHook::setAccessPublic, sdkVersion=%d, access_flags_ptr=%p, access_flags=%ud",
        sdkVersion, access_flags_ptr, *access_flags_ptr);
 }
 
