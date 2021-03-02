@@ -259,8 +259,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
  * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
  * 逻辑在 ClassLinker::LoadClass 中.
  */
-long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
-                      jobject srcMethod, jobject dstMethod) {
+long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
+                      jstring srcSig, jobject srcMethod, jobject dstMethod) {
 
   jboolean isCopy;
   const char* srcClassStr = env->GetStringUTFChars(srcClass, &isCopy);
@@ -513,33 +513,25 @@ void restore_all_method_impl(JNIEnv* env) {
   clear_exception(env);
 }
 
-//static void set_field_accFlags(JNIEnv* env, jobject fields[]) {
-//    if (fields == nullptr) {
-//        return;
-//    }
-//    size_t count = sizeof(fields) / sizeof(jfieldID);
-//    if (count <= 0) {
-//        return;
-//    }
-//    for (int i = 0; i < count; ++i) {
-//        void* artField = env->FromReflectedField(fields[i]);
-//        artField
-//    }
-//}
-
-static FieldHookClassInfo_t fieldHookClassInfo;
-
 void set_field_public(JNIEnv* env, jobject field) {
   // art::mirror::ArtField
   if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10 <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
     void* artField = reinterpret_cast<void*>(env->FromReflectedField(field));
     ArtHookField::addAccessFlagsPublic(artField);
   } else {
-    // TODO: ing......
+    void* artFieldAddr = ArtHookField::getArtField(env, field);
+    if (artFieldAddr == nullptr) {
+      logi("set_field_public, artFieldAddr=nullptr");
+    }
+    if (artFieldAddr == nullptr) {
+      loge("set_field_public: failure !");
+    } else {
+      logi("set_field_public, artFieldAddr=%p", artFieldAddr);
+      // TODO: ing......
+    }
   }
 
   iwatch::clear_exception(env);
-  logv("set_field_public: Success !");
 }
 
 static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtFieldPtr) {
@@ -553,6 +545,8 @@ static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtF
 //  return srcMethod;
   return I_ERR;
 }
+
+static FieldHookClassInfo_t fieldHookClassInfo;
 
 long class_hook_impl(JNIEnv* env, jstring clazzName) {
   jboolean isCopy;
