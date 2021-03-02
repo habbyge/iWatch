@@ -42,9 +42,10 @@ public:
   static void* getArtField(JNIEnv* env, jobject field);
 
   inline static void addAccessFlagsPublic(void* artField) {
-    uint32_t* access_flags_ptr = reinterpret_cast<uint32_t*>(artField) + 1;
-    *access_flags_ptr = (*access_flags_ptr) & (~kAccPrivate) | kAccPublic;
-    logw("addAccessFlagsPublic, access_flags_ptr=%p, access_flags=%ud", access_flags_ptr, *access_flags_ptr);
+    // 从 Android5.0 ~ Android11.0 的版本中，ArtField 中 access_flags_ 字段偏移量都是1
+    uint32_t* access_flags_ = reinterpret_cast<uint32_t*>(artField) + 1;
+    *access_flags_ = ((*access_flags_) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
+    logw("addAccessFlagsPublic, access_flags_ptr=%p, access_flags=%ud", access_flags_, *access_flags_);
   }
 
 private:

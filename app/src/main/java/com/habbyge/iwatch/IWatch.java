@@ -63,6 +63,8 @@ public final class IWatch {
             String patchFilePath = patchFile.getAbsolutePath();
             Log.i(TAG, "doFix, patchFile: " + patchFilePath);
             final ClassLoader cl = IWatch.class.getClassLoader();
+
+            // TODO: 2021/3/3 这里改为 DexFile 加载 ？？？？？？ 
             DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
             Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile(patchFile);
             if (jarEntries == null) {
