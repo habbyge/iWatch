@@ -7,10 +7,30 @@
 #ifndef IWATCH_ARTHOOKFIELD_H
 #define IWATCH_ARTHOOKFIELD_H
 
+#include <stdint.h>
+
 namespace iwatch {
 
+static constexpr uint32_t kAccPublic =       0x0001;  // class, field, method, ic
+static constexpr uint32_t kAccPrivate =      0x0002;  // field, method, ic
+static constexpr uint32_t kAccProtected =    0x0004;  // field, method, ic
+                                                      // ......
+static constexpr uint32_t kAccJavaFlagsMask = 0xffff; // bits set from Java sources (low 16)
+
+/**
+ * access_flags_ 在 ArtField 中的偏移量满足：android-5.0 ~ android-11.0
+ */
 class ArtHookField final {
 // todo： 主要实现Class中字段访问权限的改变，private -> public or protected
+public:
+  inline static void addAccessFlags(uint32_t access_flag, void* artField) {
+    *reinterpret_cast<uint32_t*>((reinterpret_cast<uint32_t>(artField) + 1)) |= access_flag;
+  }
+
+private:
+  uint32_t reference_;
+  uint32_t access_flags_ = 0; // android5.0 ~android11 field 的访问权限字段偏移量都是4byte处
+  // ...... 不关注
 };
 
 } // namespace iwatch
