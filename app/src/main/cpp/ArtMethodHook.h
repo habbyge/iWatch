@@ -18,7 +18,6 @@
 #include "common/elf_op.h"
 
 #include "common/log.h"
-//#include "common/elfop.h"
 #include "common/elf_op.h"
 #include "art/art_method_11.h"
 #include "art/ScopedFastNativeObjectAccess.h"
@@ -78,8 +77,7 @@ public:
   void* getArtMethodLessEqual10(JNIEnv* env, jobject method);
   void* getArtMethod(JNIEnv* env, jobject method);
   void* getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static);
-
-
+  
   inline size_t getArtMethodSizeV1() const {
     return artMethodSizeV1;
   }

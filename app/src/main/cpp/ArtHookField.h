@@ -8,6 +8,7 @@
 #define IWATCH_ARTHOOKFIELD_H
 
 #include <stdint.h>
+#include <jni.h>
 
 namespace iwatch {
 
@@ -23,6 +24,9 @@ static constexpr uint32_t kAccJavaFlagsMask = 0xffff; // bits set from Java sour
  */
 class ArtHookField final {
 public:
+  static void* getArtField(JNIEnv* env, jobject field);
+  static void* getArtField(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static);
+
   inline static void addAccessFlagsPublic(void* artField) {
     uint32_t* access_flags_ptr = reinterpret_cast<uint32_t*>(artField) + 1;
     *access_flags_ptr = (*access_flags_ptr) & (~kAccPrivate) | kAccPublic;

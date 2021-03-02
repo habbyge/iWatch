@@ -5,5 +5,13 @@
 #include "ArtHookField.h"
 
 namespace iwatch {
-// todo： 主要实现Class中字段访问权限的改变，private -> public or protected
+
+void* ArtHookField::getArtField(JNIEnv* env, jobject field) {
+  return nullptr; // todo
+}
+
+void* ArtHookField::getArtField(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static) {
+  return nullptr; // todo
+}
+
 } // namespace iwatch
