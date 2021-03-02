@@ -39,9 +39,7 @@ public final class MethodHook {
         ArtMethodSize.init(Build.VERSION.SDK_INT);
     }
 
-    public static boolean hookMethod1(String className1, String name1, String sig1,
-                                      Method method1, Method method2) {
-
+    public static boolean hookMethod1(String className1, String name1, String sig1, Method method1, Method method2) {
         if (method1 == null || method2 == null) {
             return false;
         }
@@ -95,8 +93,7 @@ public final class MethodHook {
     @Keep
     public static native void init(int sdkVersionCode, Method m1, Method m2);
     @Keep
-    private static native long hookMethod(String srcClass, String srcName, String srcSig,
-                                          Method src, Method dst);
+    private static native long hookMethod(String srcClass, String srcName, String srcSig, Method src, Method dst);
     @Keep
     private static native long hookMethod(String className1, String funcName1, String funcSig1,
                                           boolean isStatic1, String className2, String funcName2,

@@ -62,6 +62,8 @@ public final class PatchManager {
         mIWatchVersion = iwatchVersion;
         mAppVersion = appVersion;
 
+        // 测试路径: 需要 adb push 补丁.apatch 到手机这个目录:
+        // /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/
         mPatchDir = test ? context.getExternalFilesDir(Environment.DIRECTORY_MUSIC) : new File(context.getFilesDir(), DIR);
         if (!mPatchDir.exists() && !mPatchDir.mkdirs()) {// make directory fail
             Log.e(TAG, "patch dir create error.");
