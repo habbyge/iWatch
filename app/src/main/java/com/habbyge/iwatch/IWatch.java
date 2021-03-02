@@ -64,8 +64,19 @@ public final class IWatch {
             Log.i(TAG, "doFix, patchFile: " + patchFilePath);
             final ClassLoader cl = IWatch.class.getClassLoader();
 
-            // TODO: 2021/3/3 这里改为 DexFile 加载 ？？？？？？ 
-            DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
+            // TODO: 2021/3/3 这里改为 DexFile 加载 ？？？？？？
+
+            DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl) {
+
+                @Override
+                protected Class<?> findClass(String name) throws ClassNotFoundException {
+                    final String packageName = "com.habbyge.iwatch";
+                    if (name.startsWith(packageName)) {
+                        return Class.forName(name);
+                    }
+                    return this.loadClass(name); // TODO: 2021/3/3 ing......
+                }
+            };
             Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile(patchFile);
             if (jarEntries == null) {
                 Log.e(TAG, "doFix, jarEntries is NULL");
