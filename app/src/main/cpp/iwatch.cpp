@@ -31,8 +31,8 @@ static void restore_all_method(JNIEnv* env, jclass) {
   iwatch::restore_all_method_impl(env);
 }
 
-static jlong field_hook(JNIEnv* env, jclass, jobject srcField, jobject dstField) {
-  return iwatch::field_hook_impl(env, srcField, dstField);
+static void set_field_public(JNIEnv* env, jclass, jobject field) {
+  iwatch::set_field_public(env, field);
 }
 
 static jlong class_hook(JNIEnv* env, jclass, jstring clazzName) {
@@ -70,9 +70,9 @@ static JNINativeMethod gMethods[] = {
     (void*) restore_all_method
   },
   {
-    "hookField",
-    "(Ljava/lang/reflect/Field;Ljava/lang/reflect/Field;)J",
-    (void*) field_hook
+    "setFieldAccessPublic",
+    "(Ljava/lang/reflect/Field;)V",
+    (void*) set_field_public
   },
   {
     "hookClass",

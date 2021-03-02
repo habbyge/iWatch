@@ -53,7 +53,7 @@ long method_hookv2_impl(JNIEnv* env,
 void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring sig);
 void restore_all_method_impl(JNIEnv* env);
 
-long field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField);
+void set_field_public(JNIEnv* env, jobject field);
 long class_hook_impl(JNIEnv* env, jstring clazzName);
 
 void set_cur_thread_impl(JNIEnv* env, long threadAddr);

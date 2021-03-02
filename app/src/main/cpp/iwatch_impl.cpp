@@ -529,19 +529,17 @@ void restore_all_method_impl(JNIEnv* env) {
 
 static FieldHookClassInfo_t fieldHookClassInfo;
 
-long field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField) {
+void set_field_public(JNIEnv* env, jobject field) {
   // art::mirror::ArtField
-  void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
-  void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
-  int8_t* backupArtField = new int8_t[fieldHookClassInfo.fieldSize];
+  if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10 <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
+    void* artField = reinterpret_cast<void*>(env->FromReflectedField(field));
+    ArtHookField::addAccessFlagsPublic(artField);
+  } else {
+    // TODO: ing......
+  }
 
-  memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
-  memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
-
-  logv("hook_field: Success !");
-  clear_exception(env);
-
-  return reinterpret_cast<jlong>(backupArtField); // TODO: 记得 delete[] 掉
+  iwatch::clear_exception(env);
+  logv("set_field_public: Success !");
 }
 
 static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtFieldPtr) {
@@ -553,7 +551,7 @@ static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtF
 //  logv("methodRestore: Success !");
 //  clear_exception(env);
 //  return srcMethod;
-  return I_ERR; // TODO: 有待搞定......
+  return I_ERR;
 }
 
 long class_hook_impl(JNIEnv* env, jstring clazzName) {

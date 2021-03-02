@@ -75,10 +75,6 @@ public final class MethodHook {
         unhookAllmethod();
     }
 
-    public static void hookField2(Field src, Field dst) {
-        hookField(src, dst);
-    }
-
     public static void hookClass2(String clazzName) {
         long addr = hookClass(clazzName.replace(".", "/"));
         Log.i(TAG, "hookClass2, addr=" + addr);
@@ -104,7 +100,7 @@ public final class MethodHook {
     private static native void unhookAllmethod();
 
     @Keep
-    private static native long hookField(Field src, Field dst);
+    public static native void setFieldAccessPublic(Field field);
     @Keep
     private static native long hookClass(String className);
     @Keep

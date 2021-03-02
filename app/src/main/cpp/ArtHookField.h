@@ -19,12 +19,13 @@ static constexpr uint32_t kAccJavaFlagsMask = 0xffff; // bits set from Java sour
 
 /**
  * access_flags_ 在 ArtField 中的偏移量满足：android-5.0 ~ android-11.0
+ * 主要实现Class中字段访问权限的改变，private -> public
  */
 class ArtHookField final {
-// todo： 主要实现Class中字段访问权限的改变，private -> public or protected
 public:
-  inline static void addAccessFlags(uint32_t access_flag, void* artField) {
-    *reinterpret_cast<uint32_t*>((reinterpret_cast<uint32_t>(artField) + 1)) |= access_flag;
+  inline static void addAccessFlagsPublic(void* artField) {
+    uint32_t* access_flags_ptr = reinterpret_cast<uint32_t*>(artField) + 1;
+    *access_flags_ptr = (*access_flags_ptr) & (~kAccPrivate) | kAccPublic;
   }
 
 private:

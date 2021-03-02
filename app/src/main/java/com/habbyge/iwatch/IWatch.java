@@ -69,6 +69,7 @@ public final class IWatch {
                 Log.e(TAG, "doFix, jarEntries is NULL");
                 return;
             }
+            // TODO: 2021/3/2 这里利用 jarEntries 字段来查看 patch 中所有的 class 文件？？？？？？
 
             // 加载FixMethodAnno/MethodReplace的ClassLoader必须是补丁的DexClassLoader，如果直接写 FixMethodAnno.class，
             // 则是来自于宿主app.apk的ClassLoader，在patch中是识别不到的，因为写在补丁中的注解(Annotation)是来自于补丁，传递
@@ -174,8 +175,7 @@ public final class IWatch {
             originMethodName = methodReplace.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
-                // todo 这里需要让原始class中的所有字段和方法为public
-                setAccessPublic(cl, originClassName);
+                setAccessPublic(cl, originClassName, clazz); // todo 这里需要让原始class中的所有字段和方法为public
 
                 // 方案1:
                 if (fixMethod1(cl, originClassName, originMethodName, method)) {
@@ -238,25 +238,34 @@ public final class IWatch {
         MethodHook.unhookAllMethod();
     }
 
-    private void setAccessPublic(ClassLoader cl, String className) {
-        Class<?> clazz;
+    private void setAccessPublic(ClassLoader cl, String className, Class<?> clazz) {
+        Class<?> Class1;
         try {
-            clazz = cl.loadClass(className);
+            Class1 = cl.loadClass(className);
         } catch (ClassNotFoundException e) {
             Log.e(TAG, "setAccessPublic, exception: " + e.getMessage());
             return;
         }
-        Method[] methods = clazz.getDeclaredMethods();
-        if (methods.length > 0) {
-            for (Method method : methods) {
-                method.setAccessible(true);
+
+        Field[] fields1 = Class1.getDeclaredFields();
+        if (fields1.length > 0) {
+            for (Field field : fields1) { // TODO: 2021/3/2 ing
+                MethodHook.setFieldAccessPublic(field);
             }
         }
-        Field[] fields = clazz.getDeclaredFields();
-        if (fields.length > 0) {
-            for (Field field : fields) {
-                field.setAccessible(true);
+
+        Field[] fields2 = clazz.getDeclaredFields();
+        if (fields2.length > 0) {
+            for (Field field : fields2) { // TODO: 2021/3/2 ing
+                MethodHook.setFieldAccessPublic(field);
             }
         }
+
+//        Method[] methods = clazz.getDeclaredMethods();
+//        if (methods.length > 0) {
+//            for (Method method : methods) {
+//                method.setAccessible(true);
+//            }
+//        }
     }
 }
