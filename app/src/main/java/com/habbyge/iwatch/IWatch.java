@@ -10,6 +10,7 @@ import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
@@ -24,20 +25,14 @@ import dalvik.system.DexClassLoader;
 public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
 
-//    private final SecurityChecker mSecurityChecker;
     private final boolean mTest;
 
     public IWatch(boolean test) {
-//        mSecurityChecker = new SecurityChecker(context);
         mTest = test;
     }
 
     public void init() {
         MethodHook.init();
-    }
-
-    public synchronized void fix(File patchFile, List<String> classNames) {
-        doFix(patchFile, classNames);
     }
 
     private Class<?> mMethodReplaceClass = null;
@@ -50,11 +45,10 @@ public final class IWatch {
      * DexClassLoader 内部的加载逻辑也是使用了DexFile来进行操作的，而这里为什么要进行加载操作呢？因为我们
      * 需要获取补丁类中需要修复的方法名称，而这个方法名称是通过修复方法的注解来获取到的，所以我们得先进行类的
      * 加载然后获取到他的方法信息，最后通过分析注解获取方法名，这里用的是反射机制来进行操作的。
-     * 3.
      *
      * @param classNames patchFile 中需要被 patch 的 类
      */
-    private void doFix(File patchFile, List<String> classNames) {
+    public synchronized void fix(File patchFile, List<String> classNames) {
         if (patchFile == null || !patchFile.exists()) {
             Log.e(TAG, "doFix, patchFile NOT exists");
             return;
@@ -69,13 +63,16 @@ public final class IWatch {
             String patchFilePath = patchFile.getAbsolutePath();
             Log.i(TAG, "doFix, patchFile: " + patchFilePath);
             final ClassLoader cl = IWatch.class.getClassLoader();
-            final DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
+            DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
             Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile(patchFile);
             if (jarEntries == null) {
                 Log.e(TAG, "doFix, jarEntries is NULL");
                 return;
             }
 
+            // 加载FixMethodAnno/MethodReplace的ClassLoader必须是补丁的DexClassLoader，如果直接写 FixMethodAnno.class，
+            // 则是来自于宿主app.apk的ClassLoader，在patch中是识别不到的，因为写在补丁中的注解(Annotation)是来自于补丁，传递
+            // 宿主的注解class，显然在虚拟机中的地址是不正确的，所以胡返回null。
             if (mTest) {
                 if (mMethodReplaceClass == null) {
                     mMethodReplaceClass = Class.forName("com.alipay.euler.andfix.annotation.MethodReplace", true, dexCl);
@@ -90,7 +87,7 @@ public final class IWatch {
             for (String className : classNames) {
                 clazz = dexCl.loadClass(className);
                 if (clazz != null) {
-                    fixClass(cl, clazz);
+                    fixClass(cl, dexCl, clazz);
                 }
             }
         } catch (Exception e) {
@@ -98,16 +95,17 @@ public final class IWatch {
         }
     }
 
-    private void fixClass(ClassLoader cl, Class<?> clazz) {
+    private void fixClass(ClassLoader cl, DexClassLoader dexCl, Class<?> clazz) {
         if (mTest) {
-            doFixClassTest(cl, clazz);
+            doFixClassTest(cl, dexCl, clazz);
         } else {
-            doFixClass(cl, clazz);
+            doFixClass(cl, dexCl, clazz);
         }
     }
 
-    private void doFixClass(ClassLoader cl, Class<?> clazz) {
-        Method[] methods = clazz.getDeclaredMethods();
+    private void doFixClass(ClassLoader cl, DexClassLoader dexCl, Class<?> clazz) {
+        Method[] methods = setAccessPublic(clazz);
+
         FixMethodAnno fixMethodAnno;
         String originClassName;
         String originMethodName;
@@ -126,6 +124,8 @@ public final class IWatch {
             originMethodName = fixMethodAnno.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
+                setAccessPublic(cl, dexCl, originClassName); // 这里需要让原始class中的所有字段和方法为public
+
                 // 方案1:
                 if (fixMethod1(cl, originClassName, originMethodName, method)) {
                     Log.i(TAG, "fixMethod1 success !");
@@ -153,28 +153,36 @@ public final class IWatch {
         }
     }
 
-    private void doFixClassTest(ClassLoader cl, Class<?> clazz) {
-        Method[] methods = clazz.getDeclaredMethods();
+    private void doFixClassTest(ClassLoader cl, DexClassLoader dexCl, Class<?> clazz) {
+        Method[] methods = setAccessPublic(clazz);
+        Log.d(TAG, "doFixClassTest, methods=" + methods.length);
 
         MethodReplace methodReplace;
         String originClassName;
         String originMethodName;
         boolean originStatic;
+
         for (Method method : methods) {
             // 这里会拿到为null，因为这里需要patch中的DexClassLoader
             /*methodReplace = method.getAnnotation(MethodReplace.class);*/
             // noinspection unchecked
             methodReplace = method.getAnnotation((Class<MethodReplace>) mMethodReplaceClass);
+            if (methodReplace == null) {
+                methodReplace = method.getAnnotation(MethodReplace.class);
+            }
             Log.w(TAG, "doFixClassTest, clazz=" + clazz.getName() +
                     ", method=" + method.getName() +
                     ", annotation=" + (methodReplace == null ? "nullptr" : "not nullptr"));
             if (methodReplace == null) {
                 continue;
             }
+
             originClassName = methodReplace.clazz();
             originMethodName = methodReplace.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
+                setAccessPublic(cl, dexCl, originClassName); // 这里需要让原始class中的所有字段和方法为public
+
                 // 方案1:
                 if (fixMethod1(cl, originClassName, originMethodName, method)) {
                     Log.i(TAG, "fixMethod1 success !");
@@ -235,4 +243,60 @@ public final class IWatch {
     public void unhookAllMethod() {
         MethodHook.unhookAllMethod();
     }
+
+    private void setAccessPublic(ClassLoader cl, DexClassLoader dexCl, String className) {
+        Class<?> class1;
+        try {
+            class1 = cl.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, "setAccessPublic, exception: " + e.getMessage());
+            return;
+        }
+        Field[] fields1 = class1.getDeclaredFields();
+        if (fields1.length > 0) {
+            for (Field field : fields1) {
+                field.setAccessible(true);
+                MethodHook.setFieldAccessPublic(field);
+            }
+        }
+        Method[] methods = class1.getDeclaredMethods();
+        if (methods.length > 0) {
+            for (Method method : methods) {
+                method.setAccessible(true);
+                MethodHook.setMethodAccessPublic(method);
+            }
+        }
+
+        /*setDexClassLoader(dexCl, class1);*/
+    }
+
+    private Method[] setAccessPublic(Class<?> clazz) {
+        Field[] fields2 = clazz.getDeclaredFields();
+        if (fields2.length > 0) {
+            for (Field field : fields2) {
+                field.setAccessible(true);
+                MethodHook.setFieldAccessPublic(field);
+            }
+        }
+
+        Method[] methods = clazz.getDeclaredMethods();
+        if (methods.length > 0) {
+            for (Method method : methods) {
+                method.setAccessible(true);
+                MethodHook.setMethodAccessPublic(method);
+            }
+        }
+        return methods;
+    }
+
+    /*private void setDexClassLoader(DexClassLoader dexCl, Class<?> clazz) {
+        try {
+            //noinspection JavaReflectionMemberAccess
+            Field field = Class.class.getDeclaredField("classLoader");
+            field.setAccessible(true);
+            field.set(clazz, dexCl);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Log.e(TAG, "setDexClassLoader, exception: " + e.getMessage());
+        }
+    }*/
 }

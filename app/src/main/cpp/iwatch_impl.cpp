@@ -59,11 +59,8 @@
 
 namespace iwatch {
 
-static int sdkVersion = 0;
 static void* cur_thread = nullptr;
 static JavaVM* vm;
-
-static const int SDK_INT_ANDROID_10 = 29;
 
 //using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
 //addWeakGlobalRef_t addWeakGlobalRef;
@@ -113,6 +110,8 @@ std::shared_ptr<Elf> elfOp = nullptr;
 std::shared_ptr<ArtRestore> artRestore = nullptr;
 std::shared_ptr<ArtMethodHook> artMethodHook = nullptr;
 
+int sdkVersion = 0;
+
 void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
   sdkVersion = sdkVersionCode;
 
@@ -129,12 +128,10 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 //  logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
 //       (size_t) artMethod22,
 //       (size_t) artMethod11);
-
+  logw("iwatch init, sdkVersion: %d", sdkVersionCode);
   if (sdkVersionCode <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
     artMethodHook->initArtMethodLessEqual10(env);
   } else { // >= Android-11(api-30)
-    logw("iwatch init, sdk >= API-30(Android-11): %d", sdkVersionCode);
-
     // 在 <= Android-10之前的版本，jni id 都是kPointer类型的，在 Andorid-11 之后都是 kIndices 类型了，
     // 所以，>= Android-11 的版本中，jmethodID != ArtMethod*了，art源码中是：art/runtime/jni_id_type.h
     // enum class JniIdType {
@@ -259,8 +256,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
  * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
  * 逻辑在 ClassLinker::LoadClass 中.
  */
-long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
-                      jobject srcMethod, jobject dstMethod) {
+long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
+                      jstring srcSig, jobject srcMethod, jobject dstMethod) {
 
   jboolean isCopy;
   const char* srcClassStr = env->GetStringUTFChars(srcClass, &isCopy);
@@ -513,35 +510,28 @@ void restore_all_method_impl(JNIEnv* env) {
   clear_exception(env);
 }
 
-//static void set_field_accFlags(JNIEnv* env, jobject fields[]) {
-//    if (fields == nullptr) {
-//        return;
-//    }
-//    size_t count = sizeof(fields) / sizeof(jfieldID);
-//    if (count <= 0) {
-//        return;
-//    }
-//    for (int i = 0; i < count; ++i) {
-//        void* artField = env->FromReflectedField(fields[i]);
-//        artField
-//    }
-//}
-
-static FieldHookClassInfo_t fieldHookClassInfo;
-
-long field_hook_impl(JNIEnv* env, jobject srcField, jobject dstField) {
+void set_field_public(JNIEnv* env, jobject field) {
   // art::mirror::ArtField
-  void* srcArtField = reinterpret_cast<void*>(env->FromReflectedField(srcField));
-  void* dstArtField = reinterpret_cast<void*>(env->FromReflectedField(dstField));
-  int8_t* backupArtField = new int8_t[fieldHookClassInfo.fieldSize];
+  if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10 <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
+    void* artField = reinterpret_cast<void*>(env->FromReflectedField(field));
+    ArtHookField::addAccessFlagsPublic(artField);
+  } else {
+    void* artFieldAddr = ArtHookField::getArtField(env, field);
+    if (artFieldAddr == nullptr) {
+      loge("set_field_public: failure !");
+    } else {
+      logi("set_field_public, artFieldAddr=%p", artFieldAddr);
+      ArtHookField::addAccessFlagsPublic(artFieldAddr);
+    }
+  }
 
-  memcpy(backupArtField, srcArtField, fieldHookClassInfo.fieldSize);
-  memcpy(srcArtField, dstArtField, fieldHookClassInfo.fieldSize);
+  iwatch::clear_exception(env);
+}
 
-  logv("hook_field: Success !");
-  clear_exception(env);
-
-  return reinterpret_cast<jlong>(backupArtField); // TODO: 记得 delete[] 掉
+void set_method_public(JNIEnv* env, jobject method) {
+  // art::mirror::ArtMethod
+  artMethodHook->setAccessPublic(env, method);
+  iwatch::clear_exception(env);
 }
 
 static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtFieldPtr) {
@@ -553,8 +543,10 @@ static jlong field_restore(JNIEnv* env, jobject srcArtField, jlong backupSrcArtF
 //  logv("methodRestore: Success !");
 //  clear_exception(env);
 //  return srcMethod;
-  return I_ERR; // TODO: 有待搞定......
+  return I_ERR;
 }
+
+static FieldHookClassInfo_t fieldHookClassInfo;
 
 long class_hook_impl(JNIEnv* env, jstring clazzName) {
   jboolean isCopy;

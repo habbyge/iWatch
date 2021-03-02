@@ -11,6 +11,7 @@
 #include "iwatch_impl.h"
 #include "ArtRestore.h"
 #include "common/constants.h"
+#include "art/art_method5_0.h"
 
 //#include <art/runtime/jni/jni_internal.h>
 //#include <exception> C/C++ 的 Exception
@@ -152,6 +153,39 @@ void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* na
     clear_exception(env);
     return nullptr;
   }
+}
+
+/**
+ * http://aosp.opersys.com/ 中查看各个版本的art_method.h 得到：
+ */
+void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
+  void* artMethod;
+  if (sdkVersion <= SDK_INT_ANDROID_10) {
+    artMethod = getArtMethodLessEqual10(env, method);
+  } else {
+    artMethod = getArtMethod(env, method);
+  }
+
+  uint32_t* access_flags = nullptr;
+
+  uint32_t step = -1;
+  if (sdkVersion == SDK_INT_ANDROID_5_0) { // 5.0.x
+    auto* artMethod5_0 = reinterpret_cast<art::mirror::ArtMethod5_0*>(artMethod);
+    artMethod5_0->access_flags_ = (artMethod5_0->access_flags_ & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
+    access_flags = &(artMethod5_0->access_flags_);
+  } else if (sdkVersion >= SDK_INT_ANDROID_5_1 && sdkVersion <= SDK_INT_ANDROID_6_0) { // 5.1.x ~ 6.0.x
+    step = 3;
+  } else if (sdkVersion >= SDK_INT_ANDROID_7_0/* && sdkVersion <= SDK_INT_ANDROID_11*/) { // 7.0.x ~ 11.0.x
+    step = 1;
+  }
+
+  if (step > 0) {
+    access_flags = reinterpret_cast<uint32_t*>(artMethod) + step;
+    *access_flags = ((*access_flags) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
+  }
+
+  logw("ArtMethodHook::setAccessPublic, sdkVersion=%d, access_flags=%p, *access_flags=%ud",
+       sdkVersion, access_flags, *access_flags);
 }
 
 } // namespace iwatch

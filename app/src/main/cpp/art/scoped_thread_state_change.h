@@ -8,6 +8,7 @@
 #define IWATCH_SCOPED_THREAD_STATE_CHANGE_H
 
 #include "value_object.h"
+#include "JNIEnvExt.h"
 
 namespace art {
 

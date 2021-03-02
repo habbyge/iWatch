@@ -39,9 +39,7 @@ public final class MethodHook {
         ArtMethodSize.init(Build.VERSION.SDK_INT);
     }
 
-    public static boolean hookMethod1(String className1, String name1, String sig1,
-                                      Method method1, Method method2) {
-
+    public static boolean hookMethod1(String className1, String name1, String sig1, Method method1, Method method2) {
         if (method1 == null || method2 == null) {
             return false;
         }
@@ -77,10 +75,6 @@ public final class MethodHook {
         unhookAllmethod();
     }
 
-    public static void hookField2(Field src, Field dst) {
-        hookField(src, dst);
-    }
-
     public static void hookClass2(String clazzName) {
         long addr = hookClass(clazzName.replace(".", "/"));
         Log.i(TAG, "hookClass2, addr=" + addr);
@@ -95,8 +89,7 @@ public final class MethodHook {
     @Keep
     public static native void init(int sdkVersionCode, Method m1, Method m2);
     @Keep
-    private static native long hookMethod(String srcClass, String srcName, String srcSig,
-                                          Method src, Method dst);
+    private static native long hookMethod(String srcClass, String srcName, String srcSig, Method src, Method dst);
     @Keep
     private static native long hookMethod(String className1, String funcName1, String funcSig1,
                                           boolean isStatic1, String className2, String funcName2,
@@ -107,7 +100,11 @@ public final class MethodHook {
     private static native void unhookAllmethod();
 
     @Keep
-    private static native long hookField(Field src, Field dst);
+    public static native void setFieldAccessPublic(Field field);
+
+    @Keep
+    public static native void setMethodAccessPublic(Method method);
+
     @Keep
     private static native long hookClass(String className);
     @Keep
