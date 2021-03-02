@@ -59,7 +59,6 @@
 
 namespace iwatch {
 
-static int sdkVersion = 0;
 static void* cur_thread = nullptr;
 static JavaVM* vm;
 

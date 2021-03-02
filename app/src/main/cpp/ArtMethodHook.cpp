@@ -154,4 +154,24 @@ void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* na
   }
 }
 
+/**
+ * http://aosp.opersys.com/ 中查看各个版本的art_method.h 得到：
+ */
+void ArtMethodHook::setAccessPublic(JNIEnv* env, void* artMethod) {
+  int step = 0;
+  if (sdkVersion == 21) { // 5.0.x
+    step = 10;
+  } else if (sdkVersion >= 22 && sdkVersion <= 23) { // 5.1.x ~ 6.0.x
+    step = 3;
+  } else if (sdkVersion >= 24/* && sdkVersion <= 30*/) { // 7.0.x ~ 11.0.x
+    step = 1;
+  }
+
+  uint32_t* access_flags_ptr = reinterpret_cast<uint32_t*>(artMethod) + step;
+  *access_flags_ptr = (*access_flags_ptr) & (~kAccPrivate) | kAccPublic;
+
+  logw("setAccessPublic, sdkVersion=%d, access_flags_ptr=%p, access_flags=%ud",
+       sdkVersion, access_flags_ptr, *access_flags_ptr);
+}
+
 } // namespace iwatch

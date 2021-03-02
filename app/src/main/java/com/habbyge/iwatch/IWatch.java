@@ -70,6 +70,12 @@ public final class IWatch {
                 return;
             }
             // TODO: 2021/3/2 这里利用 jarEntries 字段来查看 patch 中所有的 class 文件？？？？？？
+            JarEntry entry;
+            while (jarEntries.hasMoreElements()) {
+                entry = jarEntries.nextElement();
+                Log.d(TAG, "fix: patch entry=" + entry.getName());
+            }
+            // TODO: 2021/3/2 这里利用 jarEntries 字段来查看 patch 中所有的 class 文件？？？？？？
 
             // 加载FixMethodAnno/MethodReplace的ClassLoader必须是补丁的DexClassLoader，如果直接写 FixMethodAnno.class，
             // 则是来自于宿主app.apk的ClassLoader，在patch中是识别不到的，因为写在补丁中的注解(Annotation)是来自于补丁，传递
@@ -105,6 +111,8 @@ public final class IWatch {
     }
 
     private void doFixClass(ClassLoader cl, Class<?> clazz) {
+        setAccessPublic(clazz);
+
         Method[] methods = clazz.getDeclaredMethods();
         FixMethodAnno fixMethodAnno;
         String originClassName;
@@ -124,6 +132,8 @@ public final class IWatch {
             originMethodName = fixMethodAnno.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
+                setAccessPublic(cl, originClassName); // 这里需要让原始class中的所有字段和方法为public
+
                 // 方案1:
                 if (fixMethod1(cl, originClassName, originMethodName, method)) {
                     Log.i(TAG, "fixMethod1 success !");
@@ -152,6 +162,7 @@ public final class IWatch {
     }
 
     private void doFixClassTest(ClassLoader cl, Class<?> clazz) {
+        setAccessPublic(clazz);
         Method[] methods = clazz.getDeclaredMethods();
 
         MethodReplace methodReplace;
@@ -165,17 +176,21 @@ public final class IWatch {
             /*methodReplace = method.getAnnotation(MethodReplace.class);*/
             // noinspection unchecked
             methodReplace = method.getAnnotation((Class<MethodReplace>) mMethodReplaceClass);
+            if (methodReplace == null) {
+                methodReplace = method.getAnnotation(MethodReplace.class);
+            }
             Log.w(TAG, "doFixClassTest, clazz=" + clazz.getName() +
                     ", method=" + method.getName() +
                     ", annotation=" + (methodReplace == null ? "nullptr" : "not nullptr"));
             if (methodReplace == null) {
                 continue;
             }
+
             originClassName = methodReplace.clazz();
             originMethodName = methodReplace.method();
             originStatic = Modifier.isStatic(method.getModifiers());
             if (!TextUtils.isEmpty(originClassName) && !TextUtils.isEmpty(originMethodName)) {
-                setAccessPublic(cl, originClassName, clazz); // todo 这里需要让原始class中的所有字段和方法为public
+                setAccessPublic(cl, originClassName); // 这里需要让原始class中的所有字段和方法为public
 
                 // 方案1:
                 if (fixMethod1(cl, originClassName, originMethodName, method)) {
@@ -238,7 +253,7 @@ public final class IWatch {
         MethodHook.unhookAllMethod();
     }
 
-    private void setAccessPublic(ClassLoader cl, String className, Class<?> clazz) {
+    private void setAccessPublic(ClassLoader cl, String className) {
         Class<?> Class1;
         try {
             Class1 = cl.loadClass(className);
@@ -249,23 +264,32 @@ public final class IWatch {
 
         Field[] fields1 = Class1.getDeclaredFields();
         if (fields1.length > 0) {
-            for (Field field : fields1) { // TODO: 2021/3/2 ing
+            for (Field field : fields1) {
                 MethodHook.setFieldAccessPublic(field);
             }
         }
 
+        Method[] methods = Class1.getDeclaredMethods();
+        if (methods.length > 0) {
+            for (Method method : methods) {
+                method.setAccessible(true);
+            }
+        }
+    }
+
+    private void setAccessPublic(Class<?> clazz) {
         Field[] fields2 = clazz.getDeclaredFields();
         if (fields2.length > 0) {
-            for (Field field : fields2) { // TODO: 2021/3/2 ing
+            for (Field field : fields2) {
                 MethodHook.setFieldAccessPublic(field);
             }
         }
 
-//        Method[] methods = clazz.getDeclaredMethods();
-//        if (methods.length > 0) {
-//            for (Method method : methods) {
-//                method.setAccessible(true);
-//            }
-//        }
+        Method[] methods = clazz.getDeclaredMethods();
+        if (methods.length > 0) {
+            for (Method method : methods) {
+                method.setAccessible(true);
+            }
+        }
     }
 }

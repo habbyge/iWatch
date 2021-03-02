@@ -51982,15 +51982,16 @@ com.habbyge.iwatch.IWatch -> com.habbyge.iwatch.a:
     java.lang.Class mFixMethodAnnoClass -> c
     30:39:void <init>() -> <init>
     35:36:void init() -> a
-    52:96:void fix(java.io.File,java.util.List) -> a
-    1099:1104:void fixClass(java.lang.ClassLoader,java.lang.Class):99:104 -> a
-    1099:1104:void fix(java.io.File,java.util.List):90 -> a
-    107:151:void doFixClass(java.lang.ClassLoader,java.lang.Class) -> a
-    154:205:void doFixClassTest(java.lang.ClassLoader,java.lang.Class) -> b
-    212:216:boolean fixMethod1(java.lang.ClassLoader,java.lang.String,java.lang.String,java.lang.reflect.Method) -> a
-    224:233:boolean fixMethod2(java.lang.String,java.lang.String,java.lang.Class[],java.lang.Class,boolean,java.lang.String,java.lang.String,java.lang.Class[],java.lang.Class,boolean) -> a
-    238:239:void unhookAllMethod() -> b
-    244:261:void setAccessPublic(java.lang.ClassLoader,java.lang.String) -> a
+    52:103:void fix(java.io.File,java.util.List) -> a
+    1106:1111:void fixClass(java.lang.ClassLoader,java.lang.Class):106:111 -> a
+    1106:1111:void fix(java.io.File,java.util.List):97 -> a
+    114:162:void doFixClass(java.lang.ClassLoader,java.lang.Class) -> a
+    165:220:void doFixClassTest(java.lang.ClassLoader,java.lang.Class) -> b
+    227:231:boolean fixMethod1(java.lang.ClassLoader,java.lang.String,java.lang.String,java.lang.reflect.Method) -> a
+    239:248:boolean fixMethod2(java.lang.String,java.lang.String,java.lang.Class[],java.lang.Class,boolean,java.lang.String,java.lang.String,java.lang.Class[],java.lang.Class,boolean) -> a
+    253:254:void unhookAllMethod() -> b
+    259:278:void setAccessPublic(java.lang.ClassLoader,java.lang.String) -> a
+    281:294:void setAccessPublic(java.lang.Class) -> a
 com.habbyge.iwatch.IWatchApplication -> com.habbyge.iwatch.IWatchApplication:
     8:8:void <init>() -> <init>
     13:20:void onCreate() -> onCreate
@@ -52007,18 +52008,17 @@ com.habbyge.iwatch.MethodHook -> com.habbyge.iwatch.MethodHook:
     54:57:boolean hookMethod2(java.lang.String,java.lang.String,java.lang.String,boolean,java.lang.String,java.lang.String,java.lang.String,boolean) -> hookMethod2
     71:72:void restoreMethod(java.lang.String,java.lang.String,java.lang.String) -> restoreMethod
     75:76:void unhookAllMethod() -> unhookAllMethod
-    79:80:void hookField2(java.lang.reflect.Field,java.lang.reflect.Field) -> hookField2
-    83:85:void hookClass2(java.lang.String) -> hookClass2
-    88:91:void setCurThread() -> setCurThread
+    79:81:void hookClass2(java.lang.String) -> hookClass2
+    84:87:void setCurThread() -> setCurThread
     void init(int,java.lang.reflect.Method,java.lang.reflect.Method) -> init
     long hookMethod(java.lang.String,java.lang.String,java.lang.String,java.lang.reflect.Method,java.lang.reflect.Method) -> hookMethod
     long hookMethod(java.lang.String,java.lang.String,java.lang.String,boolean,java.lang.String,java.lang.String,java.lang.String,boolean) -> hookMethod
     void unhookMethod(java.lang.String,java.lang.String,java.lang.String) -> unhookMethod
     void unhookAllmethod() -> unhookAllmethod
-    long hookField(java.lang.reflect.Field,java.lang.reflect.Field) -> hookField
+    void setFieldAccessPublic(java.lang.reflect.Field) -> setFieldAccessPublic
     long hookClass(java.lang.String) -> hookClass
     void setCurThread(long) -> setCurThread
-    114:115:void <clinit>() -> <clinit>
+    110:111:void <clinit>() -> <clinit>
 com.habbyge.iwatch.patch.FixMethodAnno -> com.habbyge.iwatch.patch.FixMethodAnno:
     java.lang.String _class() -> _class
     java.lang.String method() -> method

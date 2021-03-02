@@ -77,7 +77,9 @@ public:
   void* getArtMethodLessEqual10(JNIEnv* env, jobject method);
   void* getArtMethod(JNIEnv* env, jobject method);
   void* getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static);
-  
+
+  void setAccessPublic(JNIEnv* env, void* artMethod);
+
   inline size_t getArtMethodSizeV1() const {
     return artMethodSizeV1;
   }
