@@ -30,6 +30,10 @@ public class Patch implements Comparable<Patch> {
     private static final String PATCH_VERSION = "From-File";
     private static final String BASE_APP_VERSION = "To-File";
 
+    // patch extension
+    public static final String SUFFIX = ".apatch"; // patch 文件的后缀
+    public static final String DIR = "apatch";
+
     private final File mFile;
     private String mName;
     private Date mTime;

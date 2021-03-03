@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "new-Fix, btnHookMethod, onClick success !");
+                Log.i(TAG, "New-Fix, btnHookMethod, onClick success !");
 
 // TODO: 2021/3/1
 //  2021-03-01 10:55:55.022 23916-23916/? E/AndroidRuntime: FATAL EXCEPTION: main
@@ -67,7 +67,7 @@ public class MainActivity extends Activity {
 //  虽然传入的对象依旧是旧的原始对象，但是类名已经不同了，会导致只能访问public的字段和方法(相当于在A类中调用B类中方法，所以只能访问public).
 //                ix = 1000; // 这里有坑，
 //                ix_HOOK = 1000; // 这里有坑
-                printf("Mango_Pidan_Mali_Habby-New!!");
+//                printf("Mango_Pidan_Mali_Habby-New!!");
 
 // TODO: 2021/3/1
 //  2021-03-01 17:38:28.774 15008-15008/? E/AndroidRuntime: FATAL EXCEPTION: main
@@ -88,8 +88,10 @@ public class MainActivity extends Activity {
     }
 
     @SuppressWarnings("all")
-    private void printf(String text) {
-        Log.i(TAG, "printf: " + text + ", ix=" + ix + ", ix_HOOK=" + ix_HOOK);
-        ix = 100; // todo
+    private void printf(String text) { // 通过修改
+//        Log.d(TAG, "printf: " + text);
+        Log.i(TAG, "printf: " + text + ", ix_HOOK=" + ix_HOOK);
+//        ix_HOOK = 1000; // todo ing
+//        ix = 100; // todo
     }
 }

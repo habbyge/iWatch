@@ -43,9 +43,11 @@ public:
 
   inline static void addAccessFlagsPublic(void* artField) {
     // 从 Android5.0 ~ Android11.0 的版本中，ArtField 中 access_flags_ 字段偏移量都是1
-    uint32_t* access_flags_ = reinterpret_cast<uint32_t*>(artField) + 1;
-    *access_flags_ = ((*access_flags_) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
-    logw("addAccessFlagsPublic, access_flags_ptr=%p, access_flags=%ud", access_flags_, *access_flags_);
+    uint32_t* access_flags_addr = reinterpret_cast<uint32_t*>(artField) + 1;
+    uint32_t access_flags_ = *access_flags_addr;
+    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
+    logw("addAccessFlagsPublic, access_flags_ptr=%p, access_flags=%u -> %u",
+         access_flags_addr, access_flags_, *access_flags_addr);
   }
 
 private:

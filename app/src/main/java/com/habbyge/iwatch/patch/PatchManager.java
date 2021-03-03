@@ -22,14 +22,11 @@ import java.util.List;
 public final class PatchManager {
     private static final String TAG = "iWatch.PatchManager";
 
-    // patch extension
-    private static final String SUFFIX = ".apatch"; // patch 文件的后缀
-    private static final String DIR = "apatch";
-
     private String mIWatchVersion = null;
     private String mAppVersion = null;
 
     private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/apatch
+
     @Nullable
     private Patch mPatch;
 
@@ -64,7 +61,9 @@ public final class PatchManager {
 
         // 测试路径: 需要 adb push 补丁.apatch 到手机这个目录:
         // /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/
-        mPatchDir = test ? context.getExternalFilesDir(Environment.DIRECTORY_MUSIC) : new File(context.getFilesDir(), DIR);
+        mPatchDir = test ? context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+                         : new File(context.getFilesDir(), Patch.DIR);
+
         if (!mPatchDir.exists() && !mPatchDir.mkdirs()) {// make directory fail
             Log.e(TAG, "patch dir create error.");
             return false;
@@ -74,7 +73,7 @@ public final class PatchManager {
         }
         Log.i(TAG, "mPatchDir=" + mPatchDir);
 
-        initIWatch(test);
+        initIWatch(context, test);
 
         initPatchs(); // 加载补丁到内存中: mPatchs
 
@@ -108,8 +107,8 @@ public final class PatchManager {
         }
     }
 
-    private void initIWatch(boolean test) {
-        mIWatch = new IWatch(test);
+    private void initIWatch(Context context, boolean test) {
+        mIWatch = new IWatch(context, test);
         mIWatch.init();
     }
 
@@ -199,7 +198,7 @@ public final class PatchManager {
      */
     private boolean addPatch(File pathFile) {
         boolean succe = false;
-        if (pathFile.getName().endsWith(SUFFIX)) {
+        if (pathFile.getName().endsWith(Patch.SUFFIX)) {
             try {
                 mPatch = new Patch(pathFile);
                 if (!mPatch.canPatch()) {
@@ -225,6 +224,7 @@ public final class PatchManager {
             return;
         }
         for (File file : files) {
+            mIWatch.removeOptFile(file);
             if (!FileUtil.deleteFile(file)) {
                 Log.e(TAG, file.getName() + " delete error.");
             }
