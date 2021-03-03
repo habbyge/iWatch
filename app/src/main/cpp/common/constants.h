@@ -23,6 +23,9 @@ static constexpr int SDK_INT_ANDROID_11 = 30;
 static constexpr uint32_t kAccPublic =       0x0001;  // class, field, method, ic
 static constexpr uint32_t kAccPrivate =      0x0002;  // field, method, ic
 static constexpr uint32_t kAccProtected =    0x0004;  // field, method, ic
+static constexpr uint32_t kAccFinal =        0x0010;  // class, field, method, ic
+static constexpr uint32_t kAccSynthetic =    0x1000;  // class, field, method, ic
+
 // ......
 static constexpr uint32_t kAccJavaFlagsMask = 0xffff; // bits set from Java sources (low 16)
 

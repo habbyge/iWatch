@@ -20,7 +20,21 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-#-applymapping mapping.txt # todo
+-optimizationpasses 3 # why previous value is 2?
+-allowaccessmodification
+-useuniqueclassmembernames
+-dontusemixedcaseclassnames
+-dontskipnonpubliclibraryclasses
+-dontpreverify
+-verbose
+-optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
+-optimizations !class/unboxing/enum # https://stackoverflow.com/questions/32185060/android-proguard-failing-with-value-i-is-not-a-reference-value/32615580
+-renamesourcefileattribute SourceFile
+-keepattributes SourceFile,LineNumberTable,Signature
+-keepattributes *Annotation*
+-keepattributes EnclosingMethod
+
+-applymapping mapping.txt # todo 打补丁时需要，用于保持混淆一致
 -ignorewarnings
 
 -keep class * extends java.lang.annotation.Annotation

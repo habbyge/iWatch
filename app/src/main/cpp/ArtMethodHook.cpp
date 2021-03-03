@@ -144,7 +144,9 @@ void* ArtMethodHook::getArtMethod(JNIEnv* env, jobject method) {
 /**
  * 方案2
  */
-void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static) {
+void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* name,
+                                  const char* sig, bool is_static) {
+
   try {
     art::ScopedObjectAccess soa(env);
     return FindMethodJNI(soa, java_class, name, sig, is_static);
@@ -172,9 +174,12 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
   uint32_t step = -1;
   if (sdkVersion == SDK_INT_ANDROID_5_0) { // 5.0.x
     auto* artMethod5_0 = reinterpret_cast<art::mirror::ArtMethod5_0*>(artMethod);
+    if ((artMethod5_0->access_flags_ & kAccSynthetic) == kAccSynthetic) {
+      return; // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
+    }
+    access_flags_ = artMethod5_0->access_flags_;
     artMethod5_0->access_flags_ = (artMethod5_0->access_flags_ & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
     access_flags_addr = &(artMethod5_0->access_flags_);
-    access_flags_ = artMethod5_0->access_flags_;
   } else if (sdkVersion >= SDK_INT_ANDROID_5_1 && sdkVersion <= SDK_INT_ANDROID_6_0) { // 5.1.x ~ 6.0.x
     step = 3;
   } else if (sdkVersion >= SDK_INT_ANDROID_7_0/* && sdkVersion <= SDK_INT_ANDROID_11*/) { // 7.0.x ~ 11.0.x
@@ -184,10 +189,17 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
   if (step > 0) {
     access_flags_addr = reinterpret_cast<uint32_t*>(artMethod) + step;
     access_flags_ = *access_flags_addr;
-    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
+    // What is the meaning of “static synthetic”? eg: .method static synthetic access$0()Lcom/package/Sample;
+    // answer: Synthetic field, (2)
+    // A compiler-created field that links a local inner class to a block's local variable or reference type parameter.
+    // See also The JavaTM Virtual Machine Specification (§4.7.6) or Synthetic Class in Java.
+    if ((access_flags_ & kAccSynthetic) == kAccSynthetic) {
+      return; // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
+    }
+//    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic; // todo ing
   }
 
-  logw("ArtMethodHook::setAccessPublic, sdkVersion=%d, access_flags=%p, *access_flags=%u -> %u",
+  logw("ArtMethodHook::setAccessPublic, sdkVersion=%d, access_flags=%p, access_flags=%u -> %u",
        sdkVersion, access_flags_addr, access_flags_, *access_flags_addr);
 }
 
