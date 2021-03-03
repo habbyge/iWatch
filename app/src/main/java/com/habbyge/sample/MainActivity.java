@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 
 import com.habbyge.iwatch.R;
 
@@ -32,24 +31,7 @@ public class MainActivity extends Activity {
         ix_HOOK++;
         Log.i(TAG, "onCreate, ix_HOOK=" + ix_HOOK);
 
-//        verifyStoragePermissions(this);
-
-//        Button btnClick = findViewById(R.id.click);
-        Button btnHookMethod = findViewById(R.id.method);
-//        Button btnHookField = findViewById(R.id.field);
-//        Button btnHookClass = findViewById(R.id.clazz);
-//        Button btnHookClickLsn = findViewById(R.id.clickListener);
-
-//        btnClick.setOnClickListener(new View.OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                Log.i(TAG, "Old-Fix, btnClick, onClick success !");
-////                printf("Mali_Mango_Pidan_Habby");
-//            }
-//        });
-
-        btnHookMethod.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.method).setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
