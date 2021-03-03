@@ -27,9 +27,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ix = 100;
-        ix_HOOK++;
-        Log.i(TAG, "onCreate, ix_HOOK=" + ix_HOOK);
+        Log.i(TAG, "onCreate, ix_HOOK=" + ix_HOOK + ", ix=" + ix);
 
         findViewById(R.id.method).setOnClickListener(new View.OnClickListener() {
 
