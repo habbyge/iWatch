@@ -3,11 +3,13 @@
 //
 
 #include "ArtHookField.h"
+#include "iwatch_impl.h"
 
 namespace iwatch {
 
-void ArtHookField::initArtField(JNIEnv* env, std::shared_ptr<Elf> elf_op) {
-  // todo: ing......
+void ArtHookField::initArtField(JNIEnv*, const std::shared_ptr<Elf>& elf_op) {
+  FindFieldJNI = reinterpret_cast<FindFieldJNI_t>(elf_op->dlsym_elf(FindFieldJNI_Sym));
+  logi("initArtField, FindFieldJNI=%p", FindFieldJNI);
 }
 
 /**
@@ -21,9 +23,17 @@ void ArtHookField::initArtField(JNIEnv* env, std::shared_ptr<Elf> elf_op) {
  *                        const char* sig,
  *                        bool is_static)
  */
-void* ArtHookField::getArtField(JNIEnv* env, jobject field) {
-  // todo: ing......
-  return nullptr;
+void* ArtHookField::getArtField(JNIEnv* env, jclass jni_class, const char* name,
+                                const char* sig, bool isStatic) {
+
+  try {
+    art::ScopedObjectAccess soa(env);
+    return FindFieldJNI(soa, jni_class, name, sig, isStatic); // 返回 ArtField*
+  } catch (std::exception& e) {
+    loge("getArtField, eception: %s", e.what());
+    clear_exception(env);
+    return nullptr;
+  }
 }
 
 } // namespace iwatch

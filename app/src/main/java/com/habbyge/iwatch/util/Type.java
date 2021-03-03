@@ -65,4 +65,10 @@ public final class Type {
             }
         }
     }
+
+    public static String getDescriptor(final Class<?> clazz) {
+        StringBuilder buf = new StringBuilder();
+        getDescriptor(buf, clazz);
+        return buf.toString();
+    }
 }

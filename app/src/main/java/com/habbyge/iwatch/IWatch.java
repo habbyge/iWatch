@@ -325,9 +325,13 @@ public final class IWatch {
         }
         Field[] fields1 = class1.getDeclaredFields();
         if (fields1.length > 0) {
+            String desc;
+            boolean isStatic;
             for (Field field : fields1) {
                 Log.d(TAG, "set public: " + className + ", field=" + field.getName());
-                MethodHook.setFieldAccessPublic(field);
+                desc = Type.getDescriptor(field.getType());
+                isStatic = Modifier.isStatic(field.getModifiers());
+                MethodHook.setFieldAccessPublic(field, class1, field.getName(), desc, isStatic);
             }
         }
         Method[] methods = class1.getDeclaredMethods();
@@ -344,10 +348,13 @@ public final class IWatch {
     private Method[] setAccessPublic(Class<?> clazz) {
         Field[] fields2 = clazz.getDeclaredFields();
         if (fields2.length > 0) {
+            String desc;
+            boolean isStatic;
             for (Field field : fields2) {
-//                field.getDeclaringClass() todo
                 Log.d(TAG, "set public2: " + clazz.getName() + ", field=" + field.getName());
-                MethodHook.setFieldAccessPublic(field);
+                desc = Type.getDescriptor(field.getType());
+                isStatic = Modifier.isStatic(field.getModifiers());
+                MethodHook.setFieldAccessPublic(field, clazz, field.getName(), desc, isStatic);
             }
         }
 

@@ -53,7 +53,7 @@ long method_hookv2_impl(JNIEnv* env,
 void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring sig);
 void restore_all_method_impl(JNIEnv* env);
 
-void set_field_public(JNIEnv* env, jobject field);
+void set_field_public(JNIEnv* env, jobject field, jclass srcClas, jstring name, jstring sig, jboolean isStatic);
 void set_method_public(JNIEnv* env, jobject method);
 
 long class_hook_impl(JNIEnv* env, jstring clazzName);

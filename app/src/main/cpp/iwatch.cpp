@@ -31,8 +31,10 @@ static void restore_all_method(JNIEnv* env, jclass) {
   iwatch::restore_all_method_impl(env);
 }
 
-static void set_field_public(JNIEnv* env, jclass, jobject field) {
-  iwatch::set_field_public(env, field);
+static void set_field_public(JNIEnv* env, jclass, jobject field, jclass srcClass,
+                             jstring name, jstring sig, jboolean isStatic) {
+
+  iwatch::set_field_public(env, field, srcClass, name, sig, isStatic);
 }
 
 static void set_method_public(JNIEnv* env, jclass, jobject method) {
@@ -75,7 +77,7 @@ static JNINativeMethod gMethods[] = {
   },
   {
     "setFieldAccessPublic",
-    "(Ljava/lang/reflect/Field;)V",
+    "(Ljava/lang/reflect/Field;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Z)V",
     (void*) set_field_public
   },
   {

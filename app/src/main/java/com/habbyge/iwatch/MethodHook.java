@@ -100,7 +100,8 @@ public final class MethodHook {
     private static native void unhookAllmethod();
 
     @Keep
-    public static native void setFieldAccessPublic(Field field);
+    public static native void setFieldAccessPublic(Field field, Class<?> srcClass,
+                                                   String name, String sig, boolean isStatic);
 
     @Keep
     public static native void setMethodAccessPublic(Method method);

@@ -10,10 +10,12 @@
 #include <stdint.h>
 #include <jni.h>
 #include <memory>
+
 #include "art/scoped_thread_state_change.h"
 #include "common/elf_op.h"
 #include "common/log.h"
 #include "common/constants.h"
+#include "common/elf_op.h"
 
 namespace iwatch {
 
@@ -25,11 +27,11 @@ namespace iwatch {
 //                        const char* sig,
 //                        bool is_static)
 static const char* FindFieldJNI_Sym = "_ZN3art12FindFieldJNIERKNS_18ScopedObjectAccessEP7_jclassPKcS6_b";
-using FindFieldJNI = void* (*) (const art::ScopedObjectAccess& soa,
-                                jclass jni_class,
-                                const char* name,
-                                const char* sig,
-                                bool is_static);
+using FindFieldJNI_t = void* (*)(const art::ScopedObjectAccess& soa,
+                                 jclass jni_class,
+                                 const char* name,
+                                 const char* sig,
+                                 bool is_static);
 
 /**
  * access_flags_ 在 ArtField 中的偏移量满足：android-5.0 ~ android-11.0
@@ -37,9 +39,14 @@ using FindFieldJNI = void* (*) (const art::ScopedObjectAccess& soa,
  */
 class ArtHookField final {
 public:
-  static void initArtField(JNIEnv* env, std::shared_ptr<Elf> elf_op);
+  ArtHookField() : reference_(0), access_flags_(0), FindFieldJNI(nullptr) {}
 
-  static void* getArtField(JNIEnv* env, jobject field);
+  ~ArtHookField() {
+    FindFieldJNI = nullptr;
+  }
+
+  void initArtField(JNIEnv* env, const std::shared_ptr<Elf>& elf_op);
+  void* getArtField(JNIEnv* env, jclass jni_class, const char* name, const char* sig, bool isStatic);
 
   inline static void addAccessFlagsPublic(void* artField) {
     // 从 Android5.0 ~ Android11.0 的版本中，ArtField 中 access_flags_ 字段偏移量都是1
@@ -56,6 +63,8 @@ public:
 private:
   uint32_t reference_;
   uint32_t access_flags_ = 0; // android5.0 ~android11 field 的访问权限字段偏移量都是4byte处
+
+  FindFieldJNI_t  FindFieldJNI;
   // ...... 不关注
 };
 

@@ -109,6 +109,7 @@ static JavaVM* vm;
 std::shared_ptr<Elf> elfOp = nullptr;
 std::shared_ptr<ArtRestore> artRestore = nullptr;
 std::shared_ptr<ArtMethodHook> artMethodHook = nullptr;
+std::shared_ptr<ArtHookField> artHookField = nullptr;
 
 int sdkVersion = 0;
 
@@ -119,6 +120,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 
   elfOp = std::make_shared<Elf>();
   artMethodHook = std::make_shared<ArtMethodHook>();
+  artHookField = std::make_shared<ArtHookField>();
   artRestore = std::make_shared<ArtRestore>();
 
   // art::mirror::ArtMethod
@@ -224,6 +226,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
 
     // 方案2
     artMethodHook->initArtMethod2(env, elfOp);
+
+    artHookField->initArtField(env, elfOp);
 
 //    dlclose_elf(context); // 释放
     elfOp->dlclose_elf(); // 释放
@@ -510,13 +514,27 @@ void restore_all_method_impl(JNIEnv* env) {
   clear_exception(env);
 }
 
-void set_field_public(JNIEnv* env, jobject field) {
+void set_field_public(JNIEnv* env, jobject field, jclass srcClas, jstring name, jstring sig, jboolean isStatic) {
   // art::mirror::ArtField
   if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10 <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
     void* artField = reinterpret_cast<void*>(env->FromReflectedField(field));
     ArtHookField::addAccessFlagsPublic(artField);
   } else {
-    void* artFieldAddr = ArtHookField::getArtField(env, field);
+    jboolean isCopy;
+    const char* fieldName = env->GetStringUTFChars(name, &isCopy);
+    if (fieldName == nullptr) {
+      return;
+    }
+    const char* fieldSig = env->GetStringUTFChars(sig, &isCopy);
+    if (fieldSig == nullptr) {
+      return;
+    }
+
+    void* artFieldAddr = artHookField->getArtField(env, srcClas, fieldName, fieldSig, isStatic);
+
+    env->ReleaseStringUTFChars(name, fieldName);
+    env->ReleaseStringUTFChars(sig, fieldSig);
+
     if (artFieldAddr == nullptr) {
       loge("set_field_public: failure !");
     } else {
