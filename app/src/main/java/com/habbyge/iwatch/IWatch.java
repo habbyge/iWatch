@@ -54,7 +54,6 @@ public final class IWatch {
         }
 
         try {
-
             File optfile = new File(mOptDir, patchFile.getName());
             if (optfile.exists()) {
                 if (!optfile.delete()) {

@@ -48,23 +48,13 @@ public:
   void initArtField(JNIEnv* env, const std::shared_ptr<Elf>& elf_op);
   void* getArtField(JNIEnv* env, jclass jni_class, const char* name, const char* sig, bool isStatic);
 
-  inline static void addAccessFlagsPublic(void* artField) {
-    // 从 Android5.0 ~ Android11.0 的版本中，ArtField 中 access_flags_ 字段偏移量都是1
-    uint32_t* access_flags_addr = reinterpret_cast<uint32_t*>(artField) + 1;
-    uint32_t access_flags_ = *access_flags_addr;
-    if ((access_flags_ & kAccSynthetic) == kAccSynthetic) {
-      return; // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
-    }
-    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
-    logw("addAccessFlagsPublic, access_flags_ptr=%p, access_flags=%u -> %u",
-         access_flags_addr, access_flags_, *access_flags_addr);
-  }
+  static void addAccessFlagsPublic(void* artField);
 
 private:
   uint32_t reference_;
   uint32_t access_flags_ = 0; // android5.0 ~android11 field 的访问权限字段偏移量都是4byte处
 
-  FindFieldJNI_t  FindFieldJNI;
+  FindFieldJNI_t FindFieldJNI;
   // ...... 不关注
 };
 
