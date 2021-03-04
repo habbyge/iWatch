@@ -28,14 +28,15 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         Log.i(TAG, "onCreate, ix_HOOK=" + ix_HOOK + ", ix=" + ix);
+        printf("onCreate");
 
         findViewById(R.id.method).setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "New-Fix, btnHookMethod, onClick success !");
+                Log.i(TAG, "old-Fix, btnHookMethod, onClick success !");
 
-// 问题1：这里是为了解决内部类导致的编译期在其外部类中合成 syntthetic(合成) 方法，即：在外部类中合成：
+// [问题1]：这里是为了解决内部类导致的编译期在其外部类中合成 syntthetic(合成) 方法，即：在外部类中合成：
 // static synthetic xxx(外部类对象的引用) {
 //     外部类_CF->字段;
 // }
@@ -102,6 +103,7 @@ public class MainActivity extends Activity {
             }
         });
 
+// [问题2]
 // TODO: 2021/3/1 以上两个问题，可以统一用同一个方案来解决：
 //  生成补丁时，需要diff，
     }
@@ -111,14 +113,15 @@ public class MainActivity extends Activity {
         super.onResume();
         ix = 1001;
         ix_HOOK = 10001;
-        printf("onCreate, I love my family");
+        printf("onResume");
     }
 
-    @SuppressWarnings("all")
-    private void printf(String text) { // 通过修改
-        Log.d(TAG, "printf: " + text + ", I love my family");
-        Log.i(TAG, "printf: " + text + ", ix_HOOK=" + ix_HOOK);
-        ix_HOOK = 1000; // todo ing
-        ix = 100; // todo
+    public void printf(String text) { // 通过修改
+        Log.d(TAG, "printf-bengin: " + text + ", I love my family");
+        for (int i = 0; i < 10; ++i) {
+            ++ix_HOOK;
+            ++ix;
+        }
+        Log.i(TAG, "printf-end: " + text + ", ix_HOOK=" + ix_HOOK);
     }
 }

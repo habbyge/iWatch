@@ -126,7 +126,6 @@ public final class IWatch {
 //            Log.i(TAG, "doFix, patchFile: " + patchFilePath);
 //            final ClassLoader cl = IWatch.class.getClassLoader();
 //
-//            // TODO: 2021/3/3 这里改为 DexFile 加载 ？？？？？？
 //            DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
 //
 //            Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile(patchFile);
@@ -247,7 +246,7 @@ public final class IWatch {
             className1 = methodReplace.clazz();
             methodName1 = methodReplace.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
-                Log.d(TAG, "doFixClassTest, oldClassName=" + className1); // TODO: 2021/3/3 ing
+                Log.d(TAG, "doFixClassTest, oldClassName=" + className1);
                 setAccessPublic(classLoader, className1); // 这里需要让原始class中的所有字段和方法为public
 
                 // 方案1:
