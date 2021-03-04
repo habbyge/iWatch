@@ -14,8 +14,8 @@ public class MainActivity extends Activity {
     private static final String TAG = "iWatch.MainActivity";
 
     // 字符-测试样例
-    private static int ix = 10;
-    private int ix_HOOK = 10000;
+    public static int ix = 10;
+    public int ix_HOOK = 10000;
 
     @SuppressWarnings("all")
     private String iStr = "iWatch";
@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "Old-Fix, btnHookMethod, onClick success !");
+                Log.i(TAG, "New-Fix, btnHookMethod, onClick success !");
 
 // 2021-03-01 10:55:55.022 23916-23916/? E/AndroidRuntime: FATAL EXCEPTION: main
 // Process: com.habbyge.iwatch, PID: 23916
@@ -68,9 +68,16 @@ public class MainActivity extends Activity {
 //        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:526)
 //        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1034)
 
+// todo 这里问题的关键是：编译期自动生成了synthetic方法，一般在内部类调用外部类是会在外部类中生成，如果修复包在某个内部类中
+//  新增了一个外部类中某个字段的调用，这样在打修复包时会新增的static syncthetic方法，但是传入的参数仍旧是修复前的类对象(
+//  不带_CF)的，这就导致 java.lang.VerifyError，有两个方案来解决：
+//  方案1：在修复包生成时，编译期阻止生成该合成类型的方法，即设置字段为public，在transform中，根据手动增加的注解，来设
+//  置该字段设置为public; 结合 Hellhound 项目即可
+//  方案2：不阻止修复包生成Synthetic方法，尝试解决 ？？？？？？
                 ix = 1000; // 这里有坑，
                 ix_HOOK = 1000; // 这里有坑
                 printf("Mango_Pidan_Mali_Habby-New!!");
+//  采用方案：第1个方案.
 
 // TODO: 2021/3/1
 //  2021-03-01 17:38:28.774 15008-15008/? E/AndroidRuntime: FATAL EXCEPTION: main

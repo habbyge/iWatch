@@ -174,11 +174,15 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
   uint32_t step = -1;
   if (sdkVersion == SDK_INT_ANDROID_5_0) { // 5.0.x
     auto* artMethod5_0 = reinterpret_cast<art::mirror::ArtMethod5_0*>(artMethod);
-    if ((artMethod5_0->access_flags_ & kAccSynthetic) == kAccSynthetic) {
-      return; // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
-    }
     access_flags_ = artMethod5_0->access_flags_;
-    artMethod5_0->access_flags_ = (artMethod5_0->access_flags_ & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
+    if ((artMethod5_0->access_flags_ & kAccSynthetic) == kAccSynthetic) {
+      // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
+//      artMethod5_0->access_flags_ &= ~kAccSynthetic; // clear Synthetic
+//      artMethod5_0->access_flags_ |= (kAccPublic | kAccFinal);
+      logd("synthetic setAccessPublic sdk5.0 !");
+    } else {
+      /*artMethod5_0->access_flags_ = (artMethod5_0->access_flags_ & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;*/
+    }
     access_flags_addr = &(artMethod5_0->access_flags_);
   } else if (sdkVersion >= SDK_INT_ANDROID_5_1 && sdkVersion <= SDK_INT_ANDROID_6_0) { // 5.1.x ~ 6.0.x
     step = 3;
@@ -194,9 +198,15 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
     // A compiler-created field that links a local inner class to a block's local variable or reference type parameter.
     // See also The JavaTM Virtual Machine Specification (§4.7.6) or Synthetic Class in Java.
     if ((access_flags_ & kAccSynthetic) == kAccSynthetic) {
-      return; // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
+      // todo ing clear Synthetic 防止内部类生成这个合成函数时，多余的权限检查:
+      // java.lang.VerifyError:
+//      *access_flags_addr &= ~kAccSynthetic;
+//      *access_flags_addr |= (kAccPublic | kAccFinal);
+      logd("synthetic setAccessPublic !");
+      // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
+    } else {
+//    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
     }
-//    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic; // todo ing
   }
 
   logw("ArtMethodHook::setAccessPublic, sdkVersion=%d, access_flags=%p, access_flags=%u -> %u",
