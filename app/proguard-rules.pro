@@ -34,7 +34,7 @@
 -keepattributes *Annotation*
 -keepattributes EnclosingMethod
 
--applymapping mapping.txt # todo 打补丁时需要，用于保持混淆一致
+#-applymapping mapping.txt # todo 打补丁时需要，用于保持混淆一致
 -ignorewarnings
 
 -keep class * extends java.lang.annotation.Annotation
