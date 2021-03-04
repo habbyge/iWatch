@@ -74,17 +74,15 @@ public final class IWatch {
                     String packagePath2 = "com.habbyge.iwatch";
 
                     Class<?> clazz = dexFile.loadClass(className, this);
-                    if (clazz == null /*&& (className.startsWith(packagePath1)
-                            || className.startsWith(packagePath2))*/) {
+                    if (clazz == null && (className.startsWith(packagePath1) || className.startsWith(packagePath2))) {
                         return Class.forName(className);// annotation’s class
                     }
-//                    if (clazz == null) {
-//                        throw new ClassNotFoundException(className);
-//                    }
+                    if (clazz == null) {
+                        throw new ClassNotFoundException(className);
+                    }
                     return clazz;
                 }
             };
-
 
             Enumeration<String> entrys = dexFile.entries();
             Class<?> clazz;
