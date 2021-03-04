@@ -34,7 +34,7 @@ void* ArtHookField::getArtField(JNIEnv* env, jclass jni_class, const char* name,
   }
 }
 
-void ArtHookField::addAccessFlagsPublic(void* artField) {
+void ArtHookField::addAccessFlagsPublic(void* artField) { // todo ing 是否有必要 ？？？？？？
   // 从 Android5.0 ~ Android11.0 的版本中，ArtField 中 access_flags_ 字段偏移量都是1
   uint32_t* access_flags_addr = reinterpret_cast<uint32_t*>(artField) + 1;
   uint32_t access_flags_ = *access_flags_addr;

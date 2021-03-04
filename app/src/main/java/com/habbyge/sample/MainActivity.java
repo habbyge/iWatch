@@ -35,6 +35,15 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 Log.i(TAG, "New-Fix, btnHookMethod, onClick success !");
 
+// 问题1：这里是为了解决内部类导致的编译期在其外部类中合成 syntthetic(合成) 方法，即：在外部类中合成：
+// static synthetic xxx(外部类对象的引用) {
+//     外部类_CF->字段;
+// }
+// 2021/3/4 (其实应该是做成策略模式callback出去的，这里懒了):
+// 这里是为了配合iWatch，根据需要设置为public的field(用注解(com.habbyge.iwatch.patch.StopSyntheticAnno)标注)，
+// 防止由于内部类新增引用到外部类的private字段，而导致编译期生成 synthetic 方法，从而导致java.lang.VerifyError
+
+
 // 2021-03-01 10:55:55.022 23916-23916/? E/AndroidRuntime: FATAL EXCEPTION: main
 // Process: com.habbyge.iwatch, PID: 23916
 // java.lang.IllegalAccessError: Method 'void com.habbyge.sample.MainActivity.a(java.lang.String)'
