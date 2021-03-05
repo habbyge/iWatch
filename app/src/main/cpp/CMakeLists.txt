@@ -14,8 +14,44 @@ set(SRC_LIST iwatch.cpp
              ArtMethodHook.cpp
              ArtRestore.cpp
              ArtHookField.cpp
+             inner_class.cc
              common/elfop.cpp
              common/elf_op.cpp)
+
+## ${PHPCPP_ARCH} 这个也可以
+#if ("${ANDROID_ABI}" STREQUAL "x86_64")
+#    include_directories(${ANDROID_SYSROOT}/usr/include/x86_64-linux-android
+#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
+#elseif ("${ANDROID_ABI}" STREQUAL "x86")
+#    include_directories(${ANDROID_SYSROOT}/usr/include/i686-linux-android
+#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
+#elseif ("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+#    include_directories(${ANDROID_SYSROOT}/usr/include/aarch64-linux-android
+#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
+#elseif ("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
+#    include_directories(${ANDROID_SYSROOT}/usr/include/arm-linux-androideabi,
+#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
+#endif()
+
+# Set the header files directory.
+include_directories(
+        common/elfop.h
+        common/elf_op.h
+        common/log.h
+        common/constants.h
+
+        art/art_method_11.h
+        art/JNIEnvExt.h
+        art/scoped_thread_state_change.h
+        art/ScopedFastNativeObjectAccess.h
+        art/value_object.h
+
+        iwatch_impl.h
+        ArtRestore.h
+        ArtMethodHook.h
+        ArtHookField.h
+        inner_class.h
+)
 
 # 指定so生成到libs目录
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../libs/${ANDROID_ABI})
@@ -37,41 +73,6 @@ add_library(
 
     # Provides a relative path to your source file(s).
     ${SRC_LIST}
-)
-
-
-## ${PHPCPP_ARCH} 这个也可以
-#if ("${ANDROID_ABI}" STREQUAL "x86_64")
-#    include_directories(${ANDROID_SYSROOT}/usr/include/x86_64-linux-android
-#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
-#elseif ("${ANDROID_ABI}" STREQUAL "x86")
-#    include_directories(${ANDROID_SYSROOT}/usr/include/i686-linux-android
-#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
-#elseif ("${ANDROID_ABI}" STREQUAL "arm64-v8a")
-#    include_directories(${ANDROID_SYSROOT}/usr/include/aarch64-linux-android
-#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
-#elseif ("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
-#    include_directories(${ANDROID_SYSROOT}/usr/include/arm-linux-androideabi,
-#            /Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include)
-#endif()
-
-# Set the header files directory.
-include_directories(
-    common/elfop.h
-    common/elf_op.h
-    common/log.h
-    common/constants.h
-
-    art/art_method_11.h
-    art/JNIEnvExt.h
-    art/scoped_thread_state_change.h
-    art/ScopedFastNativeObjectAccess.h
-    art/value_object.h
-
-    iwatch_impl.h
-    ArtRestore.h
-    ArtMethodHook.h
-    ArtHookField.h
 )
 
 #if ("${ANDROID_ABI}" STREQUAL "x86_64")

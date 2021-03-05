@@ -1,4 +1,5 @@
+#include "inner_class.h"
 
-class InnerClass {
+namespace iwatch {
   // todo
-};
+} // namespace iwatch
