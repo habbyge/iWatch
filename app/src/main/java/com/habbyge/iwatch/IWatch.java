@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.alipay.euler.andfix.annotation.MethodReplace;
-import com.habbyge.iwatch.patch.FixMethodAnno;
 import com.habbyge.iwatch.patch.Patch;
 import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
@@ -25,12 +24,9 @@ import dalvik.system.DexFile;
 public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
 
-    private final boolean mTest;
     private final File mOptDir;   // optimize directory
 
-    public IWatch(Context context, boolean test) {
-        mTest = test;
-
+    public IWatch(Context context) {
         mOptDir = new File(context.getFilesDir(), Patch.DIR);
         if (!mOptDir.exists() && !mOptDir.mkdirs()) {// make directory fail
             Log.e(TAG, "opt dir create error.");
@@ -38,14 +34,9 @@ public final class IWatch {
             boolean ret = mOptDir.delete();
             Log.i(TAG, "mOptDir.delete(): " + ret);
         }
-    }
 
-    public void init() {
         MethodHook.init();
     }
-
-//    private Class<?> mMethodReplaceClass = null;
-//    private Class<?> mFixMethodAnnoClass = null;
 
     public synchronized void fix(File patchFile, List<String> classNames) {
         if (patchFile == null || !patchFile.exists()) {
@@ -73,7 +64,12 @@ public final class IWatch {
                     String packagePath1 = "com.alipay.euler.andfix";
                     String packagePath2 = "com.habbyge.iwatch";
 
-                    Class<?> clazz = dexFile.loadClass(className, this);
+                    Class<?> clazz;
+                    if (className.endsWith("_CF")) {
+                        clazz = dexFile.loadClass(className, this);
+                    } else {
+                        clazz = Class.forName(className);
+                    }
                     if (clazz == null && (className.startsWith(packagePath1) || className.startsWith(packagePath2))) {
                         return Class.forName(className);// annotation’s class
                     }
@@ -105,6 +101,8 @@ public final class IWatch {
         }
     }
 
+//    private Class<?> mMethodReplaceClass = null;
+//    private Class<?> mFixMethodAnnoClass = null;
 //    /**
 //     * 修复函数的主要任务：
 //     * 1. 校验补丁包：比对补丁包的签名和应用的签名是否一致
@@ -159,68 +157,9 @@ public final class IWatch {
 //        }
 //    }
 
-    private void fixClass(ClassLoader cl, Class<?> clazz) {
-        if (mTest) {
-            doFixClassTest(cl, clazz);
-        } else {
-            doFixClass(cl, clazz);
-        }
-    }
-
-    private void doFixClass(ClassLoader cl, Class<?> clazz) {
-        Method[] methods = setAccessPublic(clazz);
-
-        FixMethodAnno fixMethodAnno;
-        String className1;
-        String methodName1;
-        boolean static1;
-        for (Method method : methods) {
-            /*fixMethodAnno = method.getAnnotation(FixMethodAnno.class);*/
-            // noinspection unchecked
-            fixMethodAnno = method.getAnnotation(FixMethodAnno.class);
-//            fixMethodAnno = method.getAnnotation((Class<FixMethodAnno>) mFixMethodAnnoClass);
-//            Log.w(TAG, "doFixClass, clazz=" + clazz.getName() +
-//                    ", method=" + method.getName() +
-//                    ", annotation=" + (fixMethodAnno == null ? "nullptr" : "not nullptr"));
-            if (fixMethodAnno == null) {
-                continue;
-            }
-            className1 = fixMethodAnno._class();
-            methodName1 = fixMethodAnno.method();
-            if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
-                setAccessPublic(cl, className1); // 这里需要让原始class中的所有字段和方法为public
-
-                // 方案1:
-                if (fixMethod1(cl, className1, methodName1, method)) {
-                    Log.i(TAG, "fixMethod1 success !");
-                    continue;
-                }
-                // 方案2:
-                // 通过阅读 DexClassLoader.loadClass()源码
-                // (libcore/dalvik/src/main/java/dalvik/system/DexClassLoader.java)，可知：
-                // 一个class在虚拟机(Art)中的标识是其: 全路径名@classLoader，那么我们通过自定义DexClassLoader
-                // 加载的patch中的class，在Art虚拟机中已经是我们自定义的classLoader了，因此这里是可用于处理补丁包
-                // 中的类的。
-                // 其中使用到 ClassLoader 的地方是：DexPathList.findClass()，初始化其ClassLoader是在DexPathList
-                // 构造函数中，直接在 DexClassLoader 中赋值this，也就是我们自定义的 ClassLoader.
-                // 上面已经loadCLass过补丁中的class，那么第2次使用时，直接从缓存中读取即可。
-                // DexFile在Art中的实现对应：art/runtime/native/dalvik_system_DexFile.cc 中的 DexFile_defineClassNative函数
-                static1 = Modifier.isStatic(method.getModifiers());
-                if (fixMethod2(
-                        className1, methodName1, method.getParameterTypes(),
-                        method.getReturnType(), static1,
-                        clazz.getCanonicalName(), method.getName(), method.getParameterTypes(),
-                        method.getReturnType(), static1)) {
-
-                    Log.i(TAG, "fixMethod2 success !");
-                }
-            }
-        }
-    }
-
-    private void doFixClassTest(ClassLoader classLoader, Class<?> clazz) {
+    private void fixClass(ClassLoader classLoader, Class<?> clazz) {
         Method[] methods = clazz.getDeclaredMethods();
-        Log.d(TAG, "doFixClassTest, methods=" + methods.length);
+        Log.d(TAG, "fixClass, methods=" + methods.length);
 
         MethodReplace methodReplace;
         String className1;
@@ -235,7 +174,7 @@ public final class IWatch {
 //            if (methodReplace == null) {
                 methodReplace = method.getAnnotation(MethodReplace.class);
 //            }
-            Log.w(TAG, "doFixClassTest, clazz=" + clazz.getName() +
+            Log.w(TAG, "fixClass, clazz=" + clazz.getName() +
                     ", method=" + method.getName() +
                     ", annotation=" + (methodReplace == null ? "nullptr" : "NOT-nullptr"));
 
@@ -246,7 +185,6 @@ public final class IWatch {
             className1 = methodReplace.clazz();
             methodName1 = methodReplace.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
-                Log.d(TAG, "doFixClassTest, oldClassName=" + className1);
                 setAccessPublic(classLoader, className1); // 这里需要让原始class中的所有字段和方法为public
 
                 // 方案1:
@@ -286,6 +224,8 @@ public final class IWatch {
         String desc = Type.getMethodDescriptor(method2.getReturnType(), paramTypes);
         Method method1 = ReflectUtil.findMethod(cl, className1, funcName1, paramTypes);
         method2.setAccessible(true);
+        // TODO: 2021/3/5 ing......
+        Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ": " + funcName1 + " -> " + method2.getName());
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
     }
 
@@ -322,7 +262,7 @@ public final class IWatch {
         setAccessPublic(clazz);
     }
 
-    private Method[] setAccessPublic(Class<?> clazz) {
+    private void setAccessPublic(Class<?> clazz) {
         Field[] fields = clazz.getDeclaredFields();
         if (fields.length > 0) {
             String desc;
@@ -338,12 +278,10 @@ public final class IWatch {
         Method[] methods = clazz.getDeclaredMethods();
         if (methods.length > 0) {
             for (Method method : methods) {
-//                method.getDeclaringClass() todo
                 Log.d(TAG, "set public2: " + clazz.getName() + ", method=" + method.getName());
                 MethodHook.setMethodAccessPublic(method);
             }
         }
-        return methods;
     }
 
     public synchronized void removeOptFile(File file) {

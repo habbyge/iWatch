@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "New-Fix, btnHookMethod, onClick success !");
+                Log.i(TAG, "Fix-1, btnHookMethod, onClick success !");
 
 // [问题1]：这里是为了解决内部类导致的编译期在其外部类中合成 syntthetic(合成) 方法，即：在外部类中合成：
 // static synthetic xxx(外部类对象的引用) {
@@ -111,13 +111,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        ix = 1001;
-        ix_HOOK = 10001;
-        printf("onResume");
+//        ix = 1001;
+//        ix_HOOK = 10001;
+//        printf("onResume");
     }
 
     public void printf(String text) { // 通过修改
-        Log.w(TAG, "printf-bengin: " + text + "ix=" + ix + ", i love my family !");
+        Log.w(TAG, "printf-bengin: " + text + "ix=" + ix /*+ ", i love my family !"*/);
         for (int i = 0; i < 10; ++i) {
             ++ix_HOOK;
             ++ix;

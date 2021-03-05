@@ -73,7 +73,7 @@ public final class PatchManager {
         }
         Log.i(TAG, "mPatchDir=" + mPatchDir);
 
-        initIWatch(context, test);
+        initIWatch(context);
 
         initPatchs(); // 加载补丁到内存中: mPatchs
 
@@ -107,9 +107,8 @@ public final class PatchManager {
         }
     }
 
-    private void initIWatch(Context context, boolean test) {
-        mIWatch = new IWatch(context, test);
-        mIWatch.init();
+    private void initIWatch(Context context) {
+        mIWatch = new IWatch(context);
     }
 
     /**
