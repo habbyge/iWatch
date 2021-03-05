@@ -312,42 +312,23 @@ public final class IWatch {
     }
 
     private void setAccessPublic(ClassLoader classLoader, String className) {
-        Class<?> class1;
+        Class<?> clazz;
         try {
-            class1 = classLoader.loadClass(className);
+            clazz = classLoader.loadClass(className);
         } catch (ClassNotFoundException e) {
             Log.e(TAG, "setAccessPublic, exception: " + e.getMessage());
             return;
         }
-        Field[] fields1 = class1.getDeclaredFields();
-        if (fields1.length > 0) {
-            String desc;
-            boolean isStatic;
-            for (Field field : fields1) {
-                Log.d(TAG, "set public: " + className + ", field=" + field.getName());
-                desc = Type.getDescriptor(field.getType());
-                isStatic = Modifier.isStatic(field.getModifiers());
-                MethodHook.setFieldAccessPublic(field, class1, field.getName(), desc, isStatic);
-            }
-        }
-        Method[] methods = class1.getDeclaredMethods();
-        if (methods.length > 0) {
-            for (Method method : methods) {
-                Log.d(TAG, "set public: " + className + ", method=" + method.getName());
-                MethodHook.setMethodAccessPublic(method);
-            }
-        }
-
-        /*setDexClassLoader(dexCl, class1);*/
+        setAccessPublic(clazz);
     }
 
     private Method[] setAccessPublic(Class<?> clazz) {
-        Field[] fields2 = clazz.getDeclaredFields();
-        if (fields2.length > 0) {
+        Field[] fields = clazz.getDeclaredFields();
+        if (fields.length > 0) {
             String desc;
             boolean isStatic;
-            for (Field field : fields2) {
-                Log.d(TAG, "set public2: " + clazz.getName() + ", field=" + field.getName());
+            for (Field field : fields) {
+                Log.d(TAG, "set public: " + clazz.getName() + ", field=" + field.getName());
                 desc = Type.getDescriptor(field.getType());
                 isStatic = Modifier.isStatic(field.getModifiers());
                 MethodHook.setFieldAccessPublic(field, clazz, field.getName(), desc, isStatic);

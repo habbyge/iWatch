@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "old-Fix, btnHookMethod, onClick success !");
+                Log.i(TAG, "New-Fix, btnHookMethod, onClick success !");
 
 // [问题1]：这里是为了解决内部类导致的编译期在其外部类中合成 syntthetic(合成) 方法，即：在外部类中合成：
 // static synthetic xxx(外部类对象的引用) {
@@ -84,9 +84,9 @@ public class MainActivity extends Activity {
 //  方案1：在修复包生成时，编译期阻止生成该合成类型的方法，即设置字段为public，在transform中，根据手动增加的注解，来设
 //  置该字段设置为public; 结合 Hellhound 项目即可
 //  方案2：不阻止修复包生成Synthetic方法，尝试解决 ？？？？？？
-                ix = 1000; // 这里有坑，
-                ix_HOOK = 1000; // 这里有坑
-                printf("Mango_Pidan_Mali_Habby-New!!");
+//                ix = 1000; // 这里有坑，
+//                ix_HOOK = 1000; // 这里有坑
+//                printf("Mango_Pidan_Mali_Habby-New!!");
 //  采用方案：第1个方案.
 
 // TODO: 2021/3/1
@@ -117,11 +117,11 @@ public class MainActivity extends Activity {
     }
 
     public void printf(String text) { // 通过修改
-        Log.d(TAG, "printf-bengin: " + text + ", I love my family");
+        Log.w(TAG, "printf-bengin: " + text + "ix=" + ix + ", i love my family !");
         for (int i = 0; i < 10; ++i) {
             ++ix_HOOK;
             ++ix;
         }
-        Log.i(TAG, "printf-end: " + text + ", ix_HOOK=" + ix_HOOK);
+        Log.d(TAG, "printf-end: " + text + ", ix_HOOK=" + ix_HOOK);
     }
 }
