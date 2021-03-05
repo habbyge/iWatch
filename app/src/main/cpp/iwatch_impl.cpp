@@ -531,7 +531,6 @@ void set_field_public(JNIEnv* env, jobject field, jclass srcClas, jstring name, 
     }
 
     void* artFieldAddr = artHookField->getArtField(env, srcClas, fieldName, fieldSig, isStatic);
-    logi("set_field_public, artFieldAddr=%p", artFieldAddr);
 
     env->ReleaseStringUTFChars(name, fieldName);
     env->ReleaseStringUTFChars(sig, fieldSig);
