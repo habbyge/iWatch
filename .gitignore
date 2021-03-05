@@ -37,3 +37,4 @@ app/src/main/cpp/Makefile
 app/src/main/cpp/cmake_install.cmake
 app/.externalNativeBuild/
 app/src/main/libs/
+gradle/wrapper/gradle-5.1.1

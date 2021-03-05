@@ -167,6 +167,7 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
   } else {
     artMethod = getArtMethod(env, method);
   }
+  logi("ArtMethodHook, setAccessPublic, %p", artMethod);
 
   uint32_t* access_flags_addr = nullptr;
   uint32_t access_flags_ = 0;
