@@ -82,7 +82,6 @@ public final class MethodHook {
 
     public static void setCurThread() {
         long threadNativeAddr = ReflectUtil.getLongField(Thread.currentThread(), "nativePeer");
-        Log.i(TAG, "threadNativeAddr=" + threadNativeAddr);
         setCurThread(threadNativeAddr);
     }
 

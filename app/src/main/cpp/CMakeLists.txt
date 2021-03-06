@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.10.2)
 # Declares and names the project.
 project("iWatch")
 
+# libc++ 的共享库为 libc++_shared.so, 静态库为 libc++_static.a
 set(CMAKE_CXX_FLAGS "-std=c++11 -DANDROID_STL=c++_shared")
 
 set(SRC_LIST iwatch.cpp
