@@ -264,6 +264,8 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
                       jstring srcSig, jobject srcMethod, jobject dstMethod) {
 
   jboolean isCopy;
+  // jni.h在art中的实现位于: /art/runtime/jni/jni_internal.cc
+  // 实现是: char* bytes = new char[byte_count + 1]; 然后把 srcClass逐个赋值给bytes
   const char* srcClassStr = env->GetStringUTFChars(srcClass, &isCopy);
   if (srcClassStr == nullptr) {
     return I_ERR;
@@ -272,7 +274,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
   std::replace_if(_class.begin(), _class.end(), [](const char& ch) -> bool {
     return '.' == ch;
   }, '/');
-  env->ReleaseStringUTFChars(srcClass, srcClassStr);
+  env->ReleaseStringUTFChars(srcClass, srcClassStr); // 实现是: delete[] srcClassStr;
 
   auto srcFuncStr = env->GetStringUTFChars(srcName, &isCopy);
   if (srcFuncStr == nullptr) {
