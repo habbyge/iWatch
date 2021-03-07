@@ -8,6 +8,9 @@
 #include "ArtHookField.h"
 
 #include "common/constants.h"
+#include <unistd.h>
+#include <thread>
+#include <sstream>
 
 //#include <art/runtime/jni/jni_internal.h>
 //#include <exception> C/C++ 的 Exception
@@ -589,12 +592,27 @@ long class_hook_impl(JNIEnv* env, jstring clazzName) {
 
 void set_cur_thread_impl(JNIEnv* env, long threadAddr) {
   cur_thread = reinterpret_cast<void*>(threadAddr);
+  pid_t cur_pid = getpid();
+  pid_t cur_tid = gettid();
+  uint64_t tid = get_tid();
+
+  logi("set_cur_thread, cur_thread=%p, cur_pid=%d, %p, cur_tid=%d, %p, tid=%llu, %p", cur_thread,
+                                                                        cur_pid, (void*)cur_pid,
+                                                                        cur_tid, (void*) cur_tid,
+                                                                        tid, (void*)tid);
+
   clear_exception(env);
-  logi("set_cur_thread, cur_thread=%p", cur_thread);
 }
 
 size_t getArtMethodSize() {
   return artMethodHook->getArtMethodSize();
+}
+
+uint64_t get_tid() {
+  std::ostringstream oss;
+  oss << std::this_thread::get_id();
+  std::string stid = oss.str();
+  return std::stoull(stid);
 }
 
 } // namespace iwatch

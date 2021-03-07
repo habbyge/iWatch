@@ -22,7 +22,7 @@ import java.util.List;
 public final class PatchManager {
     private static final String TAG = "iWatch.PatchManager";
 
-    private String mIWatchVersion = null;
+//    private String mIWatchVersion = null;
     private String mAppVersion = null;
 
     private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/apatch
@@ -56,7 +56,7 @@ public final class PatchManager {
      * @param iwatchVersion iwatch本身的版本号
      */
     public boolean init(Context context, String iwatchVersion, String appVersion, boolean test) {
-        mIWatchVersion = iwatchVersion;
+//        mIWatchVersion = iwatchVersion;
         mAppVersion = appVersion;
 
         // 测试路径: 需要 adb push 补丁.apatch 到手机这个目录:
@@ -86,15 +86,15 @@ public final class PatchManager {
      * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
      * When a new patch file has been downloaded, it will become effective immediately by addPatch.
      */
-    public void addPatch(String patchPath) throws IOException {
+    public boolean addPatch(String patchPath) throws IOException {
         File newPatchFile = new File(patchPath);
         if (!newPatchFile.exists()) {
-            return;
+            return false;
         }
         File destPathchFile = new File(mPatchDir, newPatchFile.getName());
         if (destPathchFile.exists()) {
             Log.w(TAG, "patch [" + patchPath + "] has be loaded.");
-            return;
+            return false;
         }
 
         resetAllPatch(); // 清理带哦旧的path，重新load新的；恢复原始方法，重新hook新的方法
@@ -103,8 +103,9 @@ public final class PatchManager {
         FileUtil.deleteFile(newPatchFile); // 删除下载下来的patch文件
         boolean success = addPatch(destPathchFile);
         if (success && mPatch != null) {
-            loadPatch(mPatch);
+            return loadPatch(mPatch);
         }
+        return false;
     }
 
     private void initIWatch(Context context) {
@@ -161,35 +162,22 @@ public final class PatchManager {
         Log.i(TAG, "initPatchs, success: " + loadSuccess);
     }
 
-    /**
-     * load all patch, call when application start，and fix all classes and methods
-     */
     private boolean loadPatch() {
         if (mPatch == null) {
             return false;
         }
-        List<String> classes = mPatch.getClasses();
+        return loadPatch(mPatch);
+    }
+
+    private boolean loadPatch(Patch patch) {
+        List<String> classes = patch.getClasses();
         if (classes == null || classes.isEmpty()) {
             resetAllPatch();
             mPatch = null;
             return false;
         }
-        mIWatch.fix(mPatch.getFile(), classes);
-        return true;
-    }
-
-    /**
-     * load specific patch
-     * @param patch patch
-     */
-    private void loadPatch(Patch patch) {
-        List<String> classes = patch.getClasses();
-        if (classes == null || classes.isEmpty()) {
-            resetAllPatch();
-            mPatch = null;
-            return;
-        }
         mIWatch.fix(patch.getFile(), classes);
+        return true;
     }
 
     /**
@@ -229,27 +217,6 @@ public final class PatchManager {
             }
         }
     }
-
-//    public void testFix(String className1, String funcName1, Class<?>[] paramTypes1,
-//                        Class<?> returnType1, boolean isStatic1,
-//                        String className2, String funcName2, Class<?>[] paramTypes2,
-//                        Class<?> returnType2, boolean isStatic2) {
-//
-//        try {
-//            Class<?> class2 = Class.forName(className2);
-//            Method method2 = class2.getDeclaredMethod(funcName2, paramTypes2);
-//            mIWatch.fixMethod1(PatchManager.class.getClassLoader(), className1, funcName1, method2);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-//        try {
-//            mIWatch.fixMethod2(className1, funcName1, paramTypes1, returnType1, isStatic1,
-//                               className2, funcName2, paramTypes2, returnType2, isStatic2);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     public String getAppVersion() {
         return mAppVersion;

@@ -64,18 +64,17 @@ public final class IWatch {
                     String packagePath1 = "com.alipay.euler.andfix";
                     String packagePath2 = "com.habbyge.iwatch";
 
-                    Class<?> clazz;
-                    if (className.endsWith("_CF")) {
-                        clazz = dexFile.loadClass(className, this);
-                    } else {
-                        clazz = Class.forName(className);
-                    }
-                    if (clazz == null && (className.startsWith(packagePath1) || className.startsWith(packagePath2))) {
+                    Class<?> clazz = dexFile.loadClass(className, this);
+                    if (clazz == null && (className.startsWith(packagePath1)
+                            || className.startsWith(packagePath2))) {
+
+                        Log.d(TAG, "ClassLoader: findClass=" + className); // TODO: 2021/3/5
                         return Class.forName(className);// annotation’s class
                     }
                     if (clazz == null) {
-                        throw new ClassNotFoundException(className);
+                        throw new ClassNotFoundException("iWatch, classLoader: " + className);
                     }
+                    Log.d(TAG, "patchClassLoader: findClass=" + className); // TODO: 2021/3/5
                     return clazz;
                 }
             };
@@ -84,6 +83,7 @@ public final class IWatch {
             Class<?> clazz;
             while (entrys.hasMoreElements()) { // 遍历补丁中的class文件
                 String entry = entrys.nextElement();
+                Log.d(TAG, "fix: patch.entry=" + entry); // TODO: 2021/3/5
                 clazz = dexFile.loadClass(entry, patchClassLoader);
                 if (clazz == null) {
                     Log.e(TAG, "fix: loadClass failure: " + entry);
@@ -92,9 +92,9 @@ public final class IWatch {
                 setAccessPublic(clazz);
 
                 if (classNames != null && !classNames.contains(entry)) {
-                    continue;// skip, not need fix
+                    continue; // skip, not need fix
                 }
-                fixClass(classLoader, clazz);
+                fixClass(clazz, classLoader, patchClassLoader);
             }
         } catch (Exception e) {
             Log.e(TAG, "pacth", e);
@@ -157,7 +157,7 @@ public final class IWatch {
 //        }
 //    }
 
-    private void fixClass(ClassLoader classLoader, Class<?> clazz) {
+    private void fixClass(Class<?> clazz, ClassLoader classLoader, ClassLoader patchClassLoader) {
         Method[] methods = clazz.getDeclaredMethods();
         Log.d(TAG, "fixClass, methods=" + methods.length);
 
@@ -172,7 +172,7 @@ public final class IWatch {
             // noinspection unchecked
 //            methodReplace = method.getAnnotation((Class<MethodReplace>) mMethodReplaceClass);
 //            if (methodReplace == null) {
-                methodReplace = method.getAnnotation(MethodReplace.class);
+                methodReplace = method.getAnnotation(MethodReplace.class); // todo 需要换成 FixMethodAnno
 //            }
             Log.w(TAG, "fixClass, clazz=" + clazz.getName() +
                     ", method=" + method.getName() +
@@ -186,6 +186,7 @@ public final class IWatch {
             methodName1 = methodReplace.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
                 setAccessPublic(classLoader, className1); // 这里需要让原始class中的所有字段和方法为public
+                setAccessPublic(patchClassLoader, className1); // 让补丁能使用补丁中新增的类
 
                 // 方案1:
                 if (fixMethod1(classLoader, className1, methodName1, method)) {
@@ -268,7 +269,7 @@ public final class IWatch {
             String desc;
             boolean isStatic;
             for (Field field : fields) {
-                Log.d(TAG, "set public: " + clazz.getName() + ", field=" + field.getName());
+                Log.d(TAG, "set public, field: " + clazz.getName() + ", field=" + field.getName());
                 desc = Type.getDescriptor(field.getType());
                 isStatic = Modifier.isStatic(field.getModifiers());
                 MethodHook.setFieldAccessPublic(field, clazz, field.getName(), desc, isStatic);
@@ -278,7 +279,7 @@ public final class IWatch {
         Method[] methods = clazz.getDeclaredMethods();
         if (methods.length > 0) {
             for (Method method : methods) {
-                Log.d(TAG, "set public2: " + clazz.getName() + ", method=" + method.getName());
+                Log.d(TAG, "set public, method: " + clazz.getName() + ", method=" + method.getName());
                 MethodHook.setMethodAccessPublic(method);
             }
         }
@@ -291,14 +292,14 @@ public final class IWatch {
         }
     }
 
-    /*private void setDexClassLoader(DexClassLoader dexCl, Class<?> clazz) {
-        try {
-            //noinspection JavaReflectionMemberAccess
-            Field field = Class.class.getDeclaredField("classLoader");
-            field.setAccessible(true);
-            field.set(clazz, dexCl);
-        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Log.e(TAG, "setDexClassLoader, exception: " + e.getMessage());
-        }
-    }*/
+//    private void restoreClassLoader(Class<?> clazz, ClassLoader classLoader) {
+//        try {
+//            //noinspection JavaReflectionMemberAccess
+//            Field field = Class.class.getDeclaredField("classLoader");
+//            field.setAccessible(true);
+//            field.set(clazz, classLoader);
+//        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+//            Log.e(TAG, "restoreClassLoader, exception: " + e.getMessage());
+//        }
+//    }
 }

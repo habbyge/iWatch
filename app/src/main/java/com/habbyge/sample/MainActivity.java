@@ -27,14 +27,14 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        printf("onCreate"); // todo
         Log.i(TAG, "onCreate, ix_HOOK=" + ix_HOOK + ", ix=" + ix);
-        printf("onCreate");
 
         findViewById(R.id.method).setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "Fix-1, btnHookMethod, onClick success !");
+                Log.i(TAG, "Fix-2, btnHookMethod, onClick success !");
 
 // [问题1]：这里是为了解决内部类导致的编译期在其外部类中合成 syntthetic(合成) 方法，即：在外部类中合成：
 // static synthetic xxx(外部类对象的引用) {
@@ -105,23 +105,57 @@ public class MainActivity extends Activity {
 
 // [问题2]
 // TODO: 2021/3/1 以上两个问题，可以统一用同一个方案来解决：
-//  生成补丁时，需要diff，
+//  生成补丁时，需要diff：
     }
+
+    /**
+     * todo: 1. method、field、内部类都需要设置为public；
+     *       2. 被inline的目标函数，在调用处函数中如果没有内部类，一般也可以fix
+     *       3. ......
+     *
+     * todo inig: 验证测试样例：
+     *  1. 正常类的方法中修改字段、方法 --- 验证成功；
+     *  2. 内部类中修改字段和方法，要求是 public 的才可以，public 为了阻止编译期生成synthric方法
+     *  3.
+     */
 
     @Override
     protected void onResume() {
-        super.onResume();
 //        ix = 1001;
 //        ix_HOOK = 10001;
 //        printf("onResume");
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        printf("onPause");
     }
 
     public void printf(String text) { // 通过修改
-        Log.w(TAG, "printf-bengin: " + text + "ix=" + ix /*+ ", i love my family !"*/);
-        for (int i = 0; i < 10; ++i) {
+        Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
+//        Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
+        for (int i = 0; i < 100; ++i) {
             ++ix_HOOK;
             ++ix;
         }
-        Log.d(TAG, "printf-end: " + text + ", ix_HOOK=" + ix_HOOK);
+
+        int x = ix * ix_HOOK;
+        Log.d(TAG, "printf-end: " + text + ", ix_HOOK2="
+                + ix_HOOK + ", " + test("ix_HOOK_ix")
+                + ", x = " + x);
+    }
+
+    public int test(String x) {
+//        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
+        for (int i = 0; i < 100; ++i) {
+            ++ix_HOOK;
+            ++ix;
+            x = "" + ix;
+        }
+        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+//        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+        return ix + ix_HOOK;
     }
 }

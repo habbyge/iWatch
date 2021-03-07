@@ -15,6 +15,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++11 -frtti -fexceptions"
+                // libc++ 的共享库为 libc++_shared.so, 静态库为 libc++_static.a
                 arguments "-DANDROID_STL=c++_shared"
                 version '3.10.2'
                 // 生成多个版本的so文件
