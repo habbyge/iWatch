@@ -19,6 +19,8 @@
 //#include "common/elfop.h"
 #include "common/elf_op.h"
 
+#include "runtime.h"
+
 namespace iwatch {
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";

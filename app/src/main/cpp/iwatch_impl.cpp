@@ -8,9 +8,11 @@
 #include "ArtHookField.h"
 
 #include "common/constants.h"
+#include "common/elf_op.h"
 #include <unistd.h>
 #include <thread>
 #include <sstream>
+#include <string>
 
 //#include <art/runtime/jni/jni_internal.h>
 //#include <exception> C/C++ 的 Exception
@@ -110,6 +112,7 @@ static JavaVM* vm;
 // 同时使用 方案1 和 方案2，哪个生效用哪里，双保险!!!!!!
 
 std::shared_ptr<Elf> elfOp = nullptr;
+std::shared_ptr<Runtime> runtime = nullptr;
 std::shared_ptr<ArtRestore> artRestore = nullptr;
 std::shared_ptr<ArtMethodHook> artMethodHook = nullptr;
 std::shared_ptr<ArtHookField> artHookField = nullptr;
@@ -194,6 +197,11 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
       return;
     }
 
+    runtime = std::make_shared<Runtime>();
+    runtime->init(env, std::move(elfOp));
+    void* instance_ = runtime->getRuntime();
+    logi("init_impl, runtime=%p", instance_);
+
     // 注意 libart.so 中的符号都是加过密的
 //    const char* addWeakGloablRef_Sym =
 //        sdkVersionCode <= 25 ? "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE"
@@ -230,7 +238,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     // 方案2
     artMethodHook->initArtMethod2(env, elfOp);
 
-    artHookField->initArtField(env, elfOp);
+    artHookField->initArtField(env, std::move(elfOp));
 
 //    dlclose_elf(context); // 释放
     elfOp->dlclose_elf(); // 释放

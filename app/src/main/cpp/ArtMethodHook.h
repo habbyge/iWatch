@@ -46,11 +46,6 @@ typedef struct {
   size_t fieldSize;
 } FieldHookClassInfo_t;
 
-// 位于: /art/runtime/runtime.h 中instance_ 表示当前运行时对象地址
-// nm -g libart.so|grep instance_
-// 00000000006aa610 B _ZN3art12ProfileSaver9instance_E
-static const void* instance_ = "_ZN3art7Runtime9instance_E"; // static Runtime* instance_
-
 static const char* computeArtMethodSize_ClassName = "com/habbyge/iwatch/ArtMethodSize";
 
 // art/runtime/art_method.h

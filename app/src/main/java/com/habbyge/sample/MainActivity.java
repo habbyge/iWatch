@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "Fix-2, btnHookMethod, onClick success !");
+                Log.i(TAG, "Fix-1, btnHookMethod, onClick success !");
 
 // [问题1]：这里是为了解决内部类导致的编译期在其外部类中合成 syntthetic(合成) 方法，即：在外部类中合成：
 // static synthetic xxx(外部类对象的引用) {

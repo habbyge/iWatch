@@ -16,6 +16,7 @@ set(SRC_LIST iwatch.cpp
              ArtRestore.cpp
              ArtHookField.cpp
              inner_class.cc
+             runtime.cpp
              common/elfop.cpp
              common/elf_op.cpp)
 
@@ -46,7 +47,7 @@ include_directories(
         art/scoped_thread_state_change.h
         art/ScopedFastNativeObjectAccess.h
         art/value_object.h
-
+        runtime.h
         iwatch_impl.h
         ArtRestore.h
         ArtMethodHook.h
