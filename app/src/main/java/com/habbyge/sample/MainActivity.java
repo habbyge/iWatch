@@ -16,10 +16,7 @@ public class MainActivity extends Activity {
     // 字符-测试样例
     public static int ix = 10;
     public int ix_HOOK = 10000;
-
-    @SuppressWarnings("all")
     private String iStr = "iWatch";
-    @SuppressWarnings("all")
     private String iStr_HOOK = "iWatch.HOOK";
 
     @Override
