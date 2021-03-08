@@ -16,7 +16,6 @@
 #include <stddef.h>
 
 #include "common/log.h"
-//#include "common/elfop.h"
 #include "common/elf_op.h"
 
 #include "runtime.h"

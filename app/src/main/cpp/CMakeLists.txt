@@ -37,7 +37,6 @@ set(SRC_LIST iwatch.cpp
 
 # Set the header files directory.
 include_directories(
-        common/elfop.h
         common/elf_op.h
         common/log.h
         common/constants.h
