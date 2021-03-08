@@ -25,6 +25,7 @@ public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
 
     private final File mOptDir;   // optimize directory
+//    private Class<?> mFixMethodAnnoClass = null;
 
     public IWatch(Context context) {
         mOptDir = new File(context.getFilesDir(), Patch.DIR);
@@ -45,20 +46,41 @@ public final class IWatch {
         }
 
         try {
+            /*// 这里为何不直接使用 DexFile ？因为 api >= 30(Android-11)之后，DexFile不让使用了
+            String patchFilePath = patchFile.getAbsolutePath();
+            Log.i(TAG, "doFix, patchFile: " + patchFilePath);
+
+            final ClassLoader cl = IWatch.class.getClassLoader();
+            DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
+
+            // 加载FixMethodAnno/MethodReplace的ClassLoader必须是补丁的DexClassLoader，如果直接写
+            // FixMethodAnno.class，则是来自于宿主app.apk的ClassLoader，在patch中是识别不到的，因为写在补丁中的
+            // 注解(Annotation)是来自于补丁，传递宿主的注解class，显然在虚拟机中的地址是不正确的，所以胡返回null。
+            if (mFixMethodAnnoClass == null) {
+                mFixMethodAnnoClass = Class.forName( // TODO: 2021/3/8 需要换成 FixMethodAnno
+                        "com.alipay.euler.andfix.annotation.MethodReplace",
+                        true, dexCl);
+            }
+
+            Class<?> clazz;
+            for (String className : classNames) {
+                clazz = dexCl.loadClass(className);
+                if (clazz != null) {
+                    fixClass(clazz, cl, dexCl);
+                }
+            }*/
+
             File optfile = new File(mOptDir, patchFile.getName());
             if (optfile.exists()) {
                 if (!optfile.delete()) {
                     return;
                 }
             }
-
             final DexFile dexFile = DexFile.loadDex(patchFile.getAbsolutePath(),
                                                     optfile.getAbsolutePath(),
                                                     Context.MODE_PRIVATE);
-
-            final ClassLoader classLoader = IWatch.class.getClassLoader();
-            ClassLoader patchClassLoader = new ClassLoader(classLoader) {
-
+            final ClassLoader cl = IWatch.class.getClassLoader();
+            ClassLoader patchClassLoader = new ClassLoader(cl) {
                 @Override
                 protected Class<?> findClass(String className) throws ClassNotFoundException {
                     String packagePath1 = "com.alipay.euler.andfix";
@@ -68,22 +90,21 @@ public final class IWatch {
                     if (clazz == null && (className.startsWith(packagePath1)
                             || className.startsWith(packagePath2))) {
 
-                        Log.d(TAG, "ClassLoader: findClass=" + className); // TODO: 2021/3/5
+                        Log.d(TAG, "ClassLoader: findClass=" + className);
                         return Class.forName(className);// annotation’s class
                     }
                     if (clazz == null) {
                         throw new ClassNotFoundException("iWatch, classLoader: " + className);
                     }
-                    Log.d(TAG, "patchClassLoader: findClass=" + className); // TODO: 2021/3/5
+                    Log.d(TAG, "patchClassLoader: findClass=" + className);
                     return clazz;
                 }
             };
-
             Enumeration<String> entrys = dexFile.entries();
             Class<?> clazz;
             while (entrys.hasMoreElements()) { // 遍历补丁中的class文件
                 String entry = entrys.nextElement();
-                Log.d(TAG, "fix: patch.entry=" + entry); // TODO: 2021/3/5
+                Log.d(TAG, "fix: patch.entry=" + entry);
                 clazz = dexFile.loadClass(entry, patchClassLoader);
                 if (clazz == null) {
                     Log.e(TAG, "fix: loadClass failure: " + entry);
@@ -94,68 +115,12 @@ public final class IWatch {
                 if (classNames != null && !classNames.contains(entry)) {
                     continue; // skip, not need fix
                 }
-                fixClass(clazz, classLoader, patchClassLoader);
+                fixClass(clazz, cl, patchClassLoader);
             }
         } catch (Exception e) {
             Log.e(TAG, "pacth", e);
         }
     }
-
-//    private Class<?> mMethodReplaceClass = null;
-//    private Class<?> mFixMethodAnnoClass = null;
-//    /**
-//     * 修复函数的主要任务：
-//     * 1. 校验补丁包：比对补丁包的签名和应用的签名是否一致
-//     * 2. 使用 DexFile 和 自定义ClassLoader 来加载补丁包中class文件，与 DexClassLoader加载原理类似，而且
-//     * DexClassLoader 内部的加载逻辑也是使用了DexFile来进行操作的，而这里为什么要进行加载操作呢？因为我们
-//     * 需要获取补丁类中需要修复的方法名称，而这个方法名称是通过修复方法的注解来获取到的，所以我们得先进行类的
-//     * 加载然后获取到他的方法信息，最后通过分析注解获取方法名，这里用的是反射机制来进行操作的。
-//     *
-//     * @param classNames patchFile 中需要被 patch 的 类
-//     */
-//    public synchronized void fix(File patchFile, List<String> classNames) {
-//        if (patchFile == null || !patchFile.exists()) {
-//            Log.e(TAG, "doFix, patchFile NOT exists");
-//            return;
-//        }
-//
-//        try {
-//            String patchFilePath = patchFile.getAbsolutePath();
-//            Log.i(TAG, "doFix, patchFile: " + patchFilePath);
-//            final ClassLoader cl = IWatch.class.getClassLoader();
-//
-//            DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
-//
-//            Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile(patchFile);
-//            if (jarEntries == null) {
-//                Log.e(TAG, "doFix, jarEntries is NULL");
-//                return;
-//            }
-//
-//            // 加载FixMethodAnno/MethodReplace的ClassLoader必须是补丁的DexClassLoader，如果直接写 FixMethodAnno.class，
-//            // 则是来自于宿主app.apk的ClassLoader，在patch中是识别不到的，因为写在补丁中的注解(Annotation)是来自于补丁，传递
-//            // 宿主的注解class，显然在虚拟机中的地址是不正确的，所以胡返回null。
-//            if (mTest) {
-//                if (mMethodReplaceClass == null) {
-//                    mMethodReplaceClass = Class.forName("com.alipay.euler.andfix.annotation.MethodReplace", true, dexCl);
-//                }
-//            } else {
-//                if  (mFixMethodAnnoClass == null) {
-//                    mFixMethodAnnoClass = Class.forName("com.habbyge.iwatch.patch.FixMethodAnno", true, dexCl);
-//                }
-//            }
-//
-//            Class<?> clazz;
-//            for (String className : classNames) {
-//                clazz = dexCl.loadClass(className);
-//                if (clazz != null) {
-//                    fixClass(cl, dexCl, clazz);
-//                }
-//            }
-//        } catch (Exception e) {
-//            Log.e(TAG, "pacth", e);
-//        }
-//    }
 
     private void fixClass(Class<?> clazz, ClassLoader classLoader, ClassLoader patchClassLoader) {
         Method[] methods = clazz.getDeclaredMethods();

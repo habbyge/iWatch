@@ -109,20 +109,20 @@
 -dontwarn android.support.**
 # Understand the @Keep support annotation.
 # （Basic）不混淆指定的类及其类成员
--keep class android.support.annotation.Keep
-# （Basic）不混淆使用注解的类及其类成员
--keep @android.support.annotation.Keep class * {*;}
-# （Basic）不混淆所有类及其类成员中的使用注解的方法
--keepclasseswithmembers class * {
-    @android.support.annotation.Keep <methods>;
-}
-# （Basic）不混淆所有类及其类成员中的使用注解的字段
--keepclasseswithmembers class * {
-    @android.support.annotation.Keep <fields>;
-}
-# 不混淆所有类及其类成员中的使用注解的初始化方法
--keepclasseswithmembers class * {
-    @android.support.annotation.Keep <init>(...);
-}
+#-keep class android.support.annotation.Keep
+## （Basic）不混淆使用注解的类及其类成员
+#-keep @android.support.annotation.Keep class * {*;}
+## （Basic）不混淆所有类及其类成员中的使用注解的方法
+#-keepclasseswithmembers class * {
+#    @android.support.annotation.Keep <methods>;
+#}
+## （Basic）不混淆所有类及其类成员中的使用注解的字段
+#-keepclasseswithmembers class * {
+#    @android.support.annotation.Keep <fields>;
+#}
+## 不混淆所有类及其类成员中的使用注解的初始化方法
+#-keepclasseswithmembers class * {
+#    @android.support.annotation.Keep <init>(...);
+#}
 #保留源文件以及行号 方便查看具体的崩溃信息
 -keepattributes SourceFile,LineNumberTable
