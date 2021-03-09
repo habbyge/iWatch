@@ -7,7 +7,8 @@
 namespace iwatch {
 
 void Runtime::init(JNIEnv*, const std::shared_ptr<Elf>&& elf_op) {
-  instance_ = reinterpret_cast<void*>(elf_op->dlsym_elf(RUNTIME_INSTANCE_SYM));
+  void** pInstance_ = reinterpret_cast<void**>(elf_op->dlsym_elf(RUNTIME_INSTANCE_SYM));
+  instance_ = *pInstance_;
 }
 
 /**

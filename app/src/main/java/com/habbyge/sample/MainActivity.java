@@ -17,11 +17,8 @@ public class MainActivity extends Activity {
     public static int ix = 10;
     public int ix_HOOK = 10000;
 //    public String strX_Added = "Mali"; // todo 用于测试新增一个字段
-
-    @SuppressWarnings("all")
-    private String iStr = "iWatch";
-    @SuppressWarnings("all")
-    private String iStr_HOOK = "iWatch.HOOK";
+//    private String iStr = "iWatch";
+//    private String iStr_HOOK = "iWatch.HOOK";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,65 +129,65 @@ public class MainActivity extends Activity {
      *  这是一个保底策略，，，，，，哈哈哈哈哈哈，，，，，，
      */
 
-    @Override
-    protected void onResume() {
-        String family = Test.getFamily();
+//    @Override
+//    protected void onResume() {
+//        String family = Test.getFamily();
 //        Log.i(TAG, "onResume, family=" + family);
 
 //        ix = 1001;
 //        ix_HOOK = 10001;
-        printf("onResume");
+//        printf("onResume");
 //        strX_Added = "Mali_Resume";
-        super.onResume();
+//        super.onResume();
+//
+//        Test.print("what the fuck !!!!!!"); // TODO: 2021/3/8 ing......验证新增类、方法
+//    }
 
-        Test.print("what the fuck !!!!!!"); // TODO: 2021/3/8 ing......验证新增类、方法
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
 //        strX_Added = "Mali_Pause";
-        printf("onPause");
-        Test.print2(iStr + "_Pidan");
-    }
+//        printf("onPause");
+//        Test.print2(iStr + "_Pidan");
+//    }
 
-    public void printf(String text) { // 通过修改
-        Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
-        Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
-        for (int i = 0; i < 100; ++i) {
-            ++ix_HOOK;
-            ++ix;
-        }
+//    public void printf(String text) { // 通过修改
+//        Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
+//        Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
+//        for (int i = 0; i < 100; ++i) {
+//            ++ix_HOOK;
+//            ++ix;
+//        }
+//
+//        int xx = test2("i love my family !");
+//
+//        int x = ix * ix_HOOK;
+//        Log.d(TAG, "printf-end: " + text + ", ix_HOOK2="
+//                + ix_HOOK + ", " + test("ix_HOOK_ix")
+//                + ", x = " + x + ", xx=" + xx);
+//    }
 
-        int xx = test2("i love my family !");
-
-        int x = ix * ix_HOOK;
-        Log.d(TAG, "printf-end: " + text + ", ix_HOOK2="
-                + ix_HOOK + ", " + test("ix_HOOK_ix")
-                + ", x = " + x + ", xx=" + xx);
-    }
-
-    public int test(String x) {
-        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
-        for (int i = 0; i < 100; ++i) {
-            ++ix_HOOK;
-            ++ix;
-            x = "" + ix;
-        }
-        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
-        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
-        return ix + ix_HOOK;
-    }
-
-    public int test2(String x) {
-        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
-        for (int i = 0; i < 100; ++i) {
-            ++ix_HOOK;
-            ++ix;
-            x = "" + ix;
-        }
-        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
-        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
-        return ix + ix_HOOK;
-    }
+//    public int test(String x) {
+//        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
+//        for (int i = 0; i < 100; ++i) {
+//            ++ix_HOOK;
+//            ++ix;
+//            x = "" + ix;
+//        }
+//        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+//        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+//        return ix + ix_HOOK;
+//    }
+//
+//    public int test2(String x) {
+//        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
+//        for (int i = 0; i < 100; ++i) {
+//            ++ix_HOOK;
+//            ++ix;
+//            x = "" + ix;
+//        }
+//        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+//        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+//        return ix + ix_HOOK;
+//    }
 }
