@@ -167,7 +167,8 @@ public final class IWatch {
                 // 其中使用到 ClassLoader 的地方是：DexPathList.findClass()，初始化其ClassLoader是在DexPathList
                 // 构造函数中，直接在 DexClassLoader 中赋值this，也就是我们自定义的 ClassLoader.
                 // 上面已经loadCLass过补丁中的class，那么第2次使用时，直接从缓存中读取即可。
-                // DexFile在Art中的实现对应：art/runtime/native/dalvik_system_DexFile.cc 中的 DexFile_defineClassNative函数
+                // DexFile在Art中的实现对应：art/runtime/native/dalvik_system_DexFile.cc 中
+                // 的 DexFile_defineClassNative函数
                 static1 = Modifier.isStatic(method.getModifiers());
                 if (fixMethod2(
                         className1, methodName1, method.getParameterTypes(),
@@ -190,8 +191,11 @@ public final class IWatch {
         String desc = Type.getMethodDescriptor(method2.getReturnType(), paramTypes);
         Method method1 = ReflectUtil.findMethod(cl, className1, funcName1, paramTypes);
         method2.setAccessible(true);
+
         // TODO: 2021/3/5 ing......
-        Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ": " + funcName1 + " -> " + method2.getName());
+        Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ": "
+                + funcName1 + " -> " + method2.getName());
+
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
     }
 

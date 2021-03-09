@@ -16,6 +16,7 @@ public class MainActivity extends Activity {
     // 字符-测试样例
     public static int ix = 10;
     public int ix_HOOK = 10000;
+//    public String strX_Added = "Mali"; // todo 用于测试新增一个字段
 
     @SuppressWarnings("all")
     private String iStr = "iWatch";
@@ -62,7 +63,9 @@ public class MainActivity extends Activity {
 //      int com.habbyge.sample.MainActivity_CF.a(com.habbyge.sample.MainActivity) failed to verify:
 //      int com.habbyge.sample.MainActivity_CF.a(com.habbyge.sample.MainActivity):
 //      [0x2] cannot access instance field int com.habbyge.sample.MainActivity_CF.b from object of type Reference:
-//      com.habbyge.sample.MainActivity (declaration of 'com.habbyge.sample.MainActivity_CF' appears in /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/app-release-2-a078ddf55dbaee1fd8b70ff022c4f491.apatch)
+//      com.habbyge.sample.MainActivity (declaration of 'com.habbyge.sample.MainActivity_CF'
+//          appears in /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/
+//          app-release-2-a078ddf55dbaee1fd8b70ff022c4f491.apatch)
 //
 //        at com.habbyge.sample.MainActivity_CF.a(Unknown Source:0)
 //        at com.habbyge.sample.MainActivity$1_CF.onClick(MainActivity.java:70)
@@ -109,53 +112,85 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * todo: 1. method、field、内部类都需要设置为public；
-     *       2. 被inline的目标函数，在调用处函数中如果没有内部类，一般也可以fix
-     *       3. ......
-     *
-     * todo inig: 验证测试样例：
-     *  1. 正常类的方法中修改字段、方法 --- 验证成功；
-     *  2. 内部类中修改字段和方法，要求是 public 的才可以，public 为了阻止编译期生成synthric方法
-     *  3.
+     * todo:
+     * 1. method、field、内部类都需要设置为public(方法public是为了阻止编译期生成synthric方法)；
+     * 2. 被inline的目标函数，在调用处函数中如果没有内部类，一般也可以fix
+     * 3. ......
+     * ==========================================================================================
+     * todo inig: 测试用例：
+     * 1. 非内部类的方法中修改字段、方法 ------ 验证成功(通过hellhound修改)；
+     * 2. 非内部类新增的方法(编译期自动生成的ok，主动添加的不行)， ------ ing......
+     * 3. 非内部类新增的字段， ------ ing...... 需要修改 apkpatch才能生效
+     * 4. 内部类修改方法和字段，要求public才行 ------ 验证成功(通过hellhound修改)
+     * 5. 内部类中新增方法
+     * 6. 内部类新增字段
+     * 7. 内部类新增字段
+     * 8. 新增类
+     *  ==========================================================================================
+     *  fixme:
+     *  制定一个规则: 禁止在类中人工新增字段、方法，如果需要新增，则必修另外新增一个类，然后在新类中必须使用静态方法，静态字段。
+     *  这是一个保底策略，，，，，，哈哈哈哈哈哈，，，，，，
      */
 
     @Override
     protected void onResume() {
+        String family = Test.getFamily();
+//        Log.i(TAG, "onResume, family=" + family);
+
 //        ix = 1001;
 //        ix_HOOK = 10001;
-//        printf("onResume");
+        printf("onResume");
+//        strX_Added = "Mali_Resume";
         super.onResume();
+
+        Test.print("what the fuck !!!!!!"); // TODO: 2021/3/8 ing......验证新增类、方法
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+//        strX_Added = "Mali_Pause";
         printf("onPause");
+        Test.print2(iStr + "_Pidan");
     }
 
     public void printf(String text) { // 通过修改
         Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
-//        Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
+        Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix);
         for (int i = 0; i < 100; ++i) {
             ++ix_HOOK;
             ++ix;
         }
 
+        int xx = test2("i love my family !");
+
         int x = ix * ix_HOOK;
         Log.d(TAG, "printf-end: " + text + ", ix_HOOK2="
                 + ix_HOOK + ", " + test("ix_HOOK_ix")
-                + ", x = " + x);
+                + ", x = " + x + ", xx=" + xx);
     }
 
     public int test(String x) {
-//        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
+        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
         for (int i = 0; i < 100; ++i) {
             ++ix_HOOK;
             ++ix;
             x = "" + ix;
         }
         Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
-//        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+        return ix + ix_HOOK;
+    }
+
+    public int test2(String x) {
+        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
+        for (int i = 0; i < 100; ++i) {
+            ++ix_HOOK;
+            ++ix;
+            x = "" + ix;
+        }
+        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
+        Log.w(TAG, "test-printf-End: " + (ix + ix_HOOK) + ", " + x);
         return ix + ix_HOOK;
     }
 }
