@@ -17,7 +17,6 @@ set(SRC_LIST iwatch.cpp
              ArtHookField.cpp
              inner_class.cc
              runtime.cpp
-             common/elfop.cpp
              common/elf_op.cpp)
 
 ## ${PHPCPP_ARCH} 这个也可以
