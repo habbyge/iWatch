@@ -50,9 +50,7 @@ public final class ReflectUtil {
         }
     }
 
-    private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName)
-            throws NoSuchFieldException {
-
+    private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName) throws NoSuchFieldException {
         try {
             return clazz.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {

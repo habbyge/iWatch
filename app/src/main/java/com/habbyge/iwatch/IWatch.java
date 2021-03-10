@@ -6,7 +6,6 @@ import android.util.Log;
 
 import com.habbyge.iwatch.patch.FixMethodAnno;
 import com.habbyge.iwatch.patch.Patch;
-import com.habbyge.iwatch.util.FileUtil;
 import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
 
@@ -16,7 +15,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.jar.JarEntry;
 
 import dalvik.system.DexFile;
 
@@ -69,20 +67,6 @@ public final class IWatch {
                     fixClass(clazz, cl, dexCl);
                 }
             }*/
-
-            // TODO: 2021/3/10 测试代码......
-//            Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile(patchFile);
-//            if (jarEntries != null) {
-//                while (jarEntries.hasMoreElements()) {
-//                    JarEntry entry = jarEntries.nextElement();
-//                    if (entry.getName().endsWith(".dex")) {
-//                        Log.d(TAG, "patch entry: " + entry.getName());
-//                        Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile();
-//                        // TODO: 2021/3/10 ing......
-//                    }
-//                }
-//            }
-            // TODO: 2021/3/10 测试代码......
 
             File optfile = new File(mOptDir, patchFile.getName());
             if (optfile.exists()) {
@@ -210,8 +194,7 @@ public final class IWatch {
         String desc = Type.getMethodDescriptor(method2.getReturnType(), paramTypes);
         Method method1 = ReflectUtil.findMethod(cl, className1, funcName1, paramTypes);
         method2.setAccessible(true);
-
-        // TODO: 2021/3/5 ing......
+        
         Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ":"
                 + funcName1 + " -> " + method2.getName());
 
