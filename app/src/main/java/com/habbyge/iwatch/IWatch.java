@@ -4,7 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.alipay.euler.andfix.annotation.MethodReplace;
+import com.habbyge.iwatch.patch.FixMethodAnno;
 import com.habbyge.iwatch.patch.Patch;
 import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
@@ -53,13 +53,11 @@ public final class IWatch {
             final ClassLoader cl = IWatch.class.getClassLoader();
             DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
 
-            // 加载FixMethodAnno/MethodReplace的ClassLoader必须是补丁的DexClassLoader，如果直接写
+            // 加载FixMethodAnno的ClassLoader必须是补丁的DexClassLoader，如果直接写
             // FixMethodAnno.class，则是来自于宿主app.apk的ClassLoader，在patch中是识别不到的，因为写在补丁中的
             // 注解(Annotation)是来自于补丁，传递宿主的注解class，显然在虚拟机中的地址是不正确的，所以胡返回null。
             if (mFixMethodAnnoClass == null) {
-                mFixMethodAnnoClass = Class.forName( // TODO: 2021/3/8 需要换成 FixMethodAnno
-                        "com.alipay.euler.andfix.annotation.MethodReplace",
-                        true, dexCl);
+                mFixMethodAnnoClass = Class.forName("com.habbyge.iwatch.patch.FixMethodAnno", true, dexCl);
             }
 
             Class<?> clazz;
@@ -126,29 +124,29 @@ public final class IWatch {
         Method[] methods = clazz.getDeclaredMethods();
         Log.d(TAG, "fixClass, methods=" + methods.length);
 
-        MethodReplace methodReplace;
+        FixMethodAnno fixMethodAnno;
         String className1;
         String methodName1;
         boolean static1;
 
         for (Method method : methods) {
             // 这里会拿到为null，因为这里需要patch中的DexClassLoader
-            /*methodReplace = method.getAnnotation(MethodReplace.class);*/
+            /*fixMethodAnno = method.getAnnotation(FixMethodAnno.class);*/
             // noinspection unchecked
-//            methodReplace = method.getAnnotation((Class<MethodReplace>) mMethodReplaceClass);
-//            if (methodReplace == null) {
-                methodReplace = method.getAnnotation(MethodReplace.class); // todo 需要换成 FixMethodAnno
+//            fixMethodAnno = method.getAnnotation((Class<FixMethodAnno>) mFixMethodAnnoClass);
+//            if (fixMethodAnno == null) {
+                fixMethodAnno = method.getAnnotation(FixMethodAnno.class);
 //            }
             Log.w(TAG, "fixClass, clazz=" + clazz.getName() +
                     ", method=" + method.getName() +
-                    ", annotation=" + (methodReplace == null ? "nullptr" : "NOT-nullptr"));
+                    ", annotation=" + (fixMethodAnno == null ? "nullptr" : "NOT-nullptr"));
 
-            if (methodReplace == null) {
+            if (fixMethodAnno == null) {
                 continue;
             }
 
-            className1 = methodReplace.clazz();
-            methodName1 = methodReplace.method();
+            className1 = fixMethodAnno.clazz();
+            methodName1 = fixMethodAnno.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
                 setAccessPublic(classLoader, className1); // 这里需要让原始class中的所有字段和方法为public
                 setAccessPublic(patchClassLoader, className1); // 让补丁能使用补丁中新增的类
@@ -193,7 +191,7 @@ public final class IWatch {
         method2.setAccessible(true);
 
         // TODO: 2021/3/5 ing......
-        Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ": "
+        Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ":"
                 + funcName1 + " -> " + method2.getName());
 
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);

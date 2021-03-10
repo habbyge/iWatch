@@ -18,7 +18,7 @@ public @interface FixMethodAnno {
     /**
      * @return 需要被 fix 的 origin class
      */
-    String _class();
+    String clazz();
 
     /**
      * @return 需要被 fix 的 origin method

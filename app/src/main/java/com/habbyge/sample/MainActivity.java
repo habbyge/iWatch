@@ -42,7 +42,6 @@ public class MainActivity extends Activity {
 // 这里是为了配合iWatch，根据需要设置为public的field(用注解(com.habbyge.iwatch.patch.StopSyntheticAnno)标注)，
 // 防止由于内部类新增引用到外部类的private字段，而导致编译期生成 synthetic 方法，从而导致java.lang.VerifyError
 
-
 // 2021-03-01 10:55:55.022 23916-23916/? E/AndroidRuntime: FATAL EXCEPTION: main
 // Process: com.habbyge.iwatch, PID: 23916
 // java.lang.IllegalAccessError: Method 'void com.habbyge.sample.MainActivity.a(java.lang.String)'
