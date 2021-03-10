@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.habbyge.iwatch.patch.FixMethodAnno;
 import com.habbyge.iwatch.patch.Patch;
+import com.habbyge.iwatch.util.FileUtil;
 import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
 
@@ -15,6 +16,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarEntry;
 
 import dalvik.system.DexFile;
 
@@ -68,26 +70,45 @@ public final class IWatch {
                 }
             }*/
 
+            // TODO: 2021/3/10 测试代码......
+//            Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile(patchFile);
+//            if (jarEntries != null) {
+//                while (jarEntries.hasMoreElements()) {
+//                    JarEntry entry = jarEntries.nextElement();
+//                    if (entry.getName().endsWith(".dex")) {
+//                        Log.d(TAG, "patch entry: " + entry.getName());
+//                        Enumeration<JarEntry> jarEntries = FileUtil.parseJarFile();
+//                        // TODO: 2021/3/10 ing......
+//                    }
+//                }
+//            }
+            // TODO: 2021/3/10 测试代码......
+
             File optfile = new File(mOptDir, patchFile.getName());
             if (optfile.exists()) {
                 if (!optfile.delete()) {
                     return;
                 }
             }
+            // 这个DexFile已经被标记 @Deprecated 了，也就是将来不对外使用了，这里采用了替代方案：
+            // dalvik/system/DexFile中的nativev方法对应Art中的C++文件是:
+            // art/runtime/native/dalvik_system_DexFile.cc，例如: 打开DexFile是:
+            // openDexFileNative -> DexFile_openDexFileNative
+            //
+
+            // art/libdexfile/dex/dex_file.h
             final DexFile dexFile = DexFile.loadDex(patchFile.getAbsolutePath(),
                                                     optfile.getAbsolutePath(),
                                                     Context.MODE_PRIVATE);
+
             final ClassLoader cl = IWatch.class.getClassLoader();
             ClassLoader patchClassLoader = new ClassLoader(cl) {
                 @Override
                 protected Class<?> findClass(String className) throws ClassNotFoundException {
-                    String packagePath1 = "com.alipay.euler.andfix";
-                    String packagePath2 = "com.habbyge.iwatch";
+                    String packagePath1 = "com.habbyge.iwatch";
 
                     Class<?> clazz = dexFile.loadClass(className, this);
-                    if (clazz == null && (className.startsWith(packagePath1)
-                            || className.startsWith(packagePath2))) {
-
+                    if (clazz == null && (className.startsWith(packagePath1))) {
                         Log.d(TAG, "ClassLoader: findClass=" + className);
                         return Class.forName(className);// annotation’s class
                     }

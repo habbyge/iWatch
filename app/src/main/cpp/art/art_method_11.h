@@ -106,7 +106,7 @@ private:
   HeapReference<ClassLoader> class_loader_;
   HeapReference<String> location_;
 
-  uint64_t dex_file_;                // const DexFile*
+  uint64_t dex_file_;                // const DexFile*, 位于: art/libdexfile/dex/dex_file.h
   uint64_t preresolved_strings_;     // GcRoot<mirror::String*> array with num_preresolved_strings
                                      // elements.
   uint64_t resolved_call_sites_;     // GcRoot<CallSite>* array with num_resolved_call_sites_

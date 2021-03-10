@@ -19,6 +19,16 @@ namespace iwatch {
 // C++的符号规则(GNU C++)
 static const char* RUNTIME_INSTANCE_SYM = "_ZN3art7Runtime9instance_E"; // static Runtime* instance_
 
+// 监听 runtime 退出函数，可以hook
+// void CallExitHook(jint status);
+//static const char* CallExitHook_Sym = "_ZN3art7Runtime12CallExitHookEi";
+
+// 这里是 art/runtime/runtime.h void DumpForSigQuit(std::ostream& os)
+// 可以看到这里其实是把Art中的运行时系统的Runtime对象中在信号SigQuit发生时，runtime退出前，保存Runtime中的数据到
+// os中，这里一般传入的是cerr对象，用于发生crash时，抓取运行时系统(runtime)的上下文
+//static const char* DumpForSigQuit_Sym =
+//    "_ZN3art7Runtime14DumpForSigQuitERNSt3__113basic_ostreamIcNS1_11char_traitsIcEEEE";
+
 class Runtime final {
 public:
   Runtime() : instance_(nullptr) {}
