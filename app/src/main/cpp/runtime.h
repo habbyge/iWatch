@@ -45,6 +45,11 @@ static const char* CurrentFromGdb_Syn = "_ZN3art6Thread14CurrentFromGdbEv";
 // SuspendVM -> _ZN3art3Dbg9SuspendVMEv
 // ResumeVM -> _ZN3art3Dbg8ResumeVMEv
 
+// art/runtime/oat_file_manager.h 中 OpenDexFilesFromOat/OpenDexFilesFromOat/OpenDexFilesFromOat_Impl
+// _ZN3art14OatFileManager19OpenDexFilesFromOatEONSt3__16vectorINS_6MemMapENS1_9allocatorIS3_EEEEP8_jobjectP13_jobjectArrayPPKNS_7OatFileEPNS2_INS1_12basic_stringIcNS1_11char_traitsIcEENS4_IcEEEENS4_ISK_EEEE
+// _ZN3art14OatFileManager19OpenDexFilesFromOatEPKcP8_jobjectP13_jobjectArrayPPKNS_7OatFileEPNSt3__16vectorINSB_12basic_stringIcNSB_11char_traitsIcEENSB_9allocatorIcEEEENSG_ISI_EEEE
+// _ZN3art14OatFileManager24OpenDexFilesFromOat_ImplEONSt3__16vectorINS_6MemMapENS1_9allocatorIS3_EEEEP8_jobjectP13_jobjectArrayPPKNS_7OatFileEPNS2_INS1_12basic_stringIcNS1_11char_traitsIcEENS4_IcEEEENS4_ISK_EEEE
+
 class Runtime final {
 public:
   Runtime() : instance_(nullptr) {}
