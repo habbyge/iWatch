@@ -9,6 +9,11 @@ namespace iwatch {
 void Runtime::init(JNIEnv*, const std::shared_ptr<Elf>&& elf_op) {
   void** pInstance_ = reinterpret_cast<void**>(elf_op->dlsym_elf(RUNTIME_INSTANCE_SYM));
   instance_ = *pInstance_;
+
+  // todo
+  auto currentFromGdb = reinterpret_cast<CurrentFromGdb>(elf_op->dlsym_elf(CurrentFromGdb_Syn));
+  logd("currentFromGdb = %p", currentFromGdb());
+  // todo
 }
 
 /**

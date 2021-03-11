@@ -29,6 +29,17 @@ static const char* RUNTIME_INSTANCE_SYM = "_ZN3art7Runtime9instance_E"; // stati
 //static const char* DumpForSigQuit_Sym =
 //    "_ZN3art7Runtime14DumpForSigQuitERNSt3__113basic_ostreamIcNS1_11char_traitsIcEEEE";
 
+// art/runtime/thread.h 中:
+using CurrentFromGdb = void* (*)(); // Thread* CurrentFromGdb()
+static const char* CurrentFromGdb_Syn = "_ZN3art6Thread14CurrentFromGdbEv";
+ // CurrentFromGdb -> _ZN3art6Thread14CurrentFromGdbEv 是否只能在gdb debug 时才能获取？不是，release一样可以获取
+// GetCurrentMethod() -> _ZNK3art6Thread16GetCurrentMethodEPjbb
+// DumpJavaStack -> _ZNK3art6Thread13DumpJavaStackERNSt3__113basic_ostreamIcNS1_11char_traitsIcEEEEbb
+
+//
+// SuspendVM -> _ZN3art3Dbg9SuspendVMEv
+// ResumeVM -> _ZN3art3Dbg8ResumeVMEv
+
 class Runtime final {
 public:
   Runtime() : instance_(nullptr) {}
