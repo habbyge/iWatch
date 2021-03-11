@@ -9,6 +9,7 @@
 
 #include <jni.h>
 #include <stdint.h>
+#include "../runtime.h"
 
 namespace art {
 
@@ -16,7 +17,8 @@ namespace mirror {
 
 class JNIEnvExt : public JNIEnv {
 public:
-  void* GetSelf() const {
+  void* GetSelf() {
+    init();
     return self_;
   }
 
@@ -26,9 +28,15 @@ public:
 
 private:
   // Link to Thread::Current().
-  void* const self_;
+  void* self_;
   // The invocation interface JavaVM.
   void* const vm_;
+
+  inline void init() noexcept {
+    if (self_ == nullptr) {
+      self_ = iwatch::Runtime::currentThread();
+    }
+  }
 };
 
 } // mirror

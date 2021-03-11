@@ -74,6 +74,11 @@ protected:
                                                             env_(static_cast<mirror::JNIEnvExt*>(env)),
                                                             vm_(static_cast<mirror::JNIEnvExt*>(env)->GetVm()) {}
 
+  explicit ScopedObjectAccessAlreadyRunnable(JNIEnv* env, void* self)
+      : self_(self),
+      env_(static_cast<mirror::JNIEnvExt*>(env)),
+      vm_(static_cast<mirror::JNIEnvExt*>(env)->GetVm()) {}
+
   // Here purely to force inlining.
   //  ALWAYS_INLINE ~ScopedObjectAccessAlreadyRunnable() {}
   ~ScopedObjectAccessAlreadyRunnable() {}
