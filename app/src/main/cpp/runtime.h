@@ -69,7 +69,7 @@ public:
 
 private:
   // 代表art虚拟机中当前Runtime对象指针 /art/runtime/runtime.h 中的 Current() 函数:
-  // static Runtime* instance_;
+  // static Runtime* instance_; Runtime::instance_字段，是一个全局变量，使用readelf -s libart.so可以查看
   void* instance_;
   static void* self_; // 当前 Thread*
 };
