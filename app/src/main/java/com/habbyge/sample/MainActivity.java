@@ -132,11 +132,11 @@ public class MainActivity extends Activity {
 //    protected void onResume() {
 //        String family = Test.getFamily();
 //        Log.i(TAG, "onResume, family=" + family);
-
+//
 //        ix = 1001;
 //        ix_HOOK = 10001;
-//        printf("onResume");
-//        strX_Added = "Mali_Resume";
+////        printf("onResume");
+////        strX_Added = "Mali_Resume";
 //        super.onResume();
 //
 //        Test.print("what the fuck !!!!!!"); // TODO: 2021/3/8 ing......验证新增类、方法

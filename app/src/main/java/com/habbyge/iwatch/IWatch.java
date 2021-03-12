@@ -86,20 +86,18 @@ public final class IWatch {
                                                     Context.MODE_PRIVATE);
 
             final ClassLoader cl = IWatch.class.getClassLoader();
-            ClassLoader patchClassLoader = new ClassLoader(cl) {
+            ClassLoader pcl = new ClassLoader(cl) {
                 @Override
                 protected Class<?> findClass(String className) throws ClassNotFoundException {
                     String packagePath1 = "com.habbyge.iwatch";
 
                     Class<?> clazz = dexFile.loadClass(className, this);
                     if (clazz == null && (className.startsWith(packagePath1))) {
-                        Log.d(TAG, "ClassLoader: findClass=" + className);
                         return Class.forName(className);// annotation’s class
                     }
                     if (clazz == null) {
                         throw new ClassNotFoundException("iWatch, classLoader: " + className);
                     }
-                    Log.d(TAG, "patchClassLoader: findClass=" + className);
                     return clazz;
                 }
             };
@@ -108,17 +106,17 @@ public final class IWatch {
             while (entrys.hasMoreElements()) { // 遍历补丁中的class文件
                 String entry = entrys.nextElement();
                 Log.d(TAG, "fix: patch.entry=" + entry);
-                clazz = dexFile.loadClass(entry, patchClassLoader);
+                clazz = dexFile.loadClass(entry, pcl);
                 if (clazz == null) {
                     Log.e(TAG, "fix: loadClass failure: " + entry);
-                    return;
+                    continue;
                 }
                 setAccessPublic(clazz);
 
                 if (classNames != null && !classNames.contains(entry)) {
                     continue; // skip, not need fix
                 }
-                fixClass(clazz, cl, patchClassLoader);
+                fixClass(clazz, cl, pcl);
             }
         } catch (Exception e) {
             Log.e(TAG, "pacth", e);
