@@ -26,8 +26,8 @@ ArtRestore::~ArtRestore() {
   restoreMap.clear();
 }
 
-void ArtRestore::save(std::string& className, std::string& funcName,
-                      std::string& desciptor, long backupArtmethodAddr,
+void ArtRestore::save(const std::string& className, const std::string& funcName,
+                      const std::string& desciptor, long backupArtmethodAddr,
                       long artMethodAddr) {
 
   if (className.empty() || funcName.empty() || desciptor.empty()) {
@@ -47,7 +47,10 @@ void ArtRestore::save(std::string& className, std::string& funcName,
 /**
  * 这里是恢复对应的 ArtMethod 为原始的，注意需要 delete 掉对应的堆内存，互斥访问
  */
-void ArtRestore::restoreArtMethod(std::string& className, std::string& funcName, std::string& desciptor) {
+void ArtRestore::restoreArtMethod(const std::string& className,
+                                  const std::string& funcName,
+                                  const std::string& desciptor) {
+
   std::string&& key = getKey(className, funcName, desciptor);
   restoreArtMethod(std::move(key));
 }
@@ -119,7 +122,10 @@ void ArtRestore::doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, s
 /**
  * 判断该方法是否已经 hook 了，防止重复
  */
-bool ArtRestore::inHooking(std::string& className, std::string& funcName, std::string& desciptor) {
+bool ArtRestore::inHooking(const std::string& className,
+                           const std::string& funcName,
+                           const std::string& desciptor) {
+
   std::string&& key = getKey(className, funcName, desciptor);
 
   std::lock_guard<std::recursive_mutex> lockGuard(lock);
