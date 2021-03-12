@@ -2,6 +2,10 @@
 // Created by 葛祥林 on 2020/11/24.
 //
 
+/**
+ * 目前无需考虑使用多线程<thread>来hook，评估hook不耗时，另外优先考虑在当前线程中进行hook，避免地址偏差.
+ */
+
 #include "iwatch_impl.h"
 
 static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m2) {
