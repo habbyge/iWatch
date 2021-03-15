@@ -16,7 +16,7 @@ public class MainActivity extends Activity {
     // 字符-测试样例
     public static int ix = 10;
     public int ix_HOOK = 10000;
-//    public String strX_Added = "Mali"; // todo 用于测试新增一个字段
+//    public String strX_Added = "Mali" // 用于测试新增一个字段
 //    private String iStr = "iWatch";
 //    private String iStr_HOOK = "iWatch.HOOK";
 
@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        printf("onCreate"); // todo
+//        printf("onCreate");
         Log.i(TAG, "onCreate, ix_HOOK=" + ix_HOOK + ", ix=" + ix + ", " + ix);
 
         findViewById(R.id.method).setOnClickListener(new View.OnClickListener() {
@@ -107,7 +107,7 @@ public class MainActivity extends Activity {
 //  生成补丁时，需要diff：
     }
 
-    /**
+    /*
      * todo:
      * 1. method、field、内部类都需要设置为public(方法public是为了阻止编译期生成synthric方法)；
      * 2. 被inline的目标函数，在调用处函数中如果没有内部类，一般也可以fix
