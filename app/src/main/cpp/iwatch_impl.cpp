@@ -281,7 +281,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
   if (srcClassStr == nullptr) {
     return I_ERR;
   }
-  std::string _class(srcClassStr);
+  std::string _class{srcClassStr};
   std::replace_if(_class.begin(), _class.end(), [](const char& ch) -> bool {
     return '.' == ch;
   }, '/');
@@ -291,22 +291,22 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
   if (srcFuncStr == nullptr) {
     return I_ERR;
   }
-  std::string _func(srcFuncStr);
+  std::string _func{srcFuncStr};
   env->ReleaseStringUTFChars(srcName, srcFuncStr);
 
   auto srcDescStr = env->GetStringUTFChars(srcSig, &isCopy);
   if (srcDescStr == nullptr) {
     return I_ERR;
   }
-  std::string _descriptor(srcDescStr);
+  std::string _descriptor{srcDescStr};
   env->ReleaseStringUTFChars(srcSig, srcDescStr);
 
   if (artRestore->inHooking(_class, _func, _descriptor)) {
     return I_OK; // 已经 hook 了，无需重复
   }
 
-  void* srcArtMethod = nullptr;
-  void* dstArtMethod = nullptr;
+  void* srcArtMethod{nullptr};
+  void* dstArtMethod{nullptr};
 
   if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10
     // art::mirror::ArtMethod
@@ -333,7 +333,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
     }
   }
 
-  int8_t* backupArtMethod = nullptr;
+  int8_t* backupArtMethod{nullptr};
   const size_t _artMethodSizeV1 = artMethodHook->getArtMethodSizeV1();
   try {
     backupArtMethod = new int8_t[_artMethodSizeV1];
@@ -389,7 +389,7 @@ long method_hookv2_impl(JNIEnv* env,
   if (class1Str == nullptr) {
     return I_ERR;
   }
-  std::string _class1(class1Str);
+  std::string _class1{class1Str};
   std::replace_if(_class1.begin(), _class1.end(), [](const char& ch)->bool {
     return '.' == ch;
   }, '/');
@@ -399,13 +399,13 @@ long method_hookv2_impl(JNIEnv* env,
   if (funcStr1 == nullptr) {
     return I_ERR;
   }
-  std::string _func1(funcStr1);
+  std::string _func1{funcStr1};
 
   const char* descriptorStr1 = env->GetStringUTFChars(sig1, &isCopy);
   if (descriptorStr1 == nullptr) {
     return I_ERR;
   }
-  std::string _descriptor1(descriptorStr1);
+  std::string _descriptor1{descriptorStr1};
 
   if (artRestore->inHooking(_class1, _func1, _descriptor1)) {
     return I_OK; // 已经 hook 了，无需重复
@@ -438,7 +438,7 @@ long method_hookv2_impl(JNIEnv* env,
     return I_ERR;
   }
   jclass jclass2;
-  std::string classStr2(class2);
+  std::string classStr2{class2};
   std::replace_if(classStr2.begin(), classStr2.end(), [](const char& ch)->bool {
     return '.' == ch;
   }, '/');
@@ -469,7 +469,7 @@ long method_hookv2_impl(JNIEnv* env,
     return I_ERR;
   }
 
-  int8_t* backupArtMethod = nullptr;
+  int8_t* backupArtMethod{nullptr};
   const size_t _artMethodSizeV2 = artMethodHook->getArtMethodSizeV2();
   try {
     backupArtMethod = new int8_t[_artMethodSizeV2];
@@ -507,12 +507,12 @@ void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring s
     return;
   }
 
-  std::string _class(classStr);
+  std::string _class{classStr};
   std::replace_if(_class.begin(), _class.end(), [](const char& ch)->bool {
     return '.' == ch;
   }, '/');
-  std::string _method(nameStr);
-  std::string _descripor(sigStr); // 必须这样，才是左值
+  std::string _method{nameStr};
+  std::string _descripor{sigStr}; // 必须这样，才是左值
   artRestore->restoreArtMethod(_class, _method, _descripor);
 
   env->ReleaseStringUTFChars(className, classStr);
@@ -585,7 +585,7 @@ long class_hook_impl(JNIEnv* env, jstring clazzName) {
   if (kClassName == nullptr) {
     return -1L;
   }
-  std::string kClassNameStr(kClassName);
+  std::string kClassNameStr{kClassName};
   std::replace_if(kClassNameStr.begin(), kClassNameStr.end(), [](const char& ch)->bool {
     return '.' == ch;
   }, '/');

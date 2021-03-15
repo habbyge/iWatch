@@ -51,7 +51,7 @@ public:
 
 private:
   uint32_t reference_;
-  uint32_t access_flags_ = 0; // android5.0 ~android11 field 的访问权限字段偏移量都是4byte处
+  uint32_t access_flags_{0}; // android5.0 ~android11 field 的访问权限字段偏移量都是4byte处
 
   FindFieldJNI_t FindFieldJNI;
   // ...... 不关注

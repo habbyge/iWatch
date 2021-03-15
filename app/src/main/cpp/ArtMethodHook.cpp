@@ -132,7 +132,7 @@ void* ArtMethodHook::getArtMethodLessEqual10(JNIEnv* env, jobject method) {
  */
 void* ArtMethodHook::getArtMethod(JNIEnv* env, jobject method) {
   try {
-    const art::ScopedFastNativeObjectAccess soa(env);
+    const art::ScopedFastNativeObjectAccess soa{env};
     return FromReflectedMethod(soa, method);
   } catch (std::exception& e) {
     loge("getArtMethod1, eception: %s", e.what());
@@ -169,8 +169,8 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
   }
   logi("ArtMethodHook, setAccessPublic, %p", artMethod);
 
-  uint32_t* access_flags_addr = nullptr;
-  uint32_t access_flags_ = 0;
+  uint32_t* access_flags_addr{nullptr};
+  uint32_t access_flags_{0};
 
   uint32_t step = -1;
   if (sdkVersion == SDK_INT_ANDROID_5_0) { // 5.0.x
