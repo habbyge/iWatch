@@ -25,7 +25,6 @@ public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
 
     private final File mOptDir;   // optimize directory
-//    private Class<?> mFixMethodAnnoClass = null;
 
     public IWatch(Context context) {
         mOptDir = new File(context.getFilesDir(), Patch.DIR);
@@ -46,15 +45,6 @@ public final class IWatch {
         }
 
         try {
-            /*// 这里为何不直接使用 DexFile ？因为 api >= 30(Android-11)之后，DexFile不让使用了
-            Class<?> clazz;
-            for (String className : classNames) {
-                clazz = dexCl.loadClass(className);
-                if (clazz != null) {
-                    fixClass(clazz, cl, dexCl);
-                }
-            }*/
-
             File optfile = new File(mOptDir, patchFile.getName());
             if (optfile.exists()) {
                 if (!optfile.delete()) {
@@ -92,8 +82,7 @@ public final class IWatch {
             // 遍历补丁中的class文件，新增的class，不会生成_CF版本，直接以原始名称打包在patch中
             while (entrys.hasMoreElements()) {
                 String entry = entrys.nextElement();
-//                String oldEntry = entry.endsWith("_CF") ? entry.substring(0, entry.length() - 3) : entry;
-                Log.d(TAG, "fix: patch entry=" + entry/* + ", oldEntry=" + oldEntry*/);
+                Log.d(TAG, "fix: patch entry=" + entry);
 
                 clazz = dexFile.loadClass(entry, pcl);
                 if (clazz != null) {

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
-
 import com.habbyge.iwatch.IWatch;
 import com.habbyge.iwatch.util.FileUtil;
 
@@ -26,7 +24,6 @@ public final class PatchManager {
 
     private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/apatch
 
-    @Nullable
     private Patch mPatch;
 
     private IWatch mIWatch;

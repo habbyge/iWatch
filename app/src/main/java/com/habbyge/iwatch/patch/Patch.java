@@ -3,8 +3,6 @@ package com.habbyge.iwatch.patch;
 import android.text.TextUtils;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,7 +119,6 @@ public class Patch implements Comparable<Patch> {
         return mFile;
     }
 
-    @Nullable
     public List<String> getClasses() {
         return mClasses;
     }
