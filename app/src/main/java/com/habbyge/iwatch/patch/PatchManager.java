@@ -1,6 +1,5 @@
 package com.habbyge.iwatch.patch;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
@@ -32,7 +31,6 @@ public final class PatchManager {
 
     private IWatch mIWatch;
 
-    @SuppressLint("StaticFieldLeak")
     private static PatchManager mInstance;
 
     public static PatchManager getInstance() {
@@ -71,7 +69,7 @@ public final class PatchManager {
             Log.e(TAG, "mPatchDir delete result=" + mPatchDir.delete());
             return false;
         }
-        Log.i(TAG, "mPatchDir=" + mPatchDir);
+        Log.i(TAG, "mPatchDir=" + mPatchDir + ", iwatchVersion=" + iwatchVersion);
 
         initIWatch(context);
 

@@ -47,19 +47,6 @@ public final class IWatch {
 
         try {
             /*// 这里为何不直接使用 DexFile ？因为 api >= 30(Android-11)之后，DexFile不让使用了
-            String patchFilePath = patchFile.getAbsolutePath();
-            Log.i(TAG, "doFix, patchFile: " + patchFilePath);
-
-            final ClassLoader cl = IWatch.class.getClassLoader();
-            DexClassLoader dexCl = new DexClassLoader(patchFilePath, null, null, cl);
-
-            // 加载FixMethodAnno的ClassLoader必须是补丁的DexClassLoader，如果直接写
-            // FixMethodAnno.class，则是来自于宿主app.apk的ClassLoader，在patch中是识别不到的，因为写在补丁中的
-            // 注解(Annotation)是来自于补丁，传递宿主的注解class，显然在虚拟机中的地址是不正确的，所以胡返回null。
-            if (mFixMethodAnnoClass == null) {
-                mFixMethodAnnoClass = Class.forName("com.habbyge.iwatch.patch.FixMethodAnno", true, dexCl);
-            }
-
             Class<?> clazz;
             for (String className : classNames) {
                 clazz = dexCl.loadClass(className);
@@ -78,7 +65,6 @@ public final class IWatch {
             // dalvik/system/DexFile中的nativev方法对应Art中的C++文件是:
             // art/runtime/native/dalvik_system_DexFile.cc，例如: 打开DexFile是:
             // openDexFileNative -> DexFile_openDexFileNative
-            //
 
             // art/libdexfile/dex/dex_file.h
             final DexFile dexFile = DexFile.loadDex(patchFile.getAbsolutePath(),
@@ -103,20 +89,20 @@ public final class IWatch {
             };
             Enumeration<String> entrys = dexFile.entries();
             Class<?> clazz;
-            while (entrys.hasMoreElements()) { // 遍历补丁中的class文件
+            // 遍历补丁中的class文件，新增的class，不会生成_CF版本，直接以原始名称打包在patch中
+            while (entrys.hasMoreElements()) {
                 String entry = entrys.nextElement();
-                Log.d(TAG, "fix: patch.entry=" + entry);
-                clazz = dexFile.loadClass(entry, pcl);
-                if (clazz == null) {
-                    Log.e(TAG, "fix: loadClass failure: " + entry);
-                    continue;
-                }
-                setAccessPublic(clazz);
+//                String oldEntry = entry.endsWith("_CF") ? entry.substring(0, entry.length() - 3) : entry;
+                Log.d(TAG, "fix: patch entry=" + entry/* + ", oldEntry=" + oldEntry*/);
 
-                if (classNames != null && !classNames.contains(entry)) {
-                    continue; // skip, not need fix
+                clazz = dexFile.loadClass(entry, pcl);
+                if (clazz != null) {
+                    setAccessPublic(clazz);
+                    if (classNames != null && !classNames.contains(entry)) {
+                        continue; // skip, not need fix
+                    }
+                    fixClass(clazz, cl, pcl);
                 }
-                fixClass(clazz, cl, pcl);
             }
         } catch (Exception e) {
             Log.e(TAG, "pacth", e);

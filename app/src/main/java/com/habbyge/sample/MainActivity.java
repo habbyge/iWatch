@@ -128,8 +128,8 @@ public class MainActivity extends Activity {
      *  这是一个保底策略，，，，，，哈哈哈哈哈哈，，，，，，
      */
 
-//    @Override
-//    protected void onResume() {
+    @Override
+    protected void onResume() {
 //        String family = Test.getFamily();
 //        Log.i(TAG, "onResume, family=" + family);
 //
@@ -137,10 +137,10 @@ public class MainActivity extends Activity {
 //        ix_HOOK = 10001;
 ////        printf("onResume");
 ////        strX_Added = "Mali_Resume";
-//        super.onResume();
+        super.onResume();
 //
 //        Test.print("what the fuck !!!!!!"); // TODO: 2021/3/8 ing......验证新增类、方法
-//    }
+    }
 
 //    @Override
 //    protected void onPause() {
@@ -165,7 +165,7 @@ public class MainActivity extends Activity {
 //                + ix_HOOK + ", " + test("ix_HOOK_ix")
 //                + ", x = " + x + ", xx=" + xx);
 //    }
-
+//
 //    public int test(String x) {
 //        Log.w(TAG, "test-printf-bengin: " + (ix + ix_HOOK) + ", " + x);
 //        for (int i = 0; i < 100; ++i) {
