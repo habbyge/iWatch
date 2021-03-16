@@ -120,16 +120,7 @@ public final class IWatch {
 
         for (Method method : methods) {
             // 这里会拿到为null，因为这里需要patch中的DexClassLoader
-            /*fixMethodAnno = method.getAnnotation(FixMethodAnno.class);*/
-            // noinspection unchecked
-//            fixMethodAnno = method.getAnnotation((Class<FixMethodAnno>) mFixMethodAnnoClass);
-//            if (fixMethodAnno == null) {
-                fixMethodAnno = method.getAnnotation(FixMethodAnno.class);
-//            }
-            Log.w(TAG, "fixClass, clazz=" + clazz.getName() +
-                    ", method=" + method.getName() +
-                    ", annotation=" + (fixMethodAnno == null ? "nullptr" : "NOT-nullptr"));
-
+            fixMethodAnno = method.getAnnotation(FixMethodAnno.class);
             if (fixMethodAnno == null) {
                 continue;
             }
@@ -246,15 +237,4 @@ public final class IWatch {
             Log.e(TAG, optfile.getName() + " delete error.");
         }
     }
-
-//    private void restoreClassLoader(Class<?> clazz, ClassLoader classLoader) {
-//        try {
-//            //noinspection JavaReflectionMemberAccess
-//            Field field = Class.class.getDeclaredField("classLoader");
-//            field.setAccessible(true);
-//            field.set(clazz, classLoader);
-//        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-//            Log.e(TAG, "restoreClassLoader, exception: " + e.getMessage());
-//        }
-//    }
 }
