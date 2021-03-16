@@ -27,7 +27,7 @@ void* ArtHookField::getArtField(JNIEnv* env, jclass jni_class, const char* name,
                                 const char* sig, bool isStatic) {
 
   try {
-    art::ScopedObjectAccess soa(env);
+    art::ScopedObjectAccess soa{env};
     return FindFieldJNI(soa, jni_class, name, sig, isStatic); // 返回 ArtField*
   } catch (std::exception& e) {
     loge("getArtField, eception: %s", e.what());
