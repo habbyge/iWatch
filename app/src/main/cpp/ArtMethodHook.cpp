@@ -205,12 +205,15 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
 //      *access_flags_addr |= (kAccPublic | kAccFinal);
       logd("synthetic setAccessPublic !");
       // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
+    } else if (((access_flags_ & kAccFinal) == kAccFinal) && ((access_flags_ & kAccPublic) == kAccPublic)) {
+//      *access_flags_addr &= ~kAccFinal; // 清理掉final
+      logd("method setAccessPublic: remove final !");
     } else {
 //    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
     }
   }
 
-  logw("ArtMethodHook::setAccessPublic, sdkVersion=%d, access_flags=%p, access_flags=%u -> %u",
+  logw("ArtMethodHook::setAccessPublic, sdkVersion=%d, access_flags_addr=%p, access_flags=%u -> %u",
        sdkVersion, access_flags_addr, access_flags_, *access_flags_addr);
 }
 
