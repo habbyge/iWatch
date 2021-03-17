@@ -1,21 +1,7 @@
 # iWatch
-hotfix solution
-
-## 方案思考:
-### 目标
-
-#### 一. 补丁代码
-与热补丁在功能上相同：但要求更轻量，满足新增、修改方法、字段级别的代码：
-1. 没有复杂的版本管理成本，可以与tinker等Java方案的热补丁共存；
-2. 只需要实现 代码逻辑的 增、改 即可
-3. 支持 android 5.0 ~ android 11
-4. 
-
-下发方案1：下发一个 补丁.apk
-
-
-下发方案2：下发一段dsl？
-只能对
-
-#### 二、检测
-1. 注解 + 编译期 校对来检测
+热补丁方案-Native(C/C++)层方案：
+1. 支持Android5.0 ~ 11.x
+2. 支持修改method，新增class、field、method，以及支持部分inline方法的修复
+3. 支持即时修复，即补丁下发即可生效
+4. 方案稳定可靠
+5. 配合apkpatchplus(https://github.com/habbyge/apkpatchplus)项目，其生成补丁，在iWatch中加载、使用补丁
