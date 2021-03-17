@@ -22,3 +22,7 @@
 2. 内部类中修改需要访问外部类时，其访问的method、field、都需要设置为public，是为了阻止编译器自动合成synthric方法，造成方法地址或index错乱。
 3. inline的目标函数，一般不能fix。
 4. ......
+
+### 内部类的坑
+内部类引用外部类的哪个方法，就会找不到该方法。得出结论，一定是内部类改变了该方法。todo
+java.lang.NoSuchMethodError: No virtual method b(Ljava/lang/String;)V in class Lcom/habbyge/sample/MainActivity_CF; or its super classes (declaration of 'com.habbyge.sample.MainActivity_CF' appears in /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/app-release-2-cfff1f13df8681ea51edb3ea824af973.apatch)

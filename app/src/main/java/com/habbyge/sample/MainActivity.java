@@ -46,7 +46,7 @@
 ////                test.print("i love my family ! new !!!!!!");
 //
 //                // 测试用例：测试(匿名)内部类访问现有方法(public/private)
-//                printf2("onClick", 1);
+//                printf("onClick");
 //            }
 //        });
 //
@@ -81,8 +81,7 @@
 //            ++x1;
 //        }
 //
-//        new Test().print("printf2: i love my family !" + x1);
-//        printf(text);
+//        printf(text + x1);
 //    }
 //
 //    // 测试用例: 验证新增方法、访问类中字段......
@@ -92,9 +91,6 @@
 //            ++ix_HOOK;
 //            ++ix;
 //        }
-//
-////        int xx = test2("i love my family !");
-//        new Test().print("i love my family !");
 //
 //        int x = ix * ix_HOOK;
 //        Log.d(TAG, "printf-end: " + text + ", ix_HOOK2="
