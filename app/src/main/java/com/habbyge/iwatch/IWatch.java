@@ -65,10 +65,8 @@ public final class IWatch {
             ClassLoader pcl = new ClassLoader(cl) {
                 @Override
                 protected Class<?> findClass(String className) throws ClassNotFoundException {
-                    String packagePath1 = "com.habbyge.iwatch";
-
                     Class<?> clazz = dexFile.loadClass(className, this);
-                    if (clazz == null && (className.startsWith(packagePath1))) {
+                    if (clazz == null && className.startsWith("com.habbyge.iwatch")) {
                         return Class.forName(className);// annotation’s class
                     }
                     if (clazz == null) {
@@ -102,20 +100,20 @@ public final class IWatch {
         Method[] methods = clazz.getDeclaredMethods();
         Log.d(TAG, "fixClass, methods=" + methods.length);
 
-        FixMethodAnno fixMethodAnno;
+        FixMethodAnno anno;
         String className1;
         String methodName1;
         boolean static1;
 
         for (Method method : methods) {
             // 这里会拿到为null，因为这里需要patch中的DexClassLoader
-            fixMethodAnno = method.getAnnotation(FixMethodAnno.class);
-            if (fixMethodAnno == null) {
+            anno = method.getAnnotation(FixMethodAnno.class);
+            if (anno == null) { // _CF class 中的其他非 FixMethodAnno method 也需要 replace
                 continue;
             }
 
-            className1 = fixMethodAnno.clazz();
-            methodName1 = fixMethodAnno.method();
+            className1 = anno.clazz();
+            methodName1 = anno.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
                 setAccessPublic(cl, className1); // 这里需要让原始class中的所有字段和方法为public
                 setAccessPublic(pcl, className1); // 让补丁能使用补丁中新增的类

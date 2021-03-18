@@ -71,12 +71,12 @@ void ArtMethodHook::initArtMethodLessEqual10(JNIEnv* env) {
   artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
 
   // artMethodSize = sizeof(ArtMethod);
-  logi("artMethodSize-1 = %zu, %zu, %zu", artMethodSizeV1,
-                                          reinterpret_cast<size_t>(artMethod2),
-                                          reinterpret_cast<size_t>(artMethod1));
+  logi("artMethodSize-1 = %zu, %p, %p", artMethodSizeV1,
+                                        reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod2)),
+                                        reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod1)));
 }
 
-void ArtMethodHook::initArtMethod1(JNIEnv* env, std::shared_ptr<Elf> elf_op, jobject m1, jobject m2) {
+void ArtMethodHook::initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_op, jobject m1, jobject m2) {
   try {
 //   FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(
 //       dlsym_elf(elf_op->getLoadAddr(), FromReflectedMethod_Sym));
@@ -100,7 +100,7 @@ void ArtMethodHook::initArtMethod1(JNIEnv* env, std::shared_ptr<Elf> elf_op, job
   }
 }
 
-void ArtMethodHook::initArtMethod2(JNIEnv* env, std::shared_ptr<Elf> elf_op) {
+void ArtMethodHook::initArtMethod2(JNIEnv* env, const std::shared_ptr<Elf>& elf_op) {
   try {
     jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
 //    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(elf_op->getLoadAddr(), FindMethodJNI_Sym));

@@ -34,7 +34,6 @@
 -keepattributes *Annotation*
 -keepattributes EnclosingMethod
 
-# 测试路径: /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music
 #-applymapping mapping.txt # todo 打补丁时需要，用于保持混淆一致
 -ignorewarnings
 

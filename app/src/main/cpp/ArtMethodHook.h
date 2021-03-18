@@ -71,8 +71,8 @@ public:
   virtual ~ArtMethodHook() {}
 
   void initArtMethodLessEqual10(JNIEnv* env);
-  void initArtMethod1(JNIEnv* env, std::shared_ptr<Elf> elf_op, jobject m1, jobject m2);
-  void initArtMethod2(JNIEnv* env, std::shared_ptr<Elf> elf_op);
+  void initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_op, jobject m1, jobject m2);
+  void initArtMethod2(JNIEnv* env, const std::shared_ptr<Elf>& elf_op);
 
   void* getArtMethodLessEqual10(JNIEnv* env, jobject method);
   void* getArtMethod(JNIEnv* env, jobject method);
