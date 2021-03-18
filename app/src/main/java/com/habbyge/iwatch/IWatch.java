@@ -72,7 +72,7 @@ public final class IWatch {
                         return Class.forName(className);// annotation’s class
                     }
                     if (clazz == null) {
-                        throw new ClassNotFoundException("iWatch, classLoader: " + className);
+                        throw new ClassNotFoundException("iWatch, clazz: " + className);
                     }
                     return clazz;
                 }
@@ -98,7 +98,7 @@ public final class IWatch {
         }
     }
 
-    private void fixClass(Class<?> clazz, ClassLoader classLoader, ClassLoader patchClassLoader) {
+    private void fixClass(Class<?> clazz, ClassLoader cl, ClassLoader pcl) {
         Method[] methods = clazz.getDeclaredMethods();
         Log.d(TAG, "fixClass, methods=" + methods.length);
 
@@ -117,11 +117,11 @@ public final class IWatch {
             className1 = fixMethodAnno.clazz();
             methodName1 = fixMethodAnno.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
-                setAccessPublic(classLoader, className1); // 这里需要让原始class中的所有字段和方法为public
-                setAccessPublic(patchClassLoader, className1); // 让补丁能使用补丁中新增的类
+                setAccessPublic(cl, className1); // 这里需要让原始class中的所有字段和方法为public
+                setAccessPublic(pcl, className1); // 让补丁能使用补丁中新增的类
 
                 // 方案1:
-                if (fixMethod1(classLoader, className1, methodName1, method)) {
+                if (fixMethod1(cl, className1, methodName1, method)) {
                     Log.i(TAG, "fixMethod1 success !");
                     continue;
                 }
@@ -186,10 +186,10 @@ public final class IWatch {
         MethodHook.unhookAllMethod();
     }
 
-    private void setAccessPublic(ClassLoader classLoader, String className) {
+    private void setAccessPublic(ClassLoader cl, String className) {
         Class<?> clazz;
         try {
-            clazz = classLoader.loadClass(className);
+            clazz = cl.loadClass(className);
         } catch (ClassNotFoundException e) {
             Log.e(TAG, "setAccessPublic, exception: " + e.getMessage());
             return;

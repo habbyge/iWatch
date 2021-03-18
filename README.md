@@ -19,7 +19,7 @@
 10. ......
 
 ## 本地测试方法
-adb push 补丁.apatch 到手机这个目录: storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/
+adb push 补丁.apatch 到手机这个目录: /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/
 
 ## 问题和限制(todo......有待突破)
 1. 对 ***内部类*** 有限制，在内部类中需要新增调用方法时，则需要直接新建一个class然后调用该class，直接在内部类中调用其外部类则容易造成方法地址和index错乱，找不到方法，发生NoSuchMethodError crash。但是非内部类场景没有这个限制。不过还是建议新建class的方式来搞。

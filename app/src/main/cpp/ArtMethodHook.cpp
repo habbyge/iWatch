@@ -211,6 +211,8 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
     } else {
 //    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
     }
+
+    *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
   }
 
   logw("ArtMethodHook::setAccessPublic, sdkVersion=%d, access_flags_addr=%p, access_flags=%u -> %u",
