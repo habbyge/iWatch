@@ -14,6 +14,13 @@ namespace iwatch {
  *     一个外部类的this指针在内部类中，且这个字段实际上是旧的外部类，而不是新的外部类的.，todo ing......
  *     这样就出坑了.
  */
+
+// 查看：nm -g libart.so | grep 'GetInnerClassFlags'
+// art/runtime/mirror/class.h
+// 函数原型：int32_t Class::GetInnerClassFlags(Handle<Class> h_this, int32_t default_value)
+// 获取一个class是否是内部类的标记，其中 andorid-10/android-11 都是这个符号
+const char* GetInnerClassFlags_Sym = "_ZN3art6mirror5Class18GetInnerClassFlagsENS_6HandleIS1_EEi";
+
 class InnerClass {
 };
 
