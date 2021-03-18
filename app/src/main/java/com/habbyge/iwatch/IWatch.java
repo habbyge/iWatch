@@ -159,8 +159,7 @@ public final class IWatch {
         Method method1 = ReflectUtil.findMethod(cl, className1, funcName1, paramTypes);
         method2.setAccessible(true);
         
-        Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ":"
-                + funcName1 + " -> " + method2.getName());
+        Log.d(TAG, "fixMethod1, oldClassName: " + className1);
 
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
     }
