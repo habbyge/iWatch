@@ -75,7 +75,7 @@ static JNINativeMethod gMethods[] = {
     (void*) restore_method
   },
   {
-    "unhookAllmethod",
+    "unhookAllMethod",
     "()V",
     (void*) restore_all_method
   },

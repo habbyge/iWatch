@@ -53,9 +53,7 @@ public final class PatchManager {
     public boolean init(Context context, String iwatchVersion, String appVersion, boolean test) {
 //        mIWatchVersion = iwatchVersion;
         mAppVersion = appVersion;
-
-        // 测试路径: 需要 adb push 补丁.apatch 到手机这个目录:
-        // /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/
+        // TODO: 现在是测试路径
         mPatchDir = test ? context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
                          : new File(context.getFilesDir(), Patch.DIR);
 
@@ -70,7 +68,7 @@ public final class PatchManager {
 
         initIWatch(context);
 
-        initPatchs(); // 加载补丁到内存中: mPatchs
+        initPatchs();
 
         return true;
     }
@@ -200,7 +198,7 @@ public final class PatchManager {
     }
 
     private void cleanPatch() {
-        File[] files = mPatchDir.listFiles(); // 起始就一个 patch 文件
+        File[] files = mPatchDir.listFiles();
         if (files == null) {
             Log.e(TAG, "cleanPatch: files=null");
             return;

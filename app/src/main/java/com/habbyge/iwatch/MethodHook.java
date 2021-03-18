@@ -57,29 +57,6 @@ public final class MethodHook {
         return backupOriMethod != 0L && backupOriMethod != -1L;
     }
 
-    /**
-     * 方法恢复机制：
-     * 1. 进程重启，初始化时，检查补丁支持的 reversion 是否与当前 app 的 reversion 相同
-     * 2. 每个方法 hook 时，检查从补丁支持的 reversion 是否与当前 app 的 reversion 相同，从补丁中获取的方法
-     *    是否 替换 原始方法（由注解决定）.
-     * 当前 app 进程在内存中存储了目前已经被 hook 的方法列表，分为两种情况:
-     * 1. 进程重启，完全不支持，则直接退出即可；
-     * 2. 正在 fix 一个方法，发现补丁支持的 reversion 与当前 app 的 reversion 不符，则也恢复所有的方法，
-     *    并删掉补丁文件.
-     */
-    public static void restoreMethod(String className, String name, String sig) {
-        unhookMethod(className, name, sig);
-    }
-
-    public static void unhookAllMethod() {
-        unhookAllmethod();
-    }
-
-    public static void hookClass2(String clazzName) {
-        long addr = hookClass(clazzName.replace(".", "/"));
-        Log.i(TAG, "hookClass2, addr=" + addr);
-    }
-
     public static void setCurThread() {
         long threadNativeAddr = ReflectUtil.getLongField(Thread.currentThread(), "nativePeer");
         setCurThread(threadNativeAddr);
@@ -93,10 +70,21 @@ public final class MethodHook {
     private static native long hookMethod(String className1, String funcName1, String funcSig1,
                                           boolean isStatic1, String className2, String funcName2,
                                           String funcSig2, boolean isStatic2);
+
+    /**
+     * 方法恢复机制：
+     * 1. 进程重启，初始化时，检查补丁支持的 reversion 是否与当前 app 的 reversion 相同
+     * 2. 每个方法 hook 时，检查从补丁支持的 reversion 是否与当前 app 的 reversion 相同，从补丁中获取的方法
+     *    是否 替换 原始方法（由注解决定）.
+     * 当前 app 进程在内存中存储了目前已经被 hook 的方法列表，分为两种情况:
+     * 1. 进程重启，完全不支持，则直接退出即可；
+     * 2. 正在 fix 一个方法，发现补丁支持的 reversion 与当前 app 的 reversion 不符，则也恢复所有的方法，
+     *    并删掉补丁文件.
+     */
     @Keep
-    private static native void unhookMethod(String className, String name, String sig);
+    public static native void unhookMethod(String className, String name, String sig);
     @Keep
-    private static native void unhookAllmethod();
+    public static native void unhookAllMethod();
 
     @Keep
     public static native void setFieldAccessPublic(Field field, Class<?> srcClass,
@@ -106,7 +94,7 @@ public final class MethodHook {
     public static native void setMethodAccessPublic(Method method);
 
     @Keep
-    private static native long hookClass(String className);
+    public static native long hookClass(String className);
     @Keep
     private static native void setCurThread(long threadAddr);
 
