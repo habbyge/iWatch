@@ -75,24 +75,6 @@ add_library(
     ${SRC_LIST}
 )
 
-#if ("${ANDROID_ABI}" STREQUAL "x86_64")
-#    find_library(/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-x86_64/usr/lib64/liblog.so
-#                 log-lib
-#                 log)
-#elseif ("${ANDROID_ABI}" STREQUAL "x86")
-#    find_library(/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-x86/usr/lib/liblog.so
-#                 log-lib
-#                 log)
-#elseif ("${ANDROID_ABI}" STREQUAL "arm64-v8a")
-#    find_library(/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-arm64/usr/lib64/liblog.so
-#                 log-lib
-#                 log)
-#elseif ("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
-#    find_library(/Users/habbyge/Library/Android/sdk/ndk/21.2.6472646/platforms/android-29/arch-arm/usr/lib/liblog.so
-#                 log-lib
-#                 log)
-#endif()
-
 ## Searches for a specified prebuilt library and stores the path as a
 ## variable. Because CMake includes system libraries in the search path by
 ## default, you only need to specify the name of the public NDK library
