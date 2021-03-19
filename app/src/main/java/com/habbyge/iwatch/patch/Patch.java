@@ -88,10 +88,9 @@ public class Patch implements Comparable<Patch> {
                 attrName = ((Attributes.Name) attr);
                 name = attrName.toString();
                 if (PATCH_CLASSES.equalsIgnoreCase(name)) {
-                    mClasses = Arrays.asList(mainAttributes.getValue(attrName).split(","));
-                    for (String clazz : mClasses) {
-                        Log.i(TAG, "init, Clazz=" + clazz);
-                    }
+                    String attrValue = mainAttributes.getValue(attrName);
+                    Log.i(TAG, "init, Patch-Classes=" + attrValue);
+                    mClasses = Arrays.asList(attrValue.split(","));
                     break;
                 }
             }

@@ -16,13 +16,15 @@ ArtRestore::ArtRestore() : restoreMap(), lock() {
 
 ArtRestore::~ArtRestore() {
   // delete 掉 列表内存
-  std::map<std::string, ArtRestoreData*>::iterator it;
-  for (it = restoreMap.begin(); it != restoreMap.end(); ++it) {
+  std::for_each(restoreMap.begin(), restoreMap.end(),
+                [](std::pair<std::string, ArtRestoreData*> iterm) -> void {
+
     // 释放备份的原始方法
-    delete[] reinterpret_cast<int8_t*>(it->second->backupArtmethodAddr);
-    delete it->second;
-    it->second = nullptr;
-  }
+    delete[] reinterpret_cast<int8_t*>(iterm.second->backupArtmethodAddr);
+    delete iterm.second;
+    iterm.second = nullptr;
+  });
+
   restoreMap.clear();
 }
 
