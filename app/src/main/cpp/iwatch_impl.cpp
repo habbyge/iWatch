@@ -304,6 +304,8 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
   if (artRestore->inHooking(_class, _func, _descriptor)) {
     logw("method_hook_impl, hook yet: %s, %s, %s", _class.c_str(), _func.c_str(), _descriptor.c_str());
     return I_OK; // 已经 hook 了，无需重复
+  } else {
+    logi("method_hook_impl, hook: %s, %s, %s", _class.c_str(), _func.c_str(), _descriptor.c_str());
   }
 
   void* srcArtMethod{nullptr};
@@ -409,7 +411,10 @@ long method_hookv2_impl(JNIEnv* env,
   std::string _descriptor1{descriptorStr1};
 
   if (artRestore->inHooking(_class1, _func1, _descriptor1)) {
+    logw("method_hook_impl, hook yet: %s, %s, %s", _class1.c_str(), _func1.c_str(), _descriptor1.c_str());
     return I_OK; // 已经 hook 了，无需重复
+  } else {
+    logi("method_hook_impl, hook-1: %s, %s, %s", _class1.c_str(), _func1.c_str(), _descriptor1.c_str());
   }
 
   jclass jclass1;

@@ -48,7 +48,6 @@ public class MainActivity extends Activity {
 
                 // 测试用例：测试(匿名)内部类访问现有方法(public/private)
 //                printf("onClick");
-                new Test().printf2("ilovemali", 100);
             }
         });
 
@@ -56,9 +55,7 @@ public class MainActivity extends Activity {
     }
 
     // 测试用例: 验证新增方法、访问类中字段......
-    public void printf2(String text, int x1) { // 通过修改
-        printf(text + x1);
-
+    public void printf2(String text, int x1) { // 通过修改 printf(text + x1);
         for (int i = 0; i < 100; ++i) {
             ++ix_HOOK;
             ++ix;
@@ -84,7 +81,5 @@ public class MainActivity extends Activity {
                 + ", x = " + x + ", xx=" + text);
 
         Log.w(TAG, "printf-bengin: " + text + ", ix=" + ix + ", x1=" + "，end !!!!!!");
-
-        new Test().printf2("lovemyfamily", 1000);
     }
 }
