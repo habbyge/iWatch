@@ -1,11 +1,9 @@
 package com.habbyge.iwatch;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.habbyge.iwatch.patch.FixMethodAnno;
-import com.habbyge.iwatch.patch.Patch;
 import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
 
@@ -13,10 +11,9 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Enumeration;
 import java.util.List;
 
-import dalvik.system.DexFile;
+import dalvik.system.DexClassLoader;
 
 /**
  * Created by habbyge on 2021/1/5.
@@ -24,79 +21,36 @@ import dalvik.system.DexFile;
 public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
 
-    private final File mOptDir;   // optimize directory
-
-    public IWatch(Context context) {
-        mOptDir = new File(context.getFilesDir(), Patch.DIR);
-        if (!mOptDir.exists() && !mOptDir.mkdirs()) {// make directory fail
-            Log.e(TAG, "opt dir create error.");
-        } else if (!mOptDir.isDirectory()) {// not directory
-            boolean ret = mOptDir.delete();
-            Log.i(TAG, "mOptDir.delete(): " + ret);
-        }
-
+    public IWatch() {
         MethodHook.init();
     }
 
     public synchronized void fix(File patchFile, List<String> classNames) {
-        if (patchFile == null || !patchFile.exists()) {
+        if (patchFile == null || !patchFile.exists() || classNames == null || classNames.isEmpty()) {
             Log.e(TAG, "doFix, patchFile NOT exists");
             return;
         }
 
+        // 这个DexFile已经被标记 @Deprecated 了，也就是将来不对外使用了，这里采用了替代方案：
+        // dalvik/system/DexFile中的nativev方法对应Art中的C++文件是:
+        // art/runtime/native/dalvik_system_DexFile.cc，例如: 打开DexFile是:
+        // openDexFileNative -> DexFile_openDexFileNative
+        ClassLoader cl = IWatch.class.getClassLoader();
+        if (cl == null) {
+            return;
+        }
+        DexClassLoader dexCl = new DexClassLoader(patchFile.getAbsolutePath(), null, null, cl);
+        Log.w(TAG, "classLoader=" + cl.getClass().getName() + ", " + dexCl.getClass().getName());
         try {
-            File optfile = new File(mOptDir, patchFile.getName());
-            if (optfile.exists()) {
-                if (!optfile.delete()) {
-                    return;
-                }
+            for (String className : classNames) {
+                fixClass(dexCl.loadClass(className), cl);
             }
-            // 这个DexFile已经被标记 @Deprecated 了，也就是将来不对外使用了，这里采用了替代方案：
-            // dalvik/system/DexFile中的nativev方法对应Art中的C++文件是:
-            // art/runtime/native/dalvik_system_DexFile.cc，例如: 打开DexFile是:
-            // openDexFileNative -> DexFile_openDexFileNative
-
-            // art/libdexfile/dex/dex_file.h
-            final DexFile dexFile = DexFile.loadDex(patchFile.getAbsolutePath(),
-                                                    optfile.getAbsolutePath(),
-                                                    Context.MODE_PRIVATE);
-
-            final ClassLoader cl = IWatch.class.getClassLoader();
-            ClassLoader pcl = new ClassLoader(cl) {
-                @Override
-                protected Class<?> findClass(String className) throws ClassNotFoundException {
-                    Class<?> clazz = dexFile.loadClass(className, this);
-                    if (clazz == null && className.startsWith("com.habbyge.iwatch")) {
-                        return Class.forName(className);// annotation’s class
-                    }
-                    if (clazz == null) {
-                        throw new ClassNotFoundException("iWatch, clazz: " + className);
-                    }
-                    return clazz;
-                }
-            };
-            Enumeration<String> entrys = dexFile.entries();
-            Class<?> clazz;
-            // 遍历补丁中的class文件，新增的class，不会生成_CF版本，直接以原始名称打包在patch中
-            while (entrys.hasMoreElements()) {
-                String entry = entrys.nextElement();
-                Log.d(TAG, "fix: patch entry=" + entry);
-
-                clazz = dexFile.loadClass(entry, pcl);
-                if (clazz != null) {
-                    setAccessPublic(clazz);
-                    if (classNames != null && !classNames.contains(entry)) {
-                        continue; // skip, not need fix
-                    }
-                    fixClass(clazz, cl, pcl);
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "pacth", e);
+        } catch (ClassNotFoundException e) {
+            Log.e(TAG, "iwatch fix: e=" + e.getMessage());
         }
     }
 
-    private void fixClass(Class<?> clazz, ClassLoader cl, ClassLoader pcl) {
+    private void fixClass(Class<?> clazz, ClassLoader cl) {
         Method[] methods = clazz.getDeclaredMethods();
         Log.d(TAG, "fixClass, methods=" + methods.length);
 
@@ -116,7 +70,7 @@ public final class IWatch {
             methodName1 = anno.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
                 setAccessPublic(cl, className1); // 这里需要让原始class中的所有字段和方法为public
-                setAccessPublic(pcl, className1); // 让补丁能使用补丁中新增的类
+                /*setAccessPublic(pcl, className1); // 让补丁能使用补丁中新增的类*/
 
                 // 方案1:
                 if (fixMethod1(cl, className1, methodName1, method)) {
@@ -147,17 +101,12 @@ public final class IWatch {
         }
     }
 
-    /**
-     * @param cl 宿主 ClassLoader
-     * @return 是否 fix 成功
-     */
-    private boolean fixMethod1(ClassLoader cl, String className1, String funcName1, Method method2) {
+    public static boolean fixMethod1(ClassLoader cl, String className1, String funcName1, Method method2) {
         Class<?>[] paramTypes = method2.getParameterTypes();
         String desc = Type.getMethodDescriptor(method2.getReturnType(), paramTypes);
         Method method1 = ReflectUtil.findMethod(cl, className1, funcName1, paramTypes);
         method2.setAccessible(true);
-        
-        Log.d(TAG, "fixMethod1, oldClassName: " + className1);
+        Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ", " + funcName1);
 
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
     }
@@ -214,13 +163,6 @@ public final class IWatch {
                 Log.d(TAG, "set public, method: " + clazz.getName() + ", method=" + method.getName());
                 MethodHook.setMethodAccessPublic(method);
             }
-        }
-    }
-
-    public synchronized void removeOptFile(File file) {
-        File optfile = new File(mOptDir, file.getName());
-        if (optfile.exists() && !optfile.delete()) {
-            Log.e(TAG, optfile.getName() + " delete error.");
         }
     }
 }

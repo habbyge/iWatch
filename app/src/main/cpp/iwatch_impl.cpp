@@ -302,6 +302,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
   env->ReleaseStringUTFChars(srcSig, srcDescStr);
 
   if (artRestore->inHooking(_class, _func, _descriptor)) {
+    logw("method_hook_impl, hook yet: %s, %s, %s", _class.c_str(), _func.c_str(), _descriptor.c_str());
     return I_OK; // 已经 hook 了，无需重复
   }
 

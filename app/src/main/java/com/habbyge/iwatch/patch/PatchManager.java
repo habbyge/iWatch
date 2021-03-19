@@ -66,8 +66,7 @@ public final class PatchManager {
         }
         Log.i(TAG, "mPatchDir=" + mPatchDir + ", iwatchVersion=" + iwatchVersion);
 
-        initIWatch(context);
-
+        initIWatch();
         initPatchs();
 
         return true;
@@ -101,8 +100,8 @@ public final class PatchManager {
         return false;
     }
 
-    private void initIWatch(Context context) {
-        mIWatch = new IWatch(context);
+    private void initIWatch() {
+        mIWatch = new IWatch();
     }
 
     /**
@@ -122,7 +121,7 @@ public final class PatchManager {
             Log.e(TAG, "initPatchs, failure: patch files is NULL !");
             return;
         }
-        // 补丁 "从新到旧" 排序，只是用最新的补丁包，也就是说一个用户app只支持一个补丁，然后旧的补丁
+        // todo 补丁 "从新到旧" 排序，只是用最新的补丁包，也就是说一个用户app只支持一个补丁，然后旧的补丁
         Arrays.sort(files, new Comparator<File>() {
             @Override
             public int compare(File f1, File f2) {
@@ -204,7 +203,6 @@ public final class PatchManager {
             return;
         }
         for (File file : files) {
-            mIWatch.removeOptFile(file);
             if (!FileUtil.deleteFile(file)) {
                 Log.e(TAG, file.getName() + " delete error.");
             }

@@ -31,7 +31,7 @@ public final class ReflectUtil {
 
     public static Method findMethod(ClassLoader cl, String className, String methodName, Class<?>... parameterTypes) {
         try {
-            Class<?> _class = Class.forName(className, true, cl);
+            Class<?> _class = cl.loadClass(className);
             return findMethod(_class, methodName, parameterTypes);
         } catch (ClassNotFoundException e) {
             Log.e(TAG, "findMethod-1", e);
@@ -45,7 +45,6 @@ public final class ReflectUtil {
             method.setAccessible(true);
             return method;
         } catch (NoSuchMethodException e) {
-            /*Log.e(TAG, "findMethod-2", e);*/
             return null;
         }
     }

@@ -21,7 +21,7 @@ public class Patch implements Comparable<Patch> {
     private static final String TAG = "iWatch.Patch";
 
     private static final String ENTRY_NAME = "META-INF/PATCH.MF";
-    private static final String PATCH_CLASSES = "Patch-Classes";
+    private static final String PATCH_CLASSES = "Patch-Classes"; // 包括新增、修改的类
     private static final String CREATED_TIME = "Created-Time";
     private static final String PATCH_NAME = "Patch-Name";
 
