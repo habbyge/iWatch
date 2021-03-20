@@ -44,7 +44,7 @@ public:
     FindFieldJNI = nullptr;
   }
 
-  void initArtField(JNIEnv* env, const std::shared_ptr<Elf>&& elf_op);
+  void initArtField(JNIEnv* env, const std::shared_ptr<Elf>& elf_op);
   void* getArtField(JNIEnv* env, jclass jni_class, const char* name, const char* sig, bool isStatic);
 
   static void addAccessFlagsPublic(void* artField);

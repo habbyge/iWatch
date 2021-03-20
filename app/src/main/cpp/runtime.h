@@ -59,7 +59,7 @@ public:
     self_ = nullptr;
   }
 
-  void init(JNIEnv*, const std::shared_ptr<Elf>&& elf_op);
+  void init(JNIEnv*, const std::shared_ptr<Elf>& elf_op);
 
   /**
    * 表示当前运行时Runtime对象地址，相当于

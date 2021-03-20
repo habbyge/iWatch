@@ -180,6 +180,10 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
     auto jmethodID1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
     auto jmethodID2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
+
+    logd("init_impl, jmethodID1=%zu, jmethodID2=%zu", reinterpret_cast<size_t>(jmethodID1),
+                                                      reinterpret_cast<size_t>(jmethodID2));
+
     env->DeleteLocalRef(ArtMethodSizeClass);
 
 //    auto IsIndexId1 = (reinterpret_cast<uintptr_t>(methodid1) % 2) != 0;
@@ -198,7 +202,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     }
 
     runtime = std::make_shared<Runtime>();
-    runtime->init(env, std::move(elfOp));
+    runtime->init(env, elfOp);
     void* instance_ = runtime->getRuntime();
     logi("init_impl, runtime=%p", instance_);
 
@@ -238,7 +242,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     // 方案2
     artMethodHook->initArtMethod2(env, elfOp);
 
-    artHookField->initArtField(env, std::move(elfOp));
+    artHookField->initArtField(env, elfOp);
 
 //    dlclose_elf(context); // 释放
     elfOp->dlclose_elf(); // 释放

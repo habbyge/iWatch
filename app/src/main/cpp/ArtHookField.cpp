@@ -7,7 +7,7 @@
 
 namespace iwatch {
 
-void ArtHookField::initArtField(JNIEnv*, const std::shared_ptr<Elf>&& elf_op) {
+void ArtHookField::initArtField(JNIEnv*, const std::shared_ptr<Elf>& elf_op) {
   FindFieldJNI = reinterpret_cast<FindFieldJNI_t>(elf_op->dlsym_elf(FindFieldJNI_Sym));
   logi("initArtField, FindFieldJNI=%p", FindFieldJNI);
 }
