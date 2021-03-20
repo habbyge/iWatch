@@ -16,7 +16,9 @@ ArtRestore::ArtRestore() : restoreMap(), lock() {
 
 ArtRestore::~ArtRestore() {
   // delete 掉 列表内存
-  std::for_each(restoreMap.begin(), restoreMap.end(), [](std::pair<std::string, ArtRestoreData*> iterm) -> void {
+  std::for_each(restoreMap.begin(), restoreMap.end(),
+                [](std::pair<std::string, ArtRestoreData*> iterm) -> void {
+
     // 释放备份的原始方法
     delete[] reinterpret_cast<int8_t*>(iterm.second->backupArtmethodAddr);
     delete iterm.second;
@@ -62,11 +64,9 @@ void ArtRestore::restoreAllArtMethod() {
   }
 
   std::lock_guard<std::recursive_mutex> lockGuard(lock);
-
   if (restoreMap.empty()) {
     return;
   }
-
   auto it = restoreMap.begin(); // std::map<std::string, ArtRestoreData*>::iterator
   while (it != restoreMap.end()) {
     doRestoreMethod(it->second->artMethodAddr, it->second->backupArtmethodAddr, artMethodSize);
@@ -88,7 +88,6 @@ void ArtRestore::restoreArtMethod(std::string&& key) {
   { // 利用块作用域来及时释放锁，用以提高性能
     // Java 层可能存在多线程竞态，需要互斥访问
     std::lock_guard<std::recursive_mutex> lockGuard(lock);
-
     auto dataItor = restoreMap.find(key);
     if (dataItor == restoreMap.end()) {
       return;

@@ -89,7 +89,7 @@ public final class PatchManager {
             return false;
         }
 
-        resetAllPatch(); // 清理带哦旧的path，重新load新的；恢复原始方法，重新hook新的方法
+        resetAllPatch(); // 清理掉旧的patch，重新load新的；恢复原始方法，重新hook新的方法
 
         FileUtil.copyFile(newPatchFile, destPathchFile); // copy to patch's directory
         FileUtil.deleteFile(newPatchFile); // 删除下载下来的patch文件
@@ -108,7 +108,7 @@ public final class PatchManager {
      * remove all patchs && resotore all origin methods.
      */
     private void resetAllPatch() {
-        mIWatch.unhookAllMethod(); // 恢复原始函数
+        mIWatch.reset(); // 恢复原始函数，清理掉缓存
         cleanPatch();              // 删除所有补丁
     }
 
@@ -121,7 +121,6 @@ public final class PatchManager {
             Log.e(TAG, "initPatchs, failure: patch files is NULL !");
             return;
         }
-        // todo 补丁 "从新到旧" 排序，只是用最新的补丁包，也就是说一个用户app只支持一个补丁，然后旧的补丁
         Arrays.sort(files, new Comparator<File>() {
             @Override
             public int compare(File f1, File f2) {

@@ -4,13 +4,12 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.habbyge.iwatch.patch.FixMethodAnno;
-import com.habbyge.iwatch.util.ReflectUtil;
 import com.habbyge.iwatch.util.Type;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 
 import dalvik.system.DexClassLoader;
@@ -20,9 +19,11 @@ import dalvik.system.DexClassLoader;
  */
 public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
+    private final List<String> mAccClassList;
 
     public IWatch() {
         MethodHook.init();
+        mAccClassList = new ArrayList<>();
     }
 
     public synchronized void fix(File patchFile, List<String> classNames) {
@@ -40,7 +41,6 @@ public final class IWatch {
             return;
         }
         DexClassLoader dexCl = new DexClassLoader(patchFile.getAbsolutePath(), null, null, cl);
-        Log.w(TAG, "classLoader=" + cl.getClass().getName() + ", " + dexCl.getClass().getName());
         try {
             for (String className : classNames) {
                 fixClass(dexCl.loadClass(className), cl);
@@ -69,11 +69,7 @@ public final class IWatch {
             className1 = anno.clazz();
             methodName1 = anno.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
-                setAccessPublic(cl, className1); // 这里需要让原始class中的所有字段和方法为public
-                /*setAccessPublic(pcl, className1); // 让补丁能使用补丁中新增的类*/
-
-                // 方案1:
-                if (fixMethod1(cl, className1, methodName1, method)) {
+                if (fixMethod1(cl, className1, methodName1, method)) { // 方案1:
                     Log.i(TAG, "fixMethod1 success !");
                     continue;
                 }
@@ -101,19 +97,33 @@ public final class IWatch {
         }
     }
 
-    public static boolean fixMethod1(ClassLoader cl, String className1, String funcName1, Method method2) {
+    public boolean fixMethod1(ClassLoader cl, String className1, String funcName1, Method method2) {
         Class<?>[] paramTypes = method2.getParameterTypes();
         String desc = Type.getMethodDescriptor(method2.getReturnType(), paramTypes);
-        Method method1 = ReflectUtil.findMethod(cl, className1, funcName1, paramTypes);
+        Method method1;
+        try {
+            Class<?> clazz1 = cl.loadClass(className1);
+            method1 = clazz1.getDeclaredMethod(funcName1, paramTypes);
+            method1.setAccessible(true);
+
+            if (!mAccClassList.contains(className1)) {
+                setAccessPublic(clazz1);
+                mAccClassList.add(className1);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "fixMethod1 loadClass crash: " + e.getMessage());
+            return false;
+        }
+
         method2.setAccessible(true);
         Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ", " + funcName1);
 
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
     }
 
-    private boolean fixMethod2(String className1, String funcName1,
-                               Class<?>[] paramTypes1, Class<?> returnType1, boolean isStatic1,
-                               String className2, String funcName2, Class<?>[] paramTypes2,
+    private boolean fixMethod2(String className1, String funcName1, Class<?>[] paramTypes1,
+                               Class<?> returnType1, boolean isStatic1, String className2,
+                               String funcName2, Class<?>[] paramTypes2,
                                Class<?> returnType2, boolean isStatic2) {
 
         if (TextUtils.isEmpty(className1) || TextUtils.isEmpty(funcName1)
@@ -129,33 +139,30 @@ public final class IWatch {
                                       className2, funcName2, decriptor2, isStatic2);
     }
 
-    public void unhookAllMethod() {
+    public void reset() {
         MethodHook.unhookAllMethod();
-    }
-
-    private void setAccessPublic(ClassLoader cl, String className) {
-        Class<?> clazz;
-        try {
-            clazz = cl.loadClass(className);
-        } catch (ClassNotFoundException e) {
-            Log.e(TAG, "setAccessPublic, exception: " + e.getMessage());
-            return;
-        }
-        setAccessPublic(clazz);
+        mAccClassList.clear();
     }
 
     private void setAccessPublic(Class<?> clazz) {
-        Field[] fields = clazz.getDeclaredFields();
+        /*Field[] fields = clazz.getDeclaredFields(); // todo 有待突破
         if (fields.length > 0) {
+            String name;
             String desc;
             boolean isStatic;
             for (Field field : fields) {
-                Log.d(TAG, "set public, field: " + clazz.getName() + ", field=" + field.getName());
+                name = field.getName();
                 desc = Type.getDescriptor(field.getType());
                 isStatic = Modifier.isStatic(field.getModifiers());
-                MethodHook.setFieldAccessPublic(field, clazz, field.getName(), desc, isStatic);
+
+                Log.d(TAG, "set public, field: " + clazz.getName()
+                        + ", name=" + name
+                        + ", desc=" + desc
+                        + ", static=" + isStatic);
+
+                MethodHook.setFieldAccessPublic(field, clazz, name, desc, isStatic);
             }
-        }
+        }*/
 
         Method[] methods = clazz.getDeclaredMethods();
         if (methods.length > 0) {

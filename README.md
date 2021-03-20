@@ -35,7 +35,11 @@ java.lang.NoSuchMethodError: No virtual method b(Ljava/lang/String;)V in class L
 or its super classes (declaration of 'com.habbyge.sample.MainActivity_CF' appears in
 /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/app-release-2-cfff1f13df8681ea51edb3ea824af973.apatch)
 
-### 2. 调用方法的坑
+### 2. 在同一个class中修改调用方法的坑
 在开启proguard混淆、优化时，非内部类中方法调用一个修改后方法，需要以当前方法为起点，向上回溯，直到遇到keep住的方法停止，然后在这个被keep住
-的方法插入一个代码(通常打一个日志)，来保证该keep函数也被修改，即被标记为FixMethodAnno，出现在patch文件中；否则会导致：
+的方法修改一点代码(通常打一个日志)，来保证该keep函数也被修改，即被标记为FixMethodAnno，出现在patch文件中；否则会导致：
 NoSuchMethodError exception，具体原因未知，我猜是地址偏移了，后面研究(todo); ------ 得找个方法来阻止地址变更。
+
+### 3. Class.forName()与dexClassLoader.load()有何区别，前者会导致内部类illaccesserror.
+
+### 4. 内部类和非内部类中如果新增field、method，都建议使用新增类的方式，防止破坏旧的类结构(字段索引、地址).

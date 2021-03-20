@@ -1,9 +1,6 @@
 package com.habbyge.iwatch.util;
 
-import android.util.Log;
-
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 public final class ReflectUtil {
     private static final String TAG = "iWatch.ReflectUtil";
@@ -29,27 +26,9 @@ public final class ReflectUtil {
         }
     }
 
-    public static Method findMethod(ClassLoader cl, String className, String methodName, Class<?>... parameterTypes) {
-        try {
-            Class<?> _class = cl.loadClass(className);
-            return findMethod(_class, methodName, parameterTypes);
-        } catch (ClassNotFoundException e) {
-            Log.e(TAG, "findMethod-1", e);
-            return null;
-        }
-    }
+    private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName)
+            throws NoSuchFieldException {
 
-    public static Method findMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
-        try {
-            Method method = clazz.getDeclaredMethod(methodName, parameterTypes);
-            method.setAccessible(true);
-            return method;
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
-    }
-
-    private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName) throws NoSuchFieldException {
         try {
             return clazz.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {

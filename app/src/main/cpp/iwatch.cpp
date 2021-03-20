@@ -35,8 +35,9 @@ static void restore_all_method(JNIEnv* env, jclass) {
   iwatch::restore_all_method_impl(env);
 }
 
-static void set_field_public(JNIEnv* env, jclass, jobject field, jclass srcClass,
-                             jstring name, jstring sig, jboolean isStatic) {
+static void set_field_public(JNIEnv* env, jclass, jobject field,
+                             jclass srcClass, jstring name, jstring sig,
+                             jboolean isStatic) {
 
   iwatch::set_field_public(env, field, srcClass, name, sig, isStatic);
 }

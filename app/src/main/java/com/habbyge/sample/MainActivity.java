@@ -16,7 +16,6 @@
 //    // 测试用例: private字段是否可访问
 //    public static int ix = 10;
 //    public int ix_HOOK = 10000;
-////    public String strX_Added = "Mali"; // 测试用例: 验证新增一个字段
 //
 //    @Override
 //    protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +27,7 @@
 //    protected void onResume() {
 //        super.onResume();
 //
-//        Log.i(TAG, "onResume, ix_HOOK=" + ix_HOOK + ", ix=" + ix + ", " + ix);
+//        Log.i(TAG, "onResume-2, ix_HOOK=" + ix_HOOK + ", ix=" + ix + ", " + ix);
 //
 //        findViewById(R.id.method).setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -51,34 +50,35 @@
 //            }
 //        });
 //
-//        printf2("onCreate-End", 100);
+//        printf2("onCreate-End", 1000);
 //    }
 //
 //    // 测试用例: 验证新增方法、访问类中字段......
-//    public void printf2(String text, int x1) { // 通过修改 printf(text + x1);
+//    public void printf2(String text, int x1) { // 通过修改
+//        Log.w(TAG, "printf2-begin: " + text + ", ix=" + ix + "， strX_Added=");
 //        for (int i = 0; i < 100; ++i) {
 //            ++ix_HOOK;
 //            ++ix;
 //            ++x1;
+////        printf(text + x1);
 //        }
 //        printf(text + x1);
+//        Log.w(TAG, "printf2-end: " + text + ", ix=" + ix);
 //    }
 //
 //    // 测试用例: 验证新增方法、访问类中字段......
 //    public void printf(String text) { // 通过修改
-////        Log.w(TAG, "printf-bengin-1: " + text + ", ix=" + ix + "，beg !!!!!!");
-//
+//        Log.w(TAG, "printf-bengin-2: " + text + ", ix=" + ix + "，beg !!!!!!");
 //        for (int i = 0; i < 100; ++i) {
 //            ++ix_HOOK;
 //            ++ix;
 //        }
-//
+//        Log.w(TAG, "printf-Mid0-2: " + text + ", ix=" + ix + ", x1=" + "，end !!!!!!");
 //        int x = ix * ix_HOOK;
-//
-//        Log.d(TAG, "printf-end-2: " + text + ", ix_HOOK2="
+//        int x2 = ix * ix_HOOK;
+//        Log.w(TAG, "printf-End-2: " + text + ", ix=" + ix + ", x2=" + x2 + "，end !!!!!!");
+//        Log.d(TAG, "printf-Mid1-2: " + text + "x, ix_HOOK2="
 //                + ix_HOOK + ", " /*+ test("ix_HOOK_ix")*/
 //                + ", x = " + x + ", xx=" + text);
-//
-//        Log.w(TAG, "printf-bengin-2: " + text + ", ix=" + ix + ", x1=" + "，end !!!!!!");
 //    }
 //}
