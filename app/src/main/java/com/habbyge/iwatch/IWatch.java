@@ -7,6 +7,7 @@ import com.habbyge.iwatch.patch.FixMethodAnno;
 import com.habbyge.iwatch.util.Type;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -145,7 +146,7 @@ public final class IWatch {
     }
 
     private void setAccessPublic(Class<?> clazz) {
-        /*Field[] fields = clazz.getDeclaredFields(); // todo 有待突破
+        Field[] fields = clazz.getDeclaredFields();
         if (fields.length > 0) {
             String name;
             String desc;
@@ -154,15 +155,9 @@ public final class IWatch {
                 name = field.getName();
                 desc = Type.getDescriptor(field.getType());
                 isStatic = Modifier.isStatic(field.getModifiers());
-
-                Log.d(TAG, "set public, field: " + clazz.getName()
-                        + ", name=" + name
-                        + ", desc=" + desc
-                        + ", static=" + isStatic);
-
                 MethodHook.setFieldAccessPublic(field, clazz, name, desc, isStatic);
             }
-        }*/
+        }
 
         Method[] methods = clazz.getDeclaredMethods();
         if (methods.length > 0) {

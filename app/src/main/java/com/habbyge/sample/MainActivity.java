@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        Log.i(TAG, "onResume-2, ix_HOOK=" + ix_HOOK + ", ix=" + ix + ", " + ix);
+        Log.i(TAG, "onResume-1, ix_HOOK=" + ix_HOOK + ", ix=" + ix + ", " + ix);
 
         findViewById(R.id.method).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
         Log.w(TAG, "printf-Mid0-2: " + text + ", ix=" + ix + ", x1=" + "，end !!!!!!");
         int x = ix * ix_HOOK;
         int x2 = ix * ix_HOOK;
-        Log.w(TAG, "printf-End-2: " + text + ", ix=" + ix + ", x2=" + x2 + "，end !!!!!!");
+//        Log.w(TAG, "printf-End-2: " + text + ", ix=" + ix + ", x2=" + x2 + "，end !!!!!!");
         Log.d(TAG, "printf-Mid1-2: " + text + "x, ix_HOOK2="
                 + ix_HOOK + ", " /*+ test("ix_HOOK_ix")*/
                 + ", x = " + x + ", xx=" + text);

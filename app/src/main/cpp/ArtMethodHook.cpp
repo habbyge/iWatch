@@ -144,9 +144,7 @@ void* ArtMethodHook::getArtMethod(JNIEnv* env, jobject method) {
 /**
  * 方案2
  */
-void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* name,
-                                  const char* sig, bool is_static) {
-
+void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* name, const char* sig, bool is_static) {
   try {
     art::ScopedObjectAccess soa(env);
     return FindMethodJNI(soa, java_class, name, sig, is_static);
@@ -199,7 +197,7 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
     // A compiler-created field that links a local inner class to a block's local variable or reference type parameter.
     // See also The JavaTM Virtual Machine Specification (§4.7.6) or Synthetic Class in Java.
     if ((access_flags_ & kAccSynthetic) == kAccSynthetic) {
-      // todo ing clear Synthetic 防止内部类生成这个合成函数时，多余的权限检查:
+      // need clear Synthetic 防止内部类生成这个合成函数时，多余的权限检查 ??????
       // java.lang.VerifyError:
 //      *access_flags_addr &= ~kAccSynthetic;
 //      *access_flags_addr |= (kAccPublic | kAccFinal);

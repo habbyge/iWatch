@@ -23,12 +23,12 @@ void ArtHookField::initArtField(JNIEnv*, const std::shared_ptr<Elf>& elf_op) {
  *                        const char* sig,
  *                        bool is_static)
  */
-void* ArtHookField::getArtField(JNIEnv* env, jclass jni_class, const char* name,
-                                const char* sig, bool isStatic) {
-
+void* ArtHookField::getArtField(JNIEnv* env, jclass jni_class, const char* name, const char* sig, bool isStatic) {
   try {
     art::ScopedObjectAccess soa{env};
-    return FindFieldJNI(soa, jni_class, name, sig, isStatic); // 返回 ArtField*
+    void* addr = FindFieldJNI(soa, jni_class, name, sig, isStatic); // 返回 ArtField*
+    logd("getArtField: name=%s, desc=%s, static=%d, addr=%p", name, sig, isStatic, addr);
+    return addr;
   } catch (std::exception& e) {
     loge("getArtField, eception: %s", e.what());
     clear_exception(env);
@@ -36,13 +36,16 @@ void* ArtHookField::getArtField(JNIEnv* env, jclass jni_class, const char* name,
   }
 }
 
-void ArtHookField::addAccessFlagsPublic(void* artField) { // todo ing 是否有必要 ？？？？？？
+void ArtHookField::addAccessFlagsPublic(void* artField) {
   // 从 Android5.0 ~ Android11.0 的版本中，ArtField 中 access_flags_ 字段偏移量都是1
   uint32_t* access_flags_addr = reinterpret_cast<uint32_t*>(artField) + 1;
   uint32_t access_flags_ = *access_flags_addr;
   if ((access_flags_ & kAccSynthetic) == kAccSynthetic) {
+    logd("addAccessFlagsPublic, Synthetic: access_flags_ptr=%p, access_flags=%u -> %u",
+         access_flags_addr, access_flags_, *access_flags_addr);
     return; // 由于内部类合成的字段(例如：外部类的对象字段)，不能设置其访问权限
   }
+
   *access_flags_addr = ((*access_flags_addr) & (~kAccPrivate) & (~kAccProtected)) | kAccPublic;
   logw("addAccessFlagsPublic, access_flags_ptr=%p, access_flags=%u -> %u",
        access_flags_addr, access_flags_, *access_flags_addr);
