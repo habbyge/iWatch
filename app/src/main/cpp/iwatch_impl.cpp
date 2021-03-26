@@ -182,7 +182,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     auto jmethodID2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
 
     logd("init_impl, jmethodID1=%zu, jmethodID2=%zu", reinterpret_cast<size_t>(jmethodID1),
-                                                      reinterpret_cast<size_t>(jmethodID2));
+         reinterpret_cast<size_t>(jmethodID2));
 
     env->DeleteLocalRef(ArtMethodSizeClass);
 
@@ -372,7 +372,7 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
  * 之前已经由自定义的DexClassLoader.loadClass加载过一次了，在art虚拟机中已经缓存了 class全路径名@classsLoader，
  * 所以这里可以直接从缓存中取到该class对应的classLoader加载.
  */
-long method_hookv2_impl(JNIEnv* env,
+long method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
                         jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
                         jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
@@ -397,7 +397,7 @@ long method_hookv2_impl(JNIEnv* env,
     return I_ERR;
   }
   std::string _class1{class1Str};
-  std::replace_if(_class1.begin(), _class1.end(), [](const char& ch)->bool {
+  std::replace_if(_class1.begin(), _class1.end(), [](const char& ch) -> bool {
     return '.' == ch;
   }, '/');
   env->ReleaseStringUTFChars(java_class1, class1Str);
@@ -421,62 +421,83 @@ long method_hookv2_impl(JNIEnv* env,
     logi("method_hook_impl, hook-1: %s, %s, %s", _class1.c_str(), _func1.c_str(), _descriptor1.c_str());
   }
 
-  jclass jclass1;
-  try {
-    // 这里拿到的是宿主的ClassLoader
-    jclass1 = env->FindClass(_class1.c_str());
-  } catch (std::exception& e) {
-    loge("method_hookv2 FindClass-1: %s", e.what());
-    clear_exception(env);
-    return I_ERR;
+  void* artMethod1 = nullptr;
+  jmethodID methodId1 = env->FromReflectedMethod(method1);
+  if (!isIndexId(methodId1)) {
+    artMethod1 = reinterpret_cast<void*>(methodId1);
+    if (artMethod1 == nullptr) {
+      clear_exception(env);
+      return I_ERR;
+    }
+    logd("method_hookv2, isIndexId=false, artMethod1=%p", artMethod1);
+  } else {
+    jclass jclass1;
+    try {
+      // 这里拿到的是宿主的ClassLoader
+      jclass1 = env->FindClass(_class1.c_str());
+    } catch (std::exception& e) {
+      loge("method_hookv2 FindClass-1: %s", e.what());
+      clear_exception(env);
+      return I_ERR;
+    }
+
+    artMethod1 = artMethodHook->getArtMethod(env, jclass1, funcStr1, descriptorStr1, is_static1);
+    env->DeleteLocalRef(jclass1);
+
+    env->ReleaseStringUTFChars(name1, funcStr1);
+    env->ReleaseStringUTFChars(sig1, descriptorStr1);
+
+    logi("method_hookv2, artMethod1=%p", artMethod1);
+    if (artMethod1 == nullptr) {
+      clear_exception(env);
+      return I_ERR;
+    }
   }
 
-  auto artMethod1 = artMethodHook->getArtMethod(env, jclass1, funcStr1, descriptorStr1, is_static1);
-  env->DeleteLocalRef(jclass1);
+  void* artMethod2 = nullptr;
+  jmethodID methodId2 = env->FromReflectedMethod(method2);
+  if (!isIndexId(methodId2)) {
+    artMethod2 = reinterpret_cast<void*>(methodId2);
+    if (artMethod2 == nullptr) {
+      return I_ERR;
+    }
+    logd("method_hookv2, isIndexId=false, artMethod2=%p", artMethod2);
+  } else {
+    const char* class2 = env->GetStringUTFChars(java_class2, &isCopy);
+    if (class2 == nullptr) {
+      return I_ERR;
+    }
+    jclass jclass2;
+    std::string classStr2{class2};
+    std::replace_if(classStr2.begin(), classStr2.end(), [](const char& ch) -> bool {
+      return '.' == ch;
+    }, '/');
+    try {
+      jclass2 = env->FindClass(classStr2.c_str()); // 这里拿到的是patch中的ClassLoader
+    } catch (std::exception& e) {
+      loge("method_hookv2 FindClass-2: %s", e.what());
+      clear_exception(env);
+      return I_ERR;
+    }
 
-  env->ReleaseStringUTFChars(name1, funcStr1);
-  env->ReleaseStringUTFChars(sig1, descriptorStr1);
-
-  logi("method_hookv2, artMethod1=%p", artMethod1);
-  if (artMethod1 == nullptr) {
-    clear_exception(env);
-    return I_ERR;
-  }
-
-  const char* class2 = env->GetStringUTFChars(java_class2, &isCopy);
-  if (class2 == nullptr) {
-    return I_ERR;
-  }
-  jclass jclass2;
-  std::string classStr2{class2};
-  std::replace_if(classStr2.begin(), classStr2.end(), [](const char& ch)->bool {
-    return '.' == ch;
-  }, '/');
-  try {
-    jclass2 = env->FindClass(classStr2.c_str()); // 这里拿到的是patch中的ClassLoader
-  } catch (std::exception& e) {
-    loge("method_hookv2 FindClass-2: %s", e.what());
-    clear_exception(env);
-    return I_ERR;
-  }
-
-  const char* name_str2 = env->GetStringUTFChars(name2, &isCopy);
-  if (name_str2 == nullptr) {
-    return I_ERR;
-  }
-  const char* sig_str2 = env->GetStringUTFChars(sig2, &isCopy);
-  if (sig_str2 == nullptr) {
-    return I_ERR;
-  }
-  auto artMethod2 = artMethodHook->getArtMethod(env, jclass2, name_str2, sig_str2, is_static2);
-  env->DeleteLocalRef(jclass2);
-  env->ReleaseStringUTFChars(java_class2, class2);
-  env->ReleaseStringUTFChars(name2, name_str2);
-  env->ReleaseStringUTFChars(sig2, sig_str2);
-  logi("method_hookv2, artMethod2=%p", artMethod2);
-  if (artMethod2 == nullptr) {
-    clear_exception(env);
-    return I_ERR;
+    const char* name_str2 = env->GetStringUTFChars(name2, &isCopy);
+    if (name_str2 == nullptr) {
+      return I_ERR;
+    }
+    const char* sig_str2 = env->GetStringUTFChars(sig2, &isCopy);
+    if (sig_str2 == nullptr) {
+      return I_ERR;
+    }
+    artMethod2 = artMethodHook->getArtMethod(env, jclass2, name_str2, sig_str2, is_static2);
+    env->DeleteLocalRef(jclass2);
+    env->ReleaseStringUTFChars(java_class2, class2);
+    env->ReleaseStringUTFChars(name2, name_str2);
+    env->ReleaseStringUTFChars(sig2, sig_str2);
+    logi("method_hookv2, artMethod2=%p", artMethod2);
+    if (artMethod2 == nullptr) {
+      clear_exception(env);
+      return I_ERR;
+    }
   }
 
   int8_t* backupArtMethod{nullptr};
@@ -518,7 +539,7 @@ void restore_method_impl(JNIEnv* env, jstring className, jstring name, jstring s
   }
 
   std::string _class{classStr};
-  std::replace_if(_class.begin(), _class.end(), [](const char& ch)->bool {
+  std::replace_if(_class.begin(), _class.end(), [](const char& ch) -> bool {
     return '.' == ch;
   }, '/');
   std::string _method{nameStr};
@@ -538,32 +559,39 @@ void restore_all_method_impl(JNIEnv* env) {
 }
 
 void set_field_public(JNIEnv* env, jobject field, jclass srcClas, jstring name, jstring sig, jboolean isStatic) {
+  void* artField = nullptr;
+
   // art::mirror::ArtField
   if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10 <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
-    void* artField = reinterpret_cast<void*>(env->FromReflectedField(field));
-    ArtHookField::addAccessFlagsPublic(artField);
+    artField = reinterpret_cast<void*>(env->FromReflectedField(field));
   } else {
-    jboolean isCopy;
-    const char* fieldName = env->GetStringUTFChars(name, &isCopy);
-    if (fieldName == nullptr) {
-      return;
-    }
-    const char* fieldSig = env->GetStringUTFChars(sig, &isCopy);
-    if (fieldSig == nullptr) {
-      return;
-    }
-
-    void* artFieldAddr = artHookField->getArtField(env, srcClas, fieldName, fieldSig, isStatic);
-
-    env->ReleaseStringUTFChars(name, fieldName);
-    env->ReleaseStringUTFChars(sig, fieldSig);
-
-    if (artFieldAddr == nullptr) {
-      loge("set_field_public: failure !");
+    jfieldID fieldId = env->FromReflectedField(field);
+    if (!isIndexId(fieldId)) {
+      artField = reinterpret_cast<void*>(fieldId);
+      logw("set_field_public, isIndexId=false, %p", artField);
     } else {
-      logi("set_field_public, artFieldAddr=%p", artFieldAddr);
-      ArtHookField::addAccessFlagsPublic(artFieldAddr);
+      jboolean isCopy;
+      const char* fieldName = env->GetStringUTFChars(name, &isCopy);
+      if (fieldName == nullptr) {
+        return;
+      }
+      const char* fieldSig = env->GetStringUTFChars(sig, &isCopy);
+      if (fieldSig == nullptr) {
+        return;
+      }
+      artField = artHookField->getArtField(env, srcClas, fieldName, fieldSig, isStatic);
+      env->ReleaseStringUTFChars(name, fieldName);
+      env->ReleaseStringUTFChars(sig, fieldSig);
+
+      logw("set_field_public, isIndexId=true, %p", artField);
     }
+  }
+
+  if (artField == nullptr) {
+    loge("set_field_public: failure !");
+  } else {
+    logi("set_field_public, artField=%p", artField);
+    ArtHookField::addAccessFlagsPublic(artField);
   }
 
   iwatch::clear_exception(env);
@@ -596,7 +624,7 @@ long class_hook_impl(JNIEnv* env, jstring clazzName) {
     return -1L;
   }
   std::string kClassNameStr{kClassName};
-  std::replace_if(kClassNameStr.begin(), kClassNameStr.end(), [](const char& ch)->bool {
+  std::replace_if(kClassNameStr.begin(), kClassNameStr.end(), [](const char& ch) -> bool {
     return '.' == ch;
   }, '/');
   logd("hookClass, className=%s", kClassNameStr.c_str());
@@ -615,9 +643,9 @@ void set_cur_thread_impl(JNIEnv* env, long threadAddr) {
   uint64_t tid = get_tid();
 
   logi("set_cur_thread, cur_thread=%p, cur_pid=%d, %p, cur_tid=%d, %p, tid=%llu, %p", cur_thread,
-                                                                        cur_pid, (void*)cur_pid,
-                                                                        cur_tid, (void*) cur_tid,
-                                                                        tid, (void*)tid);
+       cur_pid, (void*) cur_pid,
+       cur_tid, (void*) cur_tid,
+       tid, (void*) tid);
 
   clear_exception(env);
 }

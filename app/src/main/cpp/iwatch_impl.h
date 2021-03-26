@@ -17,6 +17,7 @@
 
 #include "common/log.h"
 #include "common/elf_op.h"
+#include "common/constants.h"
 
 #include "runtime.h"
 
@@ -43,7 +44,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2);
 long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
                       jobject srcMethod, jobject dstMethod);
 
-long method_hookv2_impl(JNIEnv* env,
+long method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
                         jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
                         jstring java_class2, jstring name2, jstring sig2, jboolean is_static2);
 
@@ -62,7 +63,16 @@ long class_hook_impl(JNIEnv* env, jstring clazzName);
 void set_cur_thread_impl(JNIEnv* env, long threadAddr);
 
 size_t getArtMethodSize();
+
 uint64_t get_tid();
+
+static inline bool isIndexId(jfieldID fid) {
+  return kEnableIndexIds && ((reinterpret_cast<uintptr_t>(fid) % 2) != 0);
+}
+
+static inline bool isIndexId(jmethodID mid) {
+  return kEnableIndexIds && ((reinterpret_cast<uintptr_t>(mid) % 2) != 0);
+}
 
 #ifdef __cplusplus
 }

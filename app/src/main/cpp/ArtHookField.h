@@ -19,6 +19,11 @@
 namespace iwatch {
 
 // 适配 >= Android-11
+// art/runtime/jni/jni_id_manager.h
+// ArtField* DecodeFieldId(jfieldID field)
+//static const char* DecodeFieldId_Sym = "_ZN3art3jni12JniIdManager13DecodeFieldIdEP9_jfieldID";
+//using DecodeFieldId_t = void* (*)(jfieldID field);
+
 // art/runtime/jni/jni_internal.cc 中的 FindFieldJNI() 函数符号
 // ArtField* FindFieldJNI(const ScopedObjectAccess& soa,
 //                        jclass jni_class,
@@ -27,7 +32,7 @@ namespace iwatch {
 //                        bool is_static)
 static const char* FindFieldJNI_Sym = "_ZN3art12FindFieldJNIERKNS_18ScopedObjectAccessEP7_jclassPKcS6_b";
 using FindFieldJNI_t = void* (*)(const art::ScopedObjectAccess& soa,
-                                 jclass jni_class,
+                                 jclass java_class,
                                  const char* name,
                                  const char* sig,
                                  bool is_static);
@@ -42,9 +47,11 @@ public:
 
   ~ArtHookField() {
     FindFieldJNI = nullptr;
+//    DecodeFieldId = nullptr;
   }
 
   void initArtField(JNIEnv* env, const std::shared_ptr<Elf>& elf_op);
+  /*void* getArtField(JNIEnv* env, jfieldID field);*/
   void* getArtField(JNIEnv* env, jclass jni_class, const char* name, const char* sig, bool isStatic);
 
   static void addAccessFlagsPublic(void* artField);
@@ -53,7 +60,8 @@ private:
   uint32_t reference_;
   uint32_t access_flags_{0}; // android5.0 ~ android11 field 的访问权限字段偏移量都是4byte处
 
-  FindFieldJNI_t FindFieldJNI;
+//  DecodeFieldId_t DecodeFieldId; // 主力
+  FindFieldJNI_t FindFieldJNI;   // 辅助
   // ...... 不关注
 };
 

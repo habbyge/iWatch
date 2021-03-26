@@ -74,7 +74,8 @@ public final class IWatch {
                     Log.i(TAG, "fixMethod1 success !");
                     continue;
                 }
-                // 方案2:
+
+                // 方案3:
                 // 通过阅读 DexClassLoader.loadClass()源码
                 // (libcore/dalvik/src/main/java/dalvik/system/DexClassLoader.java)，可知：
                 // 一个class在虚拟机(Art)中的标识是其: 全路径名@classLoader，那么我们通过自定义DexClassLoader
@@ -86,10 +87,11 @@ public final class IWatch {
                 // DexFile在Art中的实现对应：art/runtime/native/dalvik_system_DexFile.cc 中
                 // 的 DexFile_defineClassNative函数
                 static1 = Modifier.isStatic(method.getModifiers());
-                if (fixMethod2(
+                if (fixMethod2(cl, method,
                         className1, methodName1, method.getParameterTypes(),
                         method.getReturnType(), static1,
-                        clazz.getCanonicalName(), method.getName(), method.getParameterTypes(),
+                        clazz.getCanonicalName(),
+                        method.getName(), method.getParameterTypes(),
                         method.getReturnType(), static1)) {
 
                     Log.i(TAG, "fixMethod2 success !");
@@ -122,7 +124,8 @@ public final class IWatch {
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
     }
 
-    private boolean fixMethod2(String className1, String funcName1, Class<?>[] paramTypes1,
+    private boolean fixMethod2(ClassLoader cl, Method method2,
+                               String className1, String funcName1, Class<?>[] paramTypes1,
                                Class<?> returnType1, boolean isStatic1, String className2,
                                String funcName2, Class<?>[] paramTypes2,
                                Class<?> returnType2, boolean isStatic2) {
@@ -134,9 +137,25 @@ public final class IWatch {
             throw new NullPointerException("IWatch.hook, param is null");
         }
 
+        Method method1;
+        try {
+            Class<?> clazz1 = cl.loadClass(className1);
+            method1 = clazz1.getDeclaredMethod(funcName1, paramTypes1);
+            method1.setAccessible(true);
+
+            if (!mAccClassList.contains(className1)) {
+                setAccessPublic(clazz1);
+                mAccClassList.add(className1);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "fixMethod2 loadClass crash: " + e.getMessage());
+            return false;
+        }
+
         String decriptor1 = Type.getMethodDescriptor(returnType1, paramTypes1);
         String decriptor2 = Type.getMethodDescriptor(returnType2, paramTypes2);
-        return MethodHook.hookMethod2(className1, funcName1, decriptor1, isStatic1,
+        return MethodHook.hookMethod2(method1, method2,
+                                      className1, funcName1, decriptor1, isStatic1,
                                       className2, funcName2, decriptor2, isStatic2);
     }
 

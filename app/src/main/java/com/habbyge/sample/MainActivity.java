@@ -68,17 +68,19 @@ public class MainActivity extends Activity {
 
     // 测试用例: 验证新增方法、访问类中字段......
     public void printf(String text) { // 通过修改
-        Log.w(TAG, "printf-bengin-2: " + text + ", ix=" + ix + "，beg !!!!!!");
+//        Log.w(TAG, "printf-bengin-2: " + text + ", ix=" + ix + "，beg !!!!!!");
         for (int i = 0; i < 100; ++i) {
             ++ix_HOOK;
             ++ix;
         }
+
+        Log.d(TAG, "printf-Mid1-2: " + text + "x, ix_HOOK2="
+                + ix_HOOK + ", " /*+ test("ix_HOOK_ix")*/
+                + ", x = " + text + ", xx=" + text);
+
         Log.w(TAG, "printf-Mid0-2: " + text + ", ix=" + ix + ", x1=" + "，end !!!!!!");
         int x = ix * ix_HOOK;
         int x2 = ix * ix_HOOK;
-//        Log.w(TAG, "printf-End-2: " + text + ", ix=" + ix + ", x2=" + x2 + "，end !!!!!!");
-        Log.d(TAG, "printf-Mid1-2: " + text + "x, ix_HOOK2="
-                + ix_HOOK + ", " /*+ test("ix_HOOK_ix")*/
-                + ", x = " + x + ", xx=" + text);
+        Log.w(TAG, "printf-End-2: " + text + ", ix=" + ix + ", x2=" + x2 + "，end !!!!!!");
     }
 }

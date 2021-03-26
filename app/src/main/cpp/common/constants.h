@@ -31,6 +31,8 @@ static constexpr uint32_t kAccJavaFlagsMask = 0xffff; // bits set from Java sour
 
 #define IS_64BIT_OS (sizeof(void*) == 8)
 
+static constexpr bool kEnableIndexIds = true;
+
 } // namespace iwatch
 
 #endif //IWATCH_CONSTANTS_H

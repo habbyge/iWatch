@@ -19,11 +19,12 @@ static jlong method_hook(JNIEnv* env, jclass, jstring srcClass,
   return iwatch::method_hook_impl(env, srcClass, srcName, srcSig, srcMethod, dstMethod);
 }
 
-static jlong method_hookv2(JNIEnv* env, jclass,
+static jlong method_hookv2(JNIEnv* env, jclass, jobject method1, jobject method2,
                            jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
                            jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
-  return iwatch::method_hookv2_impl(env, java_class1, name1, sig1, is_static1,
+  return iwatch::method_hookv2_impl(env, method1, method2,
+                                    java_class1, name1, sig1, is_static1,
                                     java_class2, name2, sig2, is_static2);
 }
 
@@ -67,7 +68,7 @@ static JNINativeMethod gMethods[] = {
   },
   {
       "hookMethod",
-      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)J",
+      "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)J",
       (void*) method_hookv2
   },
   {
