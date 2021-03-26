@@ -29,6 +29,8 @@ static constexpr uint32_t kAccSynthetic =    0x1000;  // class, field, method, i
 // ......
 static constexpr uint32_t kAccJavaFlagsMask = 0xffff; // bits set from Java sources (low 16)
 
+#define IS_64BIT_OS (sizeof(void*) == 8)
+
 } // namespace iwatch
 
 #endif //IWATCH_CONSTANTS_H
