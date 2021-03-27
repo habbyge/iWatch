@@ -9,7 +9,7 @@ import android.net.Uri;
  */
 public final class PatchDownloder {
 
-    void request(Context context, String url) {
+    void request(Context context, String url, IPatchDownloadCallback callback) {
         DownloadManager dm = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
 
