@@ -43,7 +43,7 @@ using FindFieldJNI_t = void* (*)(const art::ScopedObjectAccess& soa,
  */
 class ArtHookField final {
 public:
-  ArtHookField() : reference_(0), access_flags_(0), FindFieldJNI(nullptr) {}
+  ArtHookField() : reference_(0u), access_flags_(0u), FindFieldJNI(nullptr) {}
 
   ~ArtHookField() {
     FindFieldJNI = nullptr;
@@ -58,7 +58,7 @@ public:
 
 private:
   uint32_t reference_;
-  uint32_t access_flags_{0}; // android5.0 ~ android11 field 的访问权限字段偏移量都是4byte处
+  uint32_t access_flags_{0u}; // android5.0 ~ android11 field 的访问权限字段偏移量都是4byte处
 
 //  DecodeFieldId_t DecodeFieldId; // 主力
   FindFieldJNI_t FindFieldJNI;   // 辅助

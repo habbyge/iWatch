@@ -168,9 +168,9 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
   logi("ArtMethodHook, setAccessPublic, %p", artMethod);
 
   uint32_t* access_flags_addr{nullptr};
-  uint32_t access_flags_{0};
+  uint32_t access_flags_{0u};
 
-  uint32_t step = -1;
+  uint32_t step = -1u;
   if (sdkVersion == SDK_INT_ANDROID_5_0) { // 5.0.x
     auto* artMethod5_0 = reinterpret_cast<art::mirror::ArtMethod5_0*>(artMethod);
     access_flags_ = artMethod5_0->access_flags_;
@@ -184,9 +184,9 @@ void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
     }
     access_flags_addr = &(artMethod5_0->access_flags_);
   } else if (sdkVersion >= SDK_INT_ANDROID_5_1 && sdkVersion <= SDK_INT_ANDROID_6_0) { // 5.1.x ~ 6.0.x
-    step = 3;
+    step = 3u;
   } else if (sdkVersion >= SDK_INT_ANDROID_7_0/* && sdkVersion <= SDK_INT_ANDROID_11*/) { // 7.0.x ~ 11.0.x
-    step = 1;
+    step = 1u;
   }
 
   if (step > 0) {
