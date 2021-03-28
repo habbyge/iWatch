@@ -19,13 +19,11 @@ import java.util.List;
 public final class PatchManager {
     private static final String TAG = "iWatch.PatchManager";
 
-//    private String mIWatchVersion = null;
     private String mAppVersion = null;
 
     private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/apatch
 
     private Patch mPatch;
-
     private IWatch mIWatch;
 
     private static PatchManager mInstance;
@@ -46,16 +44,17 @@ public final class PatchManager {
 
     /**
      * 初始化入口(越早初始化越好)
-     *
-     * @param context 必须是全局的 Application 的 Context
-     * @param iwatchVersion iwatch本身的版本号
+     * @param open 方案开关
      */
-    public boolean init(Context context, String iwatchVersion, String appVersion, boolean test) {
-//        mIWatchVersion = iwatchVersion;
+    public boolean init(Context context, String iwatchVersion, String appVersion, boolean open) {
+        if (!open) {
+            Log.e(TAG, "__XYX__ init switcher is CLOSE !");
+            return false;
+        }
+
         mAppVersion = appVersion;
-        // TODO: 现在是测试路径
-        mPatchDir = test ? context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-                         : new File(context.getFilesDir(), Patch.DIR);
+        // 现在是测试路径: context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+        mPatchDir = new File(context.getFilesDir(), Patch.DIR);
 
         if (!mPatchDir.exists() && !mPatchDir.mkdirs()) {// make directory fail
             Log.e(TAG, "patch dir create error.");
@@ -77,8 +76,15 @@ public final class PatchManager {
      *
      * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
      * When a new patch file has been downloaded, it will become effective immediately by addPatch.
+     * @param open iwatch方案的开关
      */
-    public boolean addPatch(String patchPath) throws IOException {
+    public boolean addPatch(String patchPath, boolean open) throws IOException {
+        if (!open) {
+            Log.e(TAG, "__XYX__ addPatch switcher is CLOSE !");
+            resetAllPatch(); // 清理掉旧的patch，重新load新的；恢复原始方法，重新hook新的方法
+            return false;
+        }
+
         File newPatchFile = new File(patchPath);
         if (!newPatchFile.exists()) {
             return false;
@@ -106,10 +112,14 @@ public final class PatchManager {
 
     /**
      * remove all patchs && resotore all origin methods.
+     * 恢复机制执行时机：
+     * 1. iwatch开关-关闭
+     * 2. host版本不符
+     * 3. 获取的patch包信息异常
      */
     private void resetAllPatch() {
         mIWatch.reset(); // 恢复原始函数，清理掉缓存
-        cleanPatch();              // 删除所有补丁
+        cleanPatch();    // 删除所有补丁
     }
 
     /**
@@ -198,7 +208,7 @@ public final class PatchManager {
     private void cleanPatch() {
         File[] files = mPatchDir.listFiles();
         if (files == null) {
-            Log.e(TAG, "cleanPatch: files=null");
+            Log.w(TAG, "cleanPatch: files=null");
             return;
         }
         for (File file : files) {

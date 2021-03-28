@@ -29,8 +29,6 @@ import java.lang.reflect.Method;
  */
 @Keep
 public final class MethodHook {
-    private static final String TAG = "iWatch.MethodHook";
-
     private MethodHook() {
     }
 

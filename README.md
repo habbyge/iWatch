@@ -46,7 +46,23 @@ NoSuchMethodError exception，具体原因未知，我猜是地址偏移了，�
 
 
 测试样例：~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// 1) IWatchApplication.java
+// 1) AndroidManifest.xml
+<application
+    android:name="com.habbyge.sample.IWatchApplication"
+    android:allowBackup="false"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:supportsRtl="true">
+
+    <activity android:name="com.habbyge.sample.MainActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+</application>
+// 2) IWatchApplication.java
 public class IWatchApplication extends Application {
     private static final String TAG = "iWatch.IWatchApplication";
 
@@ -61,7 +77,7 @@ public class IWatchApplication extends Application {
         }
     }
 }
-// 2) MainActivity.java
+// 3) MainActivity.java 测试增、改
 public class MainActivity extends Activity {
     private static final String TAG = "iWatch.MainActivity";
 
@@ -91,7 +107,7 @@ public class MainActivity extends Activity {
                 // 类名，因此发生failed to verify的crash，因此必须修改成public才能阻止其生成合成方法。
                 ix = 1;
                 ix_HOOK = 10;
-                Log.d(TAG, "HABBYGE-MALI, ix=" + ix + ", ix_HOOK=" + ix_HOOK);
+                Log.d(TAG, "__XYX__ ix=" + ix + ", ix_HOOK=" + ix_HOOK);
 
                 // 测试用例：测试(匿名)内部类访问新增的class(包括新增字段、方法)
 //                Test test = new Test();
@@ -136,7 +152,7 @@ public class MainActivity extends Activity {
         Log.w(TAG, "printf-End-2: " + text + ", ix=" + ix + ", x2=" + x2 + "，end !!!!!!");
     }
 }
-// 3) 测试新增类: Test.java
+// 4) Test.java 测试新增类
 public class Test {
     public static final String TAG = "iWatch.Test";
 
