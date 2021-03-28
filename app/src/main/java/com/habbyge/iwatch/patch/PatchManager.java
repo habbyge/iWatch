@@ -1,7 +1,6 @@
 package com.habbyge.iwatch.patch;
 
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 
 import com.habbyge.iwatch.IWatch;
