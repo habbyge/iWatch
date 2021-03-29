@@ -28,11 +28,6 @@ public final class IWatch {
     }
 
     public synchronized void fix(File patchFile, List<String> classNames) {
-        if (patchFile == null || !patchFile.exists() || classNames == null || classNames.isEmpty()) {
-            Log.e(TAG, "doFix, patchFile NOT exists");
-            return;
-        }
-
         // 这个DexFile已经被标记 @Deprecated 了，也就是将来不对外使用了，这里采用了替代方案：
         // dalvik/system/DexFile中的nativev方法对应Art中的C++文件是:
         // art/runtime/native/dalvik_system_DexFile.cc，例如: 打开DexFile是:

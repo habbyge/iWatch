@@ -123,15 +123,8 @@ public final class PatchManager {
             return;
         }
 
-        boolean loadSuccess = loadPatch();
+        boolean loadSuccess = loadPatch(mPatch);
         Log.i(TAG, "initPatchs, success: " + loadSuccess);
-    }
-
-    private boolean loadPatch() {
-        if (mPatch == null) {
-            return false;
-        }
-        return loadPatch(mPatch);
     }
 
     private boolean loadPatch(Patch patch) {
