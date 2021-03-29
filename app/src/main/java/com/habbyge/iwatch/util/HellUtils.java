@@ -24,20 +24,15 @@ public final class HellUtils {
     }
 
     private static Field findField(Class<?> clazz, String fieldName) {
-        try {
-            Field field = findFieldRecursiveImpl(clazz, fieldName);
-            if (field == null) {
-                return null;
-            }
-            field.setAccessible(true);
-            return field;
-        } catch (NoSuchFieldException e) {
-            Log.e(TAG, "findField exception=" + e.getMessage());
+        Field field = findFieldImpl(clazz, fieldName);
+        if (field == null) {
             return null;
         }
+        field.setAccessible(true);
+        return field;
     }
 
-    private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+    private static Field findFieldImpl(Class<?> clazz, String fieldName) {
         try {
             return clazz.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {

@@ -4,21 +4,27 @@ public final class Type {
     private Type() {
     }
 
-    public static String getMethodDescriptor(final Class<?> returnType, final Class<?>... paramTypes) {
+    public static String getMethodDesc(final Class<?> returnType, final Class<?>... paramTypes) {
         StringBuilder buf = new StringBuilder();
         buf.append('(');
         if (paramTypes != null) {
             for (Class<?> paramType : paramTypes) {
-                getDescriptor(buf, paramType);
+                getDesc(buf, paramType);
             }
         }
         buf.append(')');
 
-        getDescriptor(buf, returnType);
+        getDesc(buf, returnType);
         return buf.toString();
     }
 
-    private static void getDescriptor(final StringBuilder buf, final Class<?> c) {
+    public static String getDesc(final Class<?> clazz) {
+        StringBuilder buf = new StringBuilder();
+        getDesc(buf, clazz);
+        return buf.toString();
+    }
+
+    private static void getDesc(final StringBuilder buf, final Class<?> c) {
         Class<?> d = c;
 
         while (true) {
@@ -64,11 +70,5 @@ public final class Type {
                 return;
             }
         }
-    }
-
-    public static String getDescriptor(final Class<?> clazz) {
-        StringBuilder buf = new StringBuilder();
-        getDescriptor(buf, clazz);
-        return buf.toString();
     }
 }

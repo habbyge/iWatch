@@ -3,6 +3,8 @@ package com.habbyge.iwatch.patch;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.Keep;
+
 import com.habbyge.iwatch.IWatch;
 import com.habbyge.iwatch.util.HellUtils;
 
@@ -18,6 +20,7 @@ import java.util.List;
  *  这样做的目的是为了让业务app控制存储目录，满足业务app的存储管理要求，例如：微信对sdcard、/data目录都有非常严格的管理要求，
  *  还设计了vfs，管理文件目录、生命周期(失效、清理逻辑等)、大小等。iwatch需要服从业务app的这些要求。避免搞破坏。
  */
+@Keep // 提供给外部的接口需要keep住
 public final class PatchManager {
     private static final String TAG = "iWatch.PatchManager";
 
@@ -28,6 +31,7 @@ public final class PatchManager {
 
     private static PatchManager mInstance;
 
+    @Keep
     public static PatchManager getInstance() {
         if (mInstance == null) {
             synchronized (PatchManager.class) {
@@ -46,6 +50,7 @@ public final class PatchManager {
      * 初始化入口(越早初始化越好)
      * @param open 方案开关
      */
+    @Keep
     public boolean init(String version, String appVersion, String patchPath, boolean open) {
         if (!open) {
             Log.e(TAG, "__XYX__ init switcher is CLOSE !");
@@ -77,7 +82,7 @@ public final class PatchManager {
      * When a new patch file has been downloaded, it will become effective immediately by addPatch.
      * @param open iwatch方案的开关
      */
-    @SuppressWarnings("unused")
+    @Keep
     public boolean loadPatch(String patchPath, boolean open) {
         if (!open) {
             Log.e(TAG, "__XYX__ addPatch switcher is CLOSE !");

@@ -97,7 +97,7 @@ public final class IWatch {
 
     public boolean fixMethod1(ClassLoader cl, String className1, String funcName1, Method method2) {
         Class<?>[] paramTypes = method2.getParameterTypes();
-        String desc = Type.getMethodDescriptor(method2.getReturnType(), paramTypes);
+        String desc = Type.getMethodDesc(method2.getReturnType(), paramTypes);
         Method method1;
         try {
             Class<?> clazz1 = cl.loadClass(className1);
@@ -147,8 +147,8 @@ public final class IWatch {
             return false;
         }
 
-        String decriptor1 = Type.getMethodDescriptor(returnType1, paramTypes1);
-        String decriptor2 = Type.getMethodDescriptor(returnType2, paramTypes2);
+        String decriptor1 = Type.getMethodDesc(returnType1, paramTypes1);
+        String decriptor2 = Type.getMethodDesc(returnType2, paramTypes2);
         return MethodHook.hookMethod2(method1, method2,
                                       className1, funcName1, decriptor1, isStatic1,
                                       className2, funcName2, decriptor2, isStatic2);
@@ -167,7 +167,7 @@ public final class IWatch {
             boolean isStatic;
             for (Field field : fields) {
                 name = field.getName();
-                desc = Type.getDescriptor(field.getType());
+                desc = Type.getDesc(field.getType());
                 isStatic = Modifier.isStatic(field.getModifiers());
                 MethodHook.setFieldAccessPublic(field, clazz, name, desc, isStatic);
             }
