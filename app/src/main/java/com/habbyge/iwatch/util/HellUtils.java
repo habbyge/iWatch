@@ -1,33 +1,43 @@
 package com.habbyge.iwatch.util;
 
+import android.util.Log;
+
 import java.io.File;
 import java.lang.reflect.Field;
 
 public final class HellUtils {
+    private static final String TAG = "dungfork.HellUtils";
     private HellUtils() {
     }
 
     public static long getLongField(Object obj, String fieldName) {
         try {
-            return findField(obj.getClass(), fieldName).getLong(obj);
+            Field field = findField(obj.getClass(), fieldName);
+            if (field == null) {
+                return -1L;
+            }
+            return field.getLong(obj);
         } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
+            Log.e(TAG, "getLongField exception=" + e.getMessage());
+            return -1L;
         }
     }
 
     private static Field findField(Class<?> clazz, String fieldName) {
         try {
             Field field = findFieldRecursiveImpl(clazz, fieldName);
+            if (field == null) {
+                return null;
+            }
             field.setAccessible(true);
             return field;
         } catch (NoSuchFieldException e) {
-            throw new NoSuchFieldError(e.getMessage());
+            Log.e(TAG, "findField exception=" + e.getMessage());
+            return null;
         }
     }
 
-    private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName)
-            throws NoSuchFieldException {
-
+    private static Field findFieldRecursiveImpl(Class<?> clazz, String fieldName) throws NoSuchFieldException {
         try {
             return clazz.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
@@ -41,7 +51,8 @@ public final class HellUtils {
                 } catch (NoSuchFieldException ignored) {
                 }
             }
-            throw e;
+            Log.e(TAG, "findFieldRecursiveImpl exception=" + e.getMessage());
+            return null;
         }
     }
 
