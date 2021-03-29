@@ -32,7 +32,7 @@ public class Patch implements Comparable<Patch> {
     public static final String SUFFIX = ".apatch"; // patch 文件的后缀
     public static final String DIR = "apatch";
 
-    private final File mFile;
+    private final File mFile; // patch 文件名是固定的，也就是路径是固定的
     private String mName;
     private Date mTime;
     private String mPatchVersion;

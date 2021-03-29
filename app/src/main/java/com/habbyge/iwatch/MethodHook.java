@@ -1,11 +1,10 @@
 package com.habbyge.iwatch;
 
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.Keep;
 
-import com.habbyge.iwatch.util.ReflectUtil;
+import com.habbyge.iwatch.util.HellUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -58,7 +57,7 @@ public final class MethodHook {
     }
 
     public static void setCurThread() {
-        long threadNativeAddr = ReflectUtil.getLongField(Thread.currentThread(), "nativePeer");
+        long threadNativeAddr = HellUtils.getLongField(Thread.currentThread(), "nativePeer");
         setCurThread(threadNativeAddr);
     }
 

@@ -1,26 +1,27 @@
 package com.habbyge.iwatch.patch;
 
-import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.habbyge.iwatch.IWatch;
-import com.habbyge.iwatch.util.FileUtil;
+import com.habbyge.iwatch.util.HellUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 /**
  * Created by habbyge on 2021/1/5.
+ *
+ * 1. patch下载的url，iwach透明，让业务app自己处理，iwatch不做处理
+ * 2. patch下载目录、存储目录，iwach透明，且让业务app提供下载器，因为一般业务app都有自己的下载器(一般在下载前会做安全校验)
+ *  这样做的目的是为了让业务app控制存储目录，满足业务app的存储管理要求，例如：微信对sdcard、/data目录都有非常严格的管理要求，
+ *  还设计了vfs，管理文件目录、生命周期(失效、清理逻辑等)、大小等。iwatch需要服从业务app的这些要求。避免搞破坏。
  */
 public final class PatchManager {
     private static final String TAG = "iWatch.PatchManager";
 
     private String mAppVersion = null;
-
-    private File mPatchDir; // patch 目录: /data/user/0/com.habbyge.iwatch/files/apatch
 
     private Patch mPatch;
     private IWatch mIWatch;
@@ -45,27 +46,26 @@ public final class PatchManager {
      * 初始化入口(越早初始化越好)
      * @param open 方案开关
      */
-    public boolean init(Context context, String iwatchVersion, String appVersion, boolean open) {
+    public boolean init(String version, String appVersion, String patchPath, boolean open) {
         if (!open) {
             Log.e(TAG, "__XYX__ init switcher is CLOSE !");
             return false;
         }
-
-        mAppVersion = appVersion;
-        // 现在是测试路径: context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-        mPatchDir = new File(context.getFilesDir(), Patch.DIR);
-
-        if (!mPatchDir.exists() && !mPatchDir.mkdirs()) {// make directory fail
-            Log.e(TAG, "patch dir create error.");
-            return false;
-        } else if (!mPatchDir.isDirectory()) { // not directory
-            Log.e(TAG, "mPatchDir delete result=" + mPatchDir.delete());
+        if (TextUtils.isEmpty(patchPath)) {
+            Log.e(TAG, "__XYX__ init patchPath is NULL !");
             return false;
         }
-        Log.i(TAG, "mPatchDir=" + mPatchDir + ", iwatchVersion=" + iwatchVersion);
+        File patchFile = new File(patchPath);
+        if (!patchFile.exists() || !patchFile.isFile()) {
+            Log.e(TAG, "__XYX__ init patchFile is legal !");
+            return false;
+        }
 
-        initIWatch();
-        initPatchs();
+        mAppVersion = appVersion;
+        Log.i(TAG, "version=" + version + ", appVersion=" + appVersion + ", patchPath=" +patchPath);
+
+        mIWatch = new IWatch();
+        initPatchs(patchFile);
 
         return true;
     }
@@ -77,36 +77,26 @@ public final class PatchManager {
      * When a new patch file has been downloaded, it will become effective immediately by addPatch.
      * @param open iwatch方案的开关
      */
-    public boolean addPatch(String patchPath, boolean open) throws IOException {
+    @SuppressWarnings("unused")
+    public boolean loadPatch(String patchPath, boolean open) {
         if (!open) {
             Log.e(TAG, "__XYX__ addPatch switcher is CLOSE !");
             resetAllPatch(); // 清理掉旧的patch，重新load新的；恢复原始方法，重新hook新的方法
             return false;
         }
 
-        File newPatchFile = new File(patchPath);
-        if (!newPatchFile.exists()) {
-            return false;
-        }
-        File destPathchFile = new File(mPatchDir, newPatchFile.getName());
-        if (destPathchFile.exists()) {
-            Log.w(TAG, "patch [" + patchPath + "] has be loaded.");
+        File patchFile = new File(patchPath);
+        if (!patchFile.exists()) {
             return false;
         }
 
         resetAllPatch(); // 清理掉旧的patch，重新load新的；恢复原始方法，重新hook新的方法
 
-        FileUtil.copyFile(newPatchFile, destPathchFile); // copy to patch's directory
-        FileUtil.deleteFile(newPatchFile); // 删除下载下来的patch文件
-        boolean success = addPatch(destPathchFile);
+        boolean success = addPatch(patchFile);
         if (success && mPatch != null) {
             return loadPatch(mPatch);
         }
         return false;
-    }
-
-    private void initIWatch() {
-        mIWatch = new IWatch();
     }
 
     /**
@@ -124,33 +114,8 @@ public final class PatchManager {
     /**
      * 冷启动打补丁
      */
-    private void initPatchs() {
-        File[] files = mPatchDir.listFiles();
-        if (files == null || files.length <= 0) {
-            Log.e(TAG, "initPatchs, failure: patch files is NULL !");
-            return;
-        }
-        Arrays.sort(files, new Comparator<File>() {
-            @Override
-            public int compare(File f1, File f2) {
-                return Long.compare(f2.lastModified(), f1.lastModified());
-            }
-        });
-
-        boolean success = false;
-        File file;
-        for (int i = 0; i < files.length; ++i) {
-            file = files[i];
-            if (!file.exists()) {
-                continue;
-            }
-            if (i == 0) { // files[0] 是最新修改的文件
-                success = addPatch(file);
-            } else { // 旧的补丁文件删掉之
-                // noinspection ResultOfMethodCallIgnored
-                file.delete();
-            }
-        }
+    private void initPatchs(File patchFile) {
+        boolean success = addPatch(patchFile);
         if (!success) {
             resetAllPatch();
             mPatch = null;
@@ -205,13 +170,9 @@ public final class PatchManager {
     }
 
     private void cleanPatch() {
-        File[] files = mPatchDir.listFiles();
-        if (files == null) {
-            Log.w(TAG, "cleanPatch: files=null");
-            return;
-        }
-        for (File file : files) {
-            if (!FileUtil.deleteFile(file)) {
+        File file;
+        if (mPatch != null && (file = mPatch.getFile()) != null) {
+            if (!HellUtils.deleteFile(file)) {
                 Log.e(TAG, file.getName() + " delete error.");
             }
         }
