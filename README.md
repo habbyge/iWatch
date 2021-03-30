@@ -6,18 +6,6 @@
 4. 方案稳定可靠
 5. 配合[apkpatchplus](https://github.com/habbyge/apkpatchplus)项目，其生成补丁，在iWatch中加载、使用补丁
 
-## 测试样例
-1. 非内部类的方法中修改字段、方法 ------ 验证成功(通过hellhound修改)；
-2. 非内部类新增的方法(编译期自动生成的ok，主动添加的不行)， ------ ing......
-3. 非内部类新增的字段， ------ ing...... 需要修改 apkpatch才能生效
-4. 内部类修改方法和字段，要求public才行 ------ 验证成功(通过hellhound修改)
-5. 内部类中新增方法
-6. 内部类新增字段
-7. 内部类新增字段
-8. 新增类
-9. 需要fix的方法调用需要fix的方法
-10. ......
-
 ## 本地测试方法
 adb push 补丁.apatch 到手机这个目录: /storage/emulated/0/Android/data/com.habbyge.iwatch/files/Music/
 
@@ -40,9 +28,7 @@ or its super classes (declaration of 'com.habbyge.sample.MainActivity_CF' appear
 的方法修改一点代码(通常打一个日志)，来保证该keep函数也被修改，即被标记为FixMethodAnno，出现在patch文件中；否则会导致：
 NoSuchMethodError exception，具体原因未知，我猜是地址偏移了，后面研究(todo); ------ 得找个方法来阻止地址变更。
 
-### 3. Class.forName()与dexClassLoader.load()有何区别，前者会导致内部类illaccesserror.
-
-### 4. 内部类和非内部类中如果新增field、method，都建议使用新增类的方式，防止破坏旧的类结构(字段索引、地址).
+### 3. 内部类和非内部类中如果新增field、method，都建议使用新增类的方式，防止破坏旧的类结构(字段索引、地址).
 
 
 测试样例：~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
