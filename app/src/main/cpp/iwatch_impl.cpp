@@ -423,7 +423,7 @@ long method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
 
   void* artMethod1 = nullptr;
   jmethodID methodId1 = env->FromReflectedMethod(method1);
-  if (!isIndexId(methodId1)) {
+  if (!isIndexId<kEnableIndexIds>(methodId1)) {
     artMethod1 = reinterpret_cast<void*>(methodId1);
     if (artMethod1 == nullptr) {
       clear_exception(env);
@@ -456,7 +456,7 @@ long method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
 
   void* artMethod2 = nullptr;
   jmethodID methodId2 = env->FromReflectedMethod(method2);
-  if (!isIndexId(methodId2)) {
+  if (!isIndexId<kEnableIndexIds>(methodId2)) {
     artMethod2 = reinterpret_cast<void*>(methodId2);
     if (artMethod2 == nullptr) {
       return I_ERR;
@@ -566,7 +566,7 @@ void set_field_public(JNIEnv* env, jobject field, jclass srcClas, jstring name, 
     artField = reinterpret_cast<void*>(env->FromReflectedField(field));
   } else {
     jfieldID fieldId = env->FromReflectedField(field);
-    if (!isIndexId(fieldId)) {
+    if (!isIndexId<kEnableIndexIds>(fieldId)) {
       artField = reinterpret_cast<void*>(fieldId);
       logw("set_field_public, isIndexId=false, %p", artField);
     } else {

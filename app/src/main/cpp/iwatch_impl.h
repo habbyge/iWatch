@@ -25,10 +25,6 @@ namespace iwatch {
 
 static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * 这里在 C/C++(jni/naitve) 层发生的 exception，如果被jni方法(在java层声明的Native方法)直接或间接调用，
  * 即使是 catch 住了，也需要 clear 掉该 exception，否则会继续向上炮 exception 到 Java 层，这里需要注意.
@@ -66,17 +62,15 @@ size_t getArtMethodSize();
 
 uint64_t get_tid();
 
+template<bool kEnableIndexIds>
 static inline bool isIndexId(jfieldID fid) {
   return kEnableIndexIds && ((reinterpret_cast<uintptr_t>(fid) % 2) != 0);
 }
 
+template<bool kEnableIndexIds>
 static inline bool isIndexId(jmethodID mid) {
   return kEnableIndexIds && ((reinterpret_cast<uintptr_t>(mid) % 2) != 0);
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 } // namespace iwatch
 
