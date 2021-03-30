@@ -47,6 +47,7 @@ NoSuchMethodError exception，具体原因未知，我猜是地址偏移了，�
 
 测试样例：~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## 1) AndroidManifest.xml
+```xml
 <application
     android:name="com.habbyge.sample.IWatchApplication"
     android:allowBackup="false"
@@ -62,7 +63,9 @@ NoSuchMethodError exception，具体原因未知，我猜是地址偏移了，�
         </intent-filter>
     </activity>
 </application>
+```
 ## 2) IWatchApplication.java
+```java
 public class IWatchApplication extends Application {
     private static final String TAG = "iWatch.IWatchApplication";
 
@@ -77,7 +80,9 @@ public class IWatchApplication extends Application {
         }
     }
 }
+```
 ## 3) MainActivity.java 测试增、改
+```java
 public class MainActivity extends Activity {
     private static final String TAG = "iWatch.MainActivity";
 
@@ -152,7 +157,9 @@ public class MainActivity extends Activity {
         Log.w(TAG, "printf-End-2: " + text + ", ix=" + ix + ", x2=" + x2 + "，end !!!!!!");
     }
 }
+```
 ## 4) Test.java 测试新增类
+```java
 public class Test {
     public static final String TAG = "iWatch.Test";
 
@@ -173,3 +180,4 @@ public class Test {
         return family;
     }
 }
+```
