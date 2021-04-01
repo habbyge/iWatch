@@ -72,22 +72,22 @@ void ArtMethodHook::initArtMethodLessEqual10(JNIEnv* env) {
 
   // artMethodSize = sizeof(ArtMethod);
   logi("artMethodSize-1 = %zu, %p, %p", artMethodSizeV1,
-                                        reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod2)),
-                                        reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod1)));
+       reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod2)),
+       reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod1)));
 }
 
-void ArtMethodHook::initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_op, jobject m1, jobject m2) {
+void ArtMethodHook::initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_op, jobject method1, jobject method2) {
   try {
 //   FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(
 //       dlsym_elf(elf_op->getLoadAddr(), FromReflectedMethod_Sym));
 
     FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(elf_op->dlsym_elf(FromReflectedMethod_Sym));
     logi("initArtMethod1, FromReflectedMethod=%p", FromReflectedMethod);
-    void* artMethod1 = getArtMethod(env, m1);
-    logi("initArtMethod1, method1=%p, %p", artMethod1, m1);
-    void* artMethod2 = getArtMethod(env, m2);
+    void* artMethod1 = getArtMethod(env, method1);
+    logi("initArtMethod1, method1=%p, %p", artMethod1, method1);
+    void* artMethod2 = getArtMethod(env, method2);
     // jmethodID, jmethodID, ArtMethod*, ArtMethod*
-    logi("initArtMethod1, method2=%p, %p", artMethod2, m2);
+    logi("initArtMethod1, method2=%p, %p", artMethod2, method2);
 
     // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的：
     // ArtMethod按照类中方法声明顺序依次紧密的排列在 methods_ 字段表示的内存中.
@@ -100,18 +100,33 @@ void ArtMethodHook::initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_
   }
 }
 
-void ArtMethodHook::initArtMethod2(JNIEnv* env, const std::shared_ptr<Elf>& elf_op) {
+void ArtMethodHook::initArtMethod2(JNIEnv* env, const std::shared_ptr<Elf>& elf_op, jobject method1, jobject method2) {
+  FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(elf_op->dlsym_elf(FindMethodJNI_Sym));
+  logi("initArtMethod2, FindMethodJNI=%p", FindMethodJNI);
+
+  jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
+
+  void* artMethod11 = nullptr;
+  void* artMethod12 = nullptr;
   try {
-    jclass ArtMethodSizeClass = env->FindClass(computeArtMethodSize_ClassName);
-//    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(dlsym_elf(elf_op->getLoadAddr(), FindMethodJNI_Sym));
-    FindMethodJNI = reinterpret_cast<FindMethodJNI_t>(elf_op->dlsym_elf(FindMethodJNI_Sym));
-    logi("initArtMethod2, FindMethodJNI=%p", FindMethodJNI);
-    void* artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);
-    logi("initArtMethod2, artMethod11=%p", artMethod11);
-    void* artMethod12 = getArtMethod(env, ArtMethodSizeClass, "func2", "()V", true);
+    jmethodID jmethod1 = env->FromReflectedMethod(method1);
+    if (isIndexId<kEnableIndexIds>(jmethod1)) {
+      artMethod11 = getArtMethod(env, ArtMethodSizeClass, "func1", "()V", true);
+      logi("initArtMethod2, artMethod11=%p", artMethod11);
+    } else {
+      artMethod11 = reinterpret_cast<void*>(jmethod1);
+    }
+
+    jmethodID jmethod2 = env->FromReflectedMethod(method2);
+    if (isIndexId<kEnableIndexIds>(jmethod2)) {
+      artMethod12 = getArtMethod(env, ArtMethodSizeClass, "func2", "()V", true);
+      // jmethodID, jmethodID, ArtMethod*, ArtMethod*
+      logi("initArtMethod2, artMethod22=%p", artMethod12);
+    } else {
+      artMethod12 = reinterpret_cast<void*>(jmethod2);
+    }
+
     env->DeleteLocalRef(ArtMethodSizeClass);
-    // jmethodID, jmethodID, ArtMethod*, ArtMethod*
-    logi("initArtMethod2, artMethod22=%p", artMethod12);
 
     // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的
     artMethodSizeV2 = reinterpret_cast<size_t>(artMethod12) - reinterpret_cast<size_t>(artMethod11);
@@ -123,7 +138,7 @@ void ArtMethodHook::initArtMethod2(JNIEnv* env, const std::shared_ptr<Elf>& elf_
   }
 }
 
-void* ArtMethodHook::getArtMethodLessEqual10(JNIEnv* env, jobject method) {
+void* ArtMethodHook::getArtMethodLessEqual10(JNIEnv* env, jobject method) const {
   return reinterpret_cast<void*>(env->FromReflectedMethod(method));
 }
 

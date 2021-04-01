@@ -50,8 +50,8 @@ public final class MethodHook {
                                       String funcSig2, boolean isStatic2) {
 
         final long backupOriMethod = hookMethod(method1, method2,
-                                                className1, funcName1, funcSig1, isStatic1,
-                                                className2, funcName2, funcSig2, isStatic2);
+                className1, funcName1, funcSig1, isStatic1,
+                className2, funcName2, funcSig2, isStatic2);
 
         return backupOriMethod != 0L && backupOriMethod != -1L;
     }
@@ -62,7 +62,7 @@ public final class MethodHook {
     }
 
     @Keep
-    public static native void init(int sdkVersionCode, Method m1, Method m2);
+    public static native void init(int sdkVersionCode, Method method1, Method method2);
     @Keep
     private static native long hookMethod(String srcClass, String srcName, String srcSig, Method src, Method dst);
     @Keep

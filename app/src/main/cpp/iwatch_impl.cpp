@@ -119,7 +119,7 @@ std::shared_ptr<ArtHookField> artHookField = nullptr;
 
 int sdkVersion = 0;
 
-void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
+void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2) {
   sdkVersion = sdkVersionCode;
 
   env->GetJavaVM(&vm);
@@ -237,10 +237,10 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2) {
     // 是：自己以 "从简的方式" 定义其对应的参数类型在art目录中的形式即可，再直白点就是：查看art虚拟机源代码，根据
     // 需要抄过来其实现即可。
     // 方案1：
-    artMethodHook->initArtMethod1(env, elfOp, m1, m2);
+    artMethodHook->initArtMethod1(env, elfOp, method1, method2);
 
     // 方案2
-    artMethodHook->initArtMethod2(env, elfOp);
+    artMethodHook->initArtMethod2(env, elfOp, method1, method2);
 
     artHookField->initArtField(env, elfOp);
 

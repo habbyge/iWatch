@@ -6,7 +6,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 
 public final class HellUtils {
-    private static final String TAG = "dungfork.HellUtils";
+    private static final String TAG = "iWatch.HellUtils";
     private HellUtils() {
     }
 

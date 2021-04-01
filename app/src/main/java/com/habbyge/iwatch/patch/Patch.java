@@ -18,7 +18,7 @@ import java.util.jar.Manifest;
  * Created by habbyge on 2021/1/5.
  */
 public class Patch implements Comparable<Patch> {
-    private static final String TAG = "dungfork.Patch";
+    private static final String TAG = "iWatch.Patch";
 
     private static final String ENTRY_NAME = "META-INF/PATCH.MF";
     private static final String PATCH_CLASSES = "Patch-Classes"; // 包括新增、修改的类
@@ -55,7 +55,7 @@ public class Patch implements Comparable<Patch> {
      * Created-Time: 26 Feb 2021 07:10:21 GMT
      * From-File: app-release-2.apk
      * To-File: app-release-1.apk
-     * Patch-Classes: com.tencent.mm.dungfork.sample.MainActivity$4_CF,com.tencent.mm.dungfork.MainActivity$5_CF
+     * Patch-Classes: com.tencent.mm.iwatch.sample.MainActivity$4_CF,com.tencent.mm.iwatch.MainActivity$5_CF
      * Created-By: 1.0 (ApkPatch)
      *
      * 其中: "From-File" 表示: 修复包名-补丁版本号.apk "To-File" 表示: 基础包名-版本号.apk

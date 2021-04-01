@@ -35,7 +35,7 @@ static inline void clear_exception(JNIEnv* env) {
   }
 }
 
-void init_impl(JNIEnv* env, int sdkVersionCode, jobject m1, jobject m2);
+void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2);
 
 long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
                       jobject srcMethod, jobject dstMethod);

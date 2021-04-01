@@ -15,19 +15,19 @@ import java.util.List;
 /**
  * Created by habbyge on 2021/1/5.
  *
- * 1. patch下载的url，iwach透明，让业务app自己处理，iwatch不做处理
- * 2. patch下载目录、存储目录，iwach透明，且让业务app提供下载器，因为一般业务app都有自己的下载器(一般在下载前会做安全校验)
+ * 1. patch下载的url，iWatch透明，让业务app自己处理，iWatch不做处理
+ * 2. patch下载目录、存储目录，iWatch透明，且让业务app提供下载器，因为一般业务app都有自己的下载器(一般在下载前会做安全校验)
  *  这样做的目的是为了让业务app控制存储目录，满足业务app的存储管理要求，例如：微信对sdcard、/data目录都有非常严格的管理要求，
- *  还设计了vfs，管理文件目录、生命周期(失效、清理逻辑等)、大小等。iwatch需要服从业务app的这些要求。避免搞破坏。
+ *  还设计了vfs，管理文件目录、生命周期(失效、清理逻辑等)、大小等。iWatch需要服从业务app的这些要求。避免搞破坏。
  */
-@Keep // 提供给外部的接口需要keep住
+@Keep // 对外接口需要keep住
 public final class PatchManager {
     private static final String TAG = "iWatch.PatchManager";
 
     private String mAppVersion = null;
 
     private Patch mPatch;
-    private IWatch mIWatch;
+    private IWatch mWatch;
 
     private static PatchManager mInstance;
 
@@ -69,10 +69,8 @@ public final class PatchManager {
         mAppVersion = appVersion;
         Log.i(TAG, "version=" + version + ", appVersion=" + appVersion + ", patchPath=" +patchPath);
 
-        mIWatch = new IWatch();
-        initPatchs(patchFile);
-
-        return true;
+        mWatch = new IWatch();
+        return initPatchs(patchFile);
     }
 
     /**
@@ -80,7 +78,7 @@ public final class PatchManager {
      *
      * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
      * When a new patch file has been downloaded, it will become effective immediately by addPatch.
-     * @param open iwatch方案的开关
+     * @param open iWatch 方案的开关
      */
     @Keep
     public boolean loadPatch(String patchPath, boolean open) {
@@ -107,29 +105,28 @@ public final class PatchManager {
     /**
      * remove all patchs && resotore all origin methods.
      * 恢复机制执行时机：
-     * 1. iwatch开关-关闭
+     * 1. iWatch开关-关闭
      * 2. host版本不符
      * 3. 获取的patch包信息异常
      */
     private void resetAllPatch() {
-        mIWatch.reset(); // 恢复原始函数，清理掉缓存
+        mWatch.reset(); // 恢复原始函数，清理掉缓存
         cleanPatch();    // 删除所有补丁
     }
 
     /**
      * 冷启动打补丁
      */
-    private void initPatchs(File patchFile) {
+    private boolean initPatchs(File patchFile) {
         boolean success = addPatch(patchFile);
         if (!success) {
             resetAllPatch();
             mPatch = null;
             Log.e(TAG, "initPatchs, failure: all patch files is illegal !");
-            return;
+            return false;
         }
 
-        boolean loadSuccess = loadPatch(mPatch);
-        Log.i(TAG, "initPatchs, success: " + loadSuccess);
+        return loadPatch(mPatch);
     }
 
     private boolean loadPatch(Patch patch) {
@@ -139,8 +136,7 @@ public final class PatchManager {
             mPatch = null;
             return false;
         }
-        mIWatch.fix(patch.getFile(), classes);
-        return true;
+        return mWatch.fix(patch.getFile(), classes);
     }
 
     /**

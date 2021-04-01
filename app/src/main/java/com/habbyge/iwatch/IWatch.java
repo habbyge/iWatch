@@ -15,9 +15,6 @@ import java.util.List;
 
 import dalvik.system.DexClassLoader;
 
-/**
- * Created by habbyge on 2021/1/5.
- */
 public final class IWatch {
     private static final String TAG = "iWatch.IWatch";
     private final List<String> mAccClassList;
@@ -27,22 +24,25 @@ public final class IWatch {
         mAccClassList = new ArrayList<>();
     }
 
-    public synchronized void fix(File patchFile, List<String> classNames) {
+    public synchronized boolean fix(File patchFile, List<String> classNames) {
         // 这个DexFile已经被标记 @Deprecated 了，也就是将来不对外使用了，这里采用了替代方案：
         // dalvik/system/DexFile中的nativev方法对应Art中的C++文件是:
         // art/runtime/native/dalvik_system_DexFile.cc，例如: 打开DexFile是:
         // openDexFileNative -> DexFile_openDexFileNative
         ClassLoader cl = IWatch.class.getClassLoader();
         if (cl == null) {
-            return;
+            Log.e(TAG, "cl is null !");
+            return false;
         }
         DexClassLoader dexCl = new DexClassLoader(patchFile.getAbsolutePath(), null, null, cl);
         try {
             for (String className : classNames) {
                 fixClass(dexCl.loadClass(className), cl);
             }
+            return true;
         } catch (ClassNotFoundException e) {
-            Log.e(TAG, "iwatch fix: e=" + e.getMessage());
+            Log.e(TAG, "iWatch fix: e=" + e.getMessage());
+            return false;
         }
     }
 
@@ -129,7 +129,7 @@ public final class IWatch {
                 || TextUtils.isEmpty(className2) || TextUtils.isEmpty(funcName2)
                 || returnType1 == null || returnType2 == null) {
 
-            throw new NullPointerException("IWatch.hook, param is null");
+            throw new NullPointerException("iWatch.hook, param is null");
         }
 
         Method method1;
@@ -150,8 +150,8 @@ public final class IWatch {
         String decriptor1 = Type.getMethodDesc(returnType1, paramTypes1);
         String decriptor2 = Type.getMethodDesc(returnType2, paramTypes2);
         return MethodHook.hookMethod2(method1, method2,
-                                      className1, funcName1, decriptor1, isStatic1,
-                                      className2, funcName2, decriptor2, isStatic2);
+                className1, funcName1, decriptor1, isStatic1,
+                className2, funcName2, decriptor2, isStatic2);
     }
 
     public void reset() {

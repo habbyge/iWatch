@@ -8,8 +8,8 @@
 
 #include "iwatch_impl.h"
 
-static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject m1, jobject m2) {
-  iwatch::init_impl(env, sdkVersionCode, m1, m2);
+static void init(JNIEnv* env, jclass, jint sdkVersionCode, jobject method1, jobject method2) {
+  iwatch::init_impl(env, sdkVersionCode, method1, method2);
 }
 
 static jlong method_hook(JNIEnv* env, jclass, jstring srcClass,
@@ -24,8 +24,8 @@ static jlong method_hookv2(JNIEnv* env, jclass, jobject method1, jobject method2
                            jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
   return iwatch::method_hookv2_impl(env, method1, method2,
-                                    java_class1, name1, sig1, is_static1,
-                                    java_class2, name2, sig2, is_static2);
+                                      java_class1, name1, sig1, is_static1,
+                                      java_class2, name2, sig2, is_static2);
 }
 
 static void restore_method(JNIEnv* env, jclass, jstring className, jstring name, jstring sig) {
@@ -57,14 +57,14 @@ static void set_cur_thread(JNIEnv* env, jclass, jlong threadAddr) {
 
 static JNINativeMethod gMethods[] = {
   {
-    "init",
-    "(ILjava/lang/reflect/Method;Ljava/lang/reflect/Method;)V",
-    (void*) init
+      "init",
+      "(ILjava/lang/reflect/Method;Ljava/lang/reflect/Method;)V",
+      (void*) init
   },
   {
-    "hookMethod",
-    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)J",
-    (void*) method_hook
+      "hookMethod",
+      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)J",
+      (void*) method_hook
   },
   {
       "hookMethod",
@@ -72,19 +72,19 @@ static JNINativeMethod gMethods[] = {
       (void*) method_hookv2
   },
   {
-    "unhookMethod",
-    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
-    (void*) restore_method
+      "unhookMethod",
+      "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+      (void*) restore_method
   },
   {
-    "unhookAllMethod",
-    "()V",
-    (void*) restore_all_method
+      "unhookAllMethod",
+      "()V",
+      (void*) restore_all_method
   },
   {
-    "setFieldAccessPublic",
-    "(Ljava/lang/reflect/Field;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Z)V",
-    (void*) set_field_public
+      "setFieldAccessPublic",
+      "(Ljava/lang/reflect/Field;Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Z)V",
+      (void*) set_field_public
   },
   {
       "setMethodAccessPublic",
@@ -92,14 +92,14 @@ static JNINativeMethod gMethods[] = {
       (void*) set_method_public
   },
   {
-    "hookClass",
-    "(Ljava/lang/String;)J",
-    (void*) class_hook
+      "hookClass",
+      "(Ljava/lang/String;)J",
+      (void*) class_hook
   },
   {
-    "setCurThread",
-    "(J)V",
-    (void*) set_cur_thread
+      "setCurThread",
+      "(J)V",
+      (void*) set_cur_thread
   }
 };
 

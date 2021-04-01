@@ -11,10 +11,8 @@ import java.lang.reflect.Method;
  */
 @Keep
 public class ArtMethodSize {
-
     @Keep
     public static void func1() {}
-
     @Keep
     public static void func2() {}
 
