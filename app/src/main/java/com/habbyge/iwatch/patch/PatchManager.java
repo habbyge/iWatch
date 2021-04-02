@@ -51,7 +51,7 @@ public final class PatchManager {
      * @param open 方案开关
      */
     @Keep
-    public boolean init(String version, String appVersion, String patchPath, boolean open) {
+    public boolean init(String version, List<String> baseAppVersionList, String appVersion, String patchPath, boolean open) {
         if (!open) {
             Log.e(TAG, "__XYX__ init switcher is CLOSE !");
             return false;
@@ -67,10 +67,11 @@ public final class PatchManager {
         }
 
         mAppVersion = appVersion;
-        Log.i(TAG, "version=" + version + ", appVersion=" + appVersion + ", patchPath=" +patchPath);
+        Log.i(TAG, "version=" + version + ", appVersion=" + appVersion + ", patchPath=" + patchPath);
 
         mWatch = new IWatch();
-        return initPatchs(patchFile);
+
+        return initPatchs(patchFile, baseAppVersionList);
     }
 
     /**
@@ -81,7 +82,7 @@ public final class PatchManager {
      * @param open iWatch 方案的开关
      */
     @Keep
-    public boolean loadPatch(String patchPath, boolean open) {
+    public boolean loadPatch(List<String> baseAppVersionList, String appVersion, String patchPath, boolean open) {
         if (!open) {
             Log.e(TAG, "__XYX__ addPatch switcher is CLOSE !");
             resetAllPatch(); // 清理掉旧的patch，重新load新的；恢复原始方法，重新hook新的方法
@@ -95,7 +96,7 @@ public final class PatchManager {
 
         resetAllPatch(); // 清理掉旧的patch，重新load新的；恢复原始方法，重新hook新的方法
 
-        boolean success = addPatch(patchFile);
+        boolean success = addPatch(patchFile, baseAppVersionList);
         if (success && mPatch != null) {
             return loadPatch(mPatch);
         }
@@ -117,8 +118,8 @@ public final class PatchManager {
     /**
      * 冷启动打补丁
      */
-    private boolean initPatchs(File patchFile) {
-        boolean success = addPatch(patchFile);
+    private boolean initPatchs(File patchFile, List<String> baseAppVersionList) {
+        boolean success = addPatch(patchFile, baseAppVersionList);
         if (!success) {
             resetAllPatch();
             mPatch = null;
@@ -142,12 +143,12 @@ public final class PatchManager {
     /**
      * add patch file
      */
-    private boolean addPatch(File pathFile) {
+    private boolean addPatch(File pathFile, List<String> baseAppVersionList) {
         boolean succe = false;
         if (pathFile.getName().endsWith(Patch.SUFFIX)) {
             try {
-                mPatch = new Patch(pathFile);
-                if (!mPatch.canPatch()) {
+                mPatch = new Patch(pathFile, baseAppVersionList);
+                if (!mPatch.canPatch(mAppVersion)) {
                     resetAllPatch();
                     mPatch = null;
 
@@ -170,9 +171,5 @@ public final class PatchManager {
                 Log.e(TAG, file.getName() + " delete error.");
             }
         }
-    }
-
-    public String getAppVersion() {
-        return mAppVersion;
     }
 }

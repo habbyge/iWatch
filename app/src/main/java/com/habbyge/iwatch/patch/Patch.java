@@ -6,6 +6,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -25,8 +26,7 @@ public class Patch implements Comparable<Patch> {
     private static final String CREATED_TIME = "Created-Time";
     private static final String PATCH_NAME = "Patch-Name";
 
-    private static final String PATCH_VERSION = "From-File";
-    private static final String BASE_APP_VERSION = "To-File";
+    private final List<String> mBaseAppVersionList = new ArrayList<>();
 
     // patch extension
     public static final String SUFFIX = ".apatch"; // patch 文件的后缀
@@ -34,13 +34,14 @@ public class Patch implements Comparable<Patch> {
     private final File mFile; // patch 文件名是固定的，也就是路径是固定的
     private String mName;
     private Date mTime;
-    private String mBaseAppVersion;
 
     // 该 Patch 中包含的所有Class
     List<String> mClasses = null;
 
-    public Patch(File file) throws IOException {
+    public Patch(File file, List<String> baseAppVersionList) throws IOException {
         mFile = file;
+        mBaseAppVersionList.clear();
+        mBaseAppVersionList.addAll(baseAppVersionList);
         init();
     }
 
@@ -73,12 +74,7 @@ public class Patch implements Comparable<Patch> {
             // 补丁创建时间
             mTime = new Date(mainAttributes.getValue(CREATED_TIME)); // 26 Feb 2021 16:22:33 GMT
 
-            String patchVersion = getVersion(mainAttributes.getValue(PATCH_VERSION)); // 补丁版本
-            mBaseAppVersion = getVersion(mainAttributes.getValue(BASE_APP_VERSION)); // 宿主app版本
-
-            Log.i(TAG, "init, mName=" + mName + ", mTime=" + mTime
-                    + ", patchVersion=" + patchVersion
-                    + ", mBaseAppVersion=" + mBaseAppVersion);
+            Log.i(TAG, "init, mName=" + mName + ", mTime=" + mTime);
 
             Attributes.Name attrName;
             String name;
@@ -125,26 +121,10 @@ public class Patch implements Comparable<Patch> {
         return mTime.compareTo(another.getTime());
     }
 
-    public boolean canPatch() {
-        String appVersion = PatchManager.getInstance().getAppVersion();
+    public boolean canPatch(String appVersion) {
         if (TextUtils.isEmpty(appVersion)) {
             return false;
         }
-        return appVersion.equals(mBaseAppVersion);
-    }
-
-    private String getVersion(String str) {
-        if (TextUtils.isEmpty(str)) {
-            return "";
-        }
-        int index1 = str.lastIndexOf("-");
-        if (index1 < 0) {
-            return "";
-        }
-        int index2 = str.length() - ".apk".length();
-        if (index2 < 0) {
-            return "";
-        }
-        return index1 + 1 < index2 ? str.substring(index1 + 1, index2) : "";
+        return mBaseAppVersionList.contains(appVersion);
     }
 }
