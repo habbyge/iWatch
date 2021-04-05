@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -18,13 +17,11 @@ import java.util.jar.Manifest;
 /**
  * Created by habbyge on 2021/1/5.
  */
-public class Patch implements Comparable<Patch> {
+public class Patch {
     private static final String TAG = "iWatch.Patch";
 
     private static final String ENTRY_NAME = "META-INF/PATCH.MF";
     private static final String PATCH_CLASSES = "Patch-Classes"; // 包括新增、修改的类
-    private static final String CREATED_TIME = "Created-Time";
-    private static final String PATCH_NAME = "Patch-Name";
 
     private final List<String> mBaseAppVersionList = new ArrayList<>();
 
@@ -32,8 +29,6 @@ public class Patch implements Comparable<Patch> {
     public static final String SUFFIX = ".apatch"; // patch 文件的后缀
 
     private final File mFile; // patch 文件名是固定的，也就是路径是固定的
-    private String mName;
-    private Date mTime;
 
     // 该 Patch 中包含的所有Class
     List<String> mClasses = null;
@@ -63,19 +58,13 @@ public class Patch implements Comparable<Patch> {
      */
     private void init() throws IOException {
         JarFile jarFile = null;
-        InputStream inputStream = null;
+        InputStream is = null;
         try {
             jarFile = new JarFile(mFile);
             JarEntry entry = jarFile.getJarEntry(ENTRY_NAME);
-            inputStream = jarFile.getInputStream(entry);
-            Manifest manifest = new Manifest(inputStream);
+            is = jarFile.getInputStream(entry);
+            Manifest manifest = new Manifest(is);
             Attributes mainAttributes = manifest.getMainAttributes();
-            mName = mainAttributes.getValue(PATCH_NAME); // 补丁包名
-            // 补丁创建时间
-            mTime = new Date(mainAttributes.getValue(CREATED_TIME)); // 26 Feb 2021 16:22:33 GMT
-
-            Log.i(TAG, "init, mName=" + mName + ", mTime=" + mTime);
-
             Attributes.Name attrName;
             String name;
             for (Object attr : mainAttributes.keySet()) {
@@ -94,14 +83,10 @@ public class Patch implements Comparable<Patch> {
             if (jarFile != null) {
                 jarFile.close();
             }
-            if (inputStream != null) {
-                inputStream.close();
+            if (is != null) {
+                is.close();
             }
         }
-    }
-
-    public String getName() {
-        return mName;
     }
 
     public File getFile() {
@@ -110,15 +95,6 @@ public class Patch implements Comparable<Patch> {
 
     public List<String> getClasses() {
         return mClasses;
-    }
-
-    public Date getTime() {
-        return mTime;
-    }
-
-    @Override
-    public int compareTo(Patch another) {
-        return mTime.compareTo(another.getTime());
     }
 
     public boolean canPatch(String appVersion) {
