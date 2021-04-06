@@ -47,7 +47,23 @@ public final class IWatch {
     }
 
     private void fixClass(Class<?> clazz, ClassLoader cl) {
-        Method[] methods = clazz.getDeclaredMethods();
+        // todo ////////////////////////////////////////////////////////////////////////////////////
+        Method[] methods = null;
+        try {
+            Method method = Class.class.getDeclaredMethod("getDeclaredMethodsUnchecked", boolean.class);
+            method.setAccessible(true);
+            methods = (Method[]) method.invoke(clazz, false);
+        } catch (Exception e) {
+            Log.e(TAG, "fixClass, exception=" + e.getMessage());
+        }
+        if (methods == null || methods.length <= 0) {
+            Log.e(TAG, "fixClass, methods=null");
+            return;
+        }
+        // NoClassDefFoundError，这里会检查该方法中的所有参数、返回值能不能加载，这里不需要？？？？？？!!!!!!
+//        Method[] methods = clazz.getDeclaredMethods();
+        // todo ////////////////////////////////////////////////////////////////////////////////////
+
         Log.d(TAG, "fixClass, methods=" + methods.length);
 
         FixMethodAnno anno;
