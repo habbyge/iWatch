@@ -23,7 +23,7 @@ public class Patch {
     private static final String ENTRY_NAME = "META-INF/PATCH.MF";
     private static final String PATCH_CLASSES = "Patch-Classes"; // 包括新增、修改的类
 
-    private final List<String> mBaseAppVersionList = new ArrayList<>();
+    private final List<String> mBaseVerList = new ArrayList<>();
 
     // patch extension
     public static final String SUFFIX = ".apatch"; // patch 文件的后缀
@@ -33,10 +33,10 @@ public class Patch {
     // 该 Patch 中包含的所有Class
     List<String> mClasses = null;
 
-    public Patch(File file, List<String> baseAppVersionList) throws IOException {
+    public Patch(File file, List<String> baseVerList) throws IOException {
         mFile = file;
-        mBaseAppVersionList.clear();
-        mBaseAppVersionList.addAll(baseAppVersionList);
+        mBaseVerList.clear();
+        mBaseVerList.addAll(baseVerList);
         init();
     }
 
@@ -101,6 +101,6 @@ public class Patch {
         if (TextUtils.isEmpty(appVersion)) {
             return false;
         }
-        return mBaseAppVersionList.contains(appVersion);
+        return mBaseVerList.contains(appVersion);
     }
 }

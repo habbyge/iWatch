@@ -51,7 +51,7 @@ public final class PatchManager {
      * @param open 方案开关
      */
     @Keep
-    public boolean init(String version, List<String> baseAppVersionList, String appVersion, String patchPath, boolean open) {
+    public boolean init(String version, List<String> mBaseVerList, String appVersion, String patchPath, boolean open) {
         if (!open) {
             Log.e(TAG, "__XYX__ init switcher is CLOSE !");
             return false;
@@ -71,7 +71,7 @@ public final class PatchManager {
 
         mWatch = new IWatch();
 
-        return initPatchs(patchFile, baseAppVersionList);
+        return initPatchs(patchFile, mBaseVerList);
     }
 
     /**
@@ -82,7 +82,7 @@ public final class PatchManager {
      * @param open iWatch 方案的开关
      */
     @Keep
-    public boolean loadPatch(List<String> baseAppVersionList, String appVersion, String patchPath, boolean open) {
+    public boolean loadPatch(List<String> baseVerList, String appVersion, String patchPath, boolean open) {
         if (!open) {
             Log.e(TAG, "__XYX__ addPatch switcher is CLOSE !");
             resetAllPatch(); // 清理掉旧的patch，重新load新的；恢复原始方法，重新hook新的方法
@@ -96,7 +96,7 @@ public final class PatchManager {
 
         resetAllPatch(); // 清理掉旧的patch，重新load新的；恢复原始方法，重新hook新的方法
 
-        boolean success = addPatch(patchFile, baseAppVersionList);
+        boolean success = addPatch(patchFile, baseVerList);
         if (success && mPatch != null) {
             return loadPatch(mPatch);
         }
@@ -118,8 +118,8 @@ public final class PatchManager {
     /**
      * 冷启动打补丁
      */
-    private boolean initPatchs(File patchFile, List<String> baseAppVersionList) {
-        boolean success = addPatch(patchFile, baseAppVersionList);
+    private boolean initPatchs(File patchFile, List<String> baseVerList) {
+        boolean success = addPatch(patchFile, baseVerList);
         if (!success) {
             resetAllPatch();
             mPatch = null;
@@ -143,11 +143,11 @@ public final class PatchManager {
     /**
      * add patch file
      */
-    private boolean addPatch(File pathFile, List<String> baseAppVersionList) {
+    private boolean addPatch(File pathFile, List<String> baseVerList) {
         boolean succe = false;
         if (pathFile.getName().endsWith(Patch.SUFFIX)) {
             try {
-                mPatch = new Patch(pathFile, baseAppVersionList);
+                mPatch = new Patch(pathFile, baseVerList);
                 if (!mPatch.canPatch(mAppVersion)) {
                     resetAllPatch();
                     mPatch = null;
