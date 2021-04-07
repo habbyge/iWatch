@@ -46,10 +46,6 @@ public final class PatchManager {
     private PatchManager() {
     }
 
-    /**
-     * 初始化入口(越早初始化越好)
-     * @param open 方案开关
-     */
     @Keep
     public boolean init(String version, List<String> mBaseVerList, String appVersion, String patchPath, boolean open) {
         if (!open) {
@@ -75,11 +71,7 @@ public final class PatchManager {
     }
 
     /**
-     * 实时加载补丁、生效函数，即：从server拉取到新的补丁后，就实施打补丁替换。
-     *
-     * 实时打补丁(add patch at runtime)，一般使用时机是：当该补丁下载到sdcard目录后，立马调用，即时生效.
-     * When a new patch file has been downloaded, it will become effective immediately by addPatch.
-     * @param open iWatch 方案的开关
+     * 实时加载补丁
      */
     @Keep
     public boolean loadPatch(List<String> baseVerList, String appVersion, String patchPath, boolean open) {
