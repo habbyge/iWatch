@@ -47,7 +47,6 @@ public final class IWatch {
     }
 
     private void fixClass(Class<?> clazz, ClassLoader cl) {
-        // todo ////////////////////////////////////////////////////////////////////////////////////
         Method[] methods = null;
         try {
             Method method = Class.class.getDeclaredMethod("getDeclaredMethodsUnchecked", boolean.class);
@@ -62,8 +61,6 @@ public final class IWatch {
         }
         // NoClassDefFoundError，这里会检查该方法中的所有参数、返回值能不能加载，这里不需要？？？？？？!!!!!!
 //        Method[] methods = clazz.getDeclaredMethods();
-        // todo ////////////////////////////////////////////////////////////////////////////////////
-
         Log.d(TAG, "fixClass, methods=" + methods.length);
 
         FixMethodAnno anno;
@@ -193,7 +190,20 @@ public final class IWatch {
         if (methods.length > 0) {
             for (Method method : methods) {
                 Log.d(TAG, "set public, method: " + clazz.getName() + ", method=" + method.getName());
-                MethodHook.setMethodAccessPublic(method);
+                // 这里需要屏蔽，不能设置method的access flag，原因：
+                // 2021-04-07 13:15:33.855 7732-7732/? E/AndroidRuntime: FATAL EXCEPTION: main
+                //    Process: com.tencent.mm, PID: 7732
+                //    java.lang.IncompatibleClassChangeError: The method 'java.lang.String com.tencent.mm.plugin.finder.j.a.a.an(long, long)' was expected to be of type direct but instead was found to be of type virtual (declaration of 'com.tencent.mm.plugin.finder.j.a.a' appears in /data/app/~~StCyOrIiaxMVH-yp-cmUZw==/com.tencent.mm-ANrWQZ9Yy6xkFQtM-YjnKw==/base.apk!classes2.dex)
+                //        at com.tencent.mm.plugin.finder.j.a.a.a(SourceFile:246)
+                //        at com.tencent.mm.plugin.finder.j.a.a$a.a(SourceFile:51)
+                //        at com.tencent.mm.plugin.finder.j.a.d.a(SourceFile:503)
+                //        at com.tencent.mm.plugin.finder.j.a.d.a(SourceFile:416)
+                //        at com.tencent.mm.plugin.finder.j.a.d.b(SourceFile:250)
+                //        at com.tencent.mm.plugin.finder.j.a.d.a(SourceFile:60)
+                //        at com.tencent.mm.plugin.finder.j.a.a.a(SourceFile:152)
+                //        at com.tencent.mm.plugin.finder.j.a.k.a(SourceFile:1035)
+                //        at com.tencent.mm.plugin.finder.nearby.live.e$f.onScrolled(SourceFile:300)
+                /*MethodHook.setMethodAccessPublic(method);*/
             }
         }
     }
