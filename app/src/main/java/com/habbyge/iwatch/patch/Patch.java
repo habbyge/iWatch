@@ -25,12 +25,8 @@ public class Patch {
 
     private final List<String> mBaseVerList = new ArrayList<>();
 
-    // patch extension
-    public static final String SUFFIX = ".apatch"; // patch 文件的后缀
-
-    private final File mFile; // patch 文件名是固定的，也就是路径是固定的
-
-    // 该 Patch 中包含的所有Class
+    public static final String SUFFIX = ".apatch";
+    private final File mFile;
     List<String> mClasses = null;
 
     public Patch(File file, List<String> baseVerList) throws IOException {

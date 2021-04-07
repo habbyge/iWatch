@@ -107,9 +107,6 @@ public final class PatchManager {
         cleanPatch();    // 删除所有补丁
     }
 
-    /**
-     * 冷启动打补丁
-     */
     private boolean initPatchs(File patchFile, List<String> baseVerList) {
         boolean success = addPatch(patchFile, baseVerList);
         if (!success) {
@@ -132,9 +129,6 @@ public final class PatchManager {
         return mWatch.fix(patch.getFile(), classes);
     }
 
-    /**
-     * add patch file
-     */
     private boolean addPatch(File pathFile, List<String> baseVerList) {
         boolean succe = false;
         if (pathFile.getName().endsWith(Patch.SUFFIX)) {
