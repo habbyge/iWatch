@@ -60,14 +60,14 @@ public class Patch {
             JarEntry entry = jarFile.getJarEntry(ENTRY_NAME);
             is = jarFile.getInputStream(entry);
             Manifest manifest = new Manifest(is);
-            Attributes mainAttributes = manifest.getMainAttributes();
+            Attributes attrs = manifest.getMainAttributes();
             Attributes.Name attrName;
             String name;
-            for (Object attr : mainAttributes.keySet()) {
+            for (Object attr : attrs.keySet()) {
                 attrName = ((Attributes.Name) attr);
                 name = attrName.toString();
                 if (PATCH_CLASSES.equalsIgnoreCase(name)) {
-                    String attrValue = mainAttributes.getValue(attrName);
+                    String attrValue = attrs.getValue(attrName);
                     Log.i(TAG, "init, Patch-Classes=" + attrValue);
                     mClasses = Arrays.asList(attrValue.split(","));
                     break;
