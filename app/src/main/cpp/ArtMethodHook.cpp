@@ -172,6 +172,23 @@ void* ArtMethodHook::getArtMethod(JNIEnv* env, jclass java_class, const char* na
 
 /**
  * http://aosp.opersys.com/ 中查看各个版本的art_method.h 得到：
+ *
+ * 这个函数暂时不使用不能设置method的access flag，发生Crash：
+ * 2021-04-07 13:15:33.855 7732-7732/? E/AndroidRuntime: FATAL EXCEPTION: main
+ * Process: com.tencent.mm, PID: 7732
+ * java.lang.IncompatibleClassChangeError: The method 'java.lang.String com.tencent.mm.plugin.finder.j.a.a.an(long, long)' was expected to be of type direct but instead was found to be of type virtual (declaration of 'com.tencent.mm.plugin.finder.j.a.a' appears in /data/app/~~StCyOrIiaxMVH-yp-cmUZw==/com.tencent.mm-ANrWQZ9Yy6xkFQtM-YjnKw==/base.apk!classes2.dex)
+ * at com.tencent.mm.plugin.finder.j.a.a.a(SourceFile:246)
+ * at com.tencent.mm.plugin.finder.j.a.a$a.a(SourceFile:51)
+ * at com.tencent.mm.plugin.finder.j.a.d.a(SourceFile:503)
+ * at com.tencent.mm.plugin.finder.j.a.d.a(SourceFile:416)
+ * at com.tencent.mm.plugin.finder.j.a.d.b(SourceFile:250)
+ * at com.tencent.mm.plugin.finder.j.a.d.a(SourceFile:60)
+ * at com.tencent.mm.plugin.finder.j.a.a.a(SourceFile:152)
+ * at com.tencent.mm.plugin.finder.j.a.k.a(SourceFile:1035)
+ * at com.tencent.mm.plugin.finder.nearby.live.e$f.onScrolled(SourceFile:300)
+ * 原因：查看 class_linker.cc中的ResolveMethod()可知，resolve->CheckIncompatibleClassChange()必须返回false，即
+ * 兼容，从crash栈中能够看到是 kAccDirect 被搞成了 kAccVirtual 了，再看: kAccDirect = kAccStatic | kAccPrivate | kAccConstructor，
+ * 那么很明显，这里 setAccessPublic() 不能调用了，如果调用成 public 函数，则会被认为是 kAccVirtual，不符。
  */
 void ArtMethodHook::setAccessPublic(JNIEnv* env, jobject method) {
   void* artMethod;
