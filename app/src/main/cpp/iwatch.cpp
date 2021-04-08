@@ -24,8 +24,8 @@ static jlong method_hookv2(JNIEnv* env, jclass, jobject method1, jobject method2
                            jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
   return iwatch::method_hookv2_impl(env, method1, method2,
-                                      java_class1, name1, sig1, is_static1,
-                                      java_class2, name2, sig2, is_static2);
+                                    java_class1, name1, sig1, is_static1,
+                                    java_class2, name2, sig2, is_static2);
 }
 
 static void restore_method(JNIEnv* env, jclass, jstring className, jstring name, jstring sig) {

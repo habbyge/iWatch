@@ -30,8 +30,9 @@ public:
   ArtRestore(const ArtRestore&) = delete;
   ArtRestore& operator=(const ArtRestore&) = delete;
 
-  void save(const std::string& className, const std::string& funcName, const std::string& desciptor,
-            long backupArtmethodAddr, long artMethodAddr);
+  void save(const std::string& className, const std::string& funcName,
+            const std::string& desciptor, long backupArtmethodAddr,
+            long artMethodAddr);
 
   void restoreArtMethod(const std::string& className,
                         const std::string& funcName,

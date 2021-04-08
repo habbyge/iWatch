@@ -38,9 +38,7 @@ void ArtHookField::initArtField(JNIEnv*, const std::shared_ptr<Elf>& elf_op) {
  *                        const char* sig,
  *                        bool is_static)
  */
-void* ArtHookField::getArtField(JNIEnv* env, jclass jni_class, const char* name,
-                                const char* sig, bool isStatic) {
-
+void* ArtHookField::getArtField(JNIEnv* env, jclass jni_class, const char* name, const char* sig, bool isStatic) {
   try {
     art::ScopedObjectAccess soa{env};
     void* addr = FindFieldJNI(soa, jni_class, name, sig, isStatic); // 返回 ArtField*

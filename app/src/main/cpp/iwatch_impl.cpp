@@ -65,7 +65,7 @@
 namespace iwatch {
 
 static void* cur_thread = nullptr;
-static JavaVM* vm;
+static JavaVM* vm       = nullptr;
 
 //using addWeakGlobalRef_t = jweak (*) (JavaVM*, void*, art::ObjPtr<art::mirror::Object>);
 //addWeakGlobalRef_t addWeakGlobalRef;
@@ -111,11 +111,11 @@ static JavaVM* vm;
 //FindMethodJNI_t FindMethodJNI;
 // 同时使用 方案1 和 方案2，哪个生效用哪里，双保险!!!!!!
 
-std::shared_ptr<Elf> elfOp = nullptr;
-std::shared_ptr<Runtime> runtime = nullptr;
-std::shared_ptr<ArtRestore> artRestore = nullptr;
+std::shared_ptr<Elf> elfOp                   = nullptr;
+std::shared_ptr<Runtime> runtime             = nullptr;
+std::shared_ptr<ArtRestore> artRestore       = nullptr;
 std::shared_ptr<ArtMethodHook> artMethodHook = nullptr;
-std::shared_ptr<ArtHookField> artHookField = nullptr;
+std::shared_ptr<ArtHookField> artHookField   = nullptr;
 
 int sdkVersion = 0;
 
@@ -124,10 +124,10 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
 
   env->GetJavaVM(&vm);
 
-  elfOp = std::make_shared<Elf>();
+  elfOp         = std::make_shared<Elf>();
   artMethodHook = std::make_shared<ArtMethodHook>();
-  artHookField = std::make_shared<ArtHookField>();
-  artRestore = std::make_shared<ArtRestore>();
+  artHookField  = std::make_shared<ArtHookField>();
+  artRestore    = std::make_shared<ArtRestore>();
 
   // art::mirror::ArtMethod
 //  auto artMethod11 = env->FromReflectedMethod(m1);
@@ -182,7 +182,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
     auto jmethodID2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
 
     logd("init_impl, jmethodID1=%zu, jmethodID2=%zu", reinterpret_cast<size_t>(jmethodID1),
-         reinterpret_cast<size_t>(jmethodID2));
+                                                      reinterpret_cast<size_t>(jmethodID2));
 
     env->DeleteLocalRef(ArtMethodSizeClass);
 
@@ -643,9 +643,9 @@ void set_cur_thread_impl(JNIEnv* env, long threadAddr) {
   uint64_t tid = get_tid();
 
   logi("set_cur_thread, cur_thread=%p, cur_pid=%d, %p, cur_tid=%d, %p, tid=%llu, %p", cur_thread,
-       cur_pid, (void*) cur_pid,
-       cur_tid, (void*) cur_tid,
-       tid, (void*) tid);
+                                                                                      cur_pid, (void*) cur_pid,
+                                                                                      cur_tid, (void*) cur_tid,
+                                                                                      tid, (void*) tid);
 
   clear_exception(env);
 }

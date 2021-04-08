@@ -52,8 +52,7 @@ static const char* computeArtMethodSize_ClassName = "com/habbyge/iwatch/ArtMetho
 static const char* FromReflectedMethod_Sym =
     "_ZN3art9ArtMethod19FromReflectedMethodERKNS_33ScopedObjectAccessAlreadyRunnableEP8_jobject";
 // 真实返回值是：/*art::mirror::ArtMethod_11*/
-using FromReflectedMethod_t = void* (*)(const art::ScopedObjectAccessAlreadyRunnable& soa,
-                                        jobject jlr_method);
+using FromReflectedMethod_t = void* (*)(const art::ScopedObjectAccessAlreadyRunnable& soa, jobject jlr_method);
 
 // art/runtime/jni/jni_internal.h
 static const char* FindMethodJNI_Sym = "_ZN3art13FindMethodJNIERKNS_18ScopedObjectAccessEP7_jclassPKcS6_b";

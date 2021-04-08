@@ -72,8 +72,8 @@ void ArtMethodHook::initArtMethodLessEqual10(JNIEnv* env) {
 
   // artMethodSize = sizeof(ArtMethod);
   logi("artMethodSize-1 = %zu, %p, %p", artMethodSizeV1,
-       reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod2)),
-       reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod1)));
+                                        reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod2)),
+                                        reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod1)));
 }
 
 void ArtMethodHook::initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_op, jobject method1, jobject method2) {

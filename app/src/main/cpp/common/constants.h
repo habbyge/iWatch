@@ -17,13 +17,14 @@ static constexpr int SDK_INT_ANDROID_5_0 = 21;
 static constexpr int SDK_INT_ANDROID_5_1 = 22;
 static constexpr int SDK_INT_ANDROID_6_0 = 23;
 static constexpr int SDK_INT_ANDROID_7_0 = 24;
-static constexpr int SDK_INT_ANDROID_10 = 29;
-static constexpr int SDK_INT_ANDROID_11 = 30;
+static constexpr int SDK_INT_ANDROID_10  = 29;
+static constexpr int SDK_INT_ANDROID_11  = 30;
 
-static constexpr uint32_t kAccPublic =       0x0001u;  // class, field, method, ic
-static constexpr uint32_t kAccPrivate =      0x0002u;  // field, method, ic
+static constexpr uint32_t kAccPublic    =    0x0001u;  // class, field, method, ic
+static constexpr uint32_t kAccPrivate   =    0x0002u;  // field, method, ic
 static constexpr uint32_t kAccProtected =    0x0004u;  // field, method, ic
-static constexpr uint32_t kAccFinal =        0x0010u;  // class, field, method, ic
+static constexpr uint32_t kAccFinal     =    0x0010u;  // class, field, method, ic
+// 这个标记表示的是javac编译期自动合成的方法中的access flags中的标记
 static constexpr uint32_t kAccSynthetic =    0x1000u;  // class, field, method, ic
 
 // ......

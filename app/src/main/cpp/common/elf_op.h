@@ -35,17 +35,17 @@ namespace iwatch {
 #endif
 
 #if defined(__LP64__)
-  static const char* const kSystemLibDir = "/system/lib64/";
-  static const char* const kOdmLibDir = "/odm/lib64/";
-  static const char* const kVendorLibDir = "/vendor/lib64/";
-  static const char* const kApexLibDir = "/apex/com.android.runtime/lib64/"; // Android-10
-  static const char* const kApexLibDir_11 = "/apex/com.android.art/lib64/"; // Android-11
+  static const char* const kSystemLibDir  = "/system/lib64/";
+  static const char* const kOdmLibDir     = "/odm/lib64/";
+  static const char* const kVendorLibDir  = "/vendor/lib64/";
+  static const char* const kApexLibDir    = "/apex/com.android.runtime/lib64/"; // Android-10
+  static const char* const kApexLibDir_11 = "/apex/com.android.art/lib64/";     // Android-11
 #else
-  static const char* const kSystemLibDir = "/system/lib/";
-  static const char* const kOdmLibDir = "/odm/lib/";
-  static const char* const kVendorLibDir = "/vendor/lib/";
-  static const char* const kApexLibDir = "/apex/com.android.runtime/lib/"; // // Android-10
-  static const char* const kApexLibDir_11 = "/apex/com.android.art/lib/"; // Android-11
+  static const char* const kSystemLibDir  = "/system/lib/";
+  static const char* const kOdmLibDir     = "/odm/lib/";
+  static const char* const kVendorLibDir  = "/vendor/lib/";
+  static const char* const kApexLibDir    = "/apex/com.android.runtime/lib/"; // Android-10
+  static const char* const kApexLibDir_11 = "/apex/com.android.art/lib/";     // Android-11
 #endif
 
 #ifdef __cplusplus
