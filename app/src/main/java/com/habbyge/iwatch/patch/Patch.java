@@ -62,11 +62,9 @@ public class Patch {
             Manifest manifest = new Manifest(is);
             Attributes attrs = manifest.getMainAttributes();
             Attributes.Name attrName;
-            String name;
             for (Object attr : attrs.keySet()) {
                 attrName = ((Attributes.Name) attr);
-                name = attrName.toString();
-                if (PATCH_CLASSES.equalsIgnoreCase(name)) {
+                if (PATCH_CLASSES.equalsIgnoreCase(attrName.toString())) {
                     String attrValue = attrs.getValue(attrName);
                     Log.i(TAG, "init, Patch-Classes=" + attrValue);
                     mClasses = Arrays.asList(attrValue.split(","));

@@ -59,15 +59,16 @@ public final class IWatch {
             Log.e(TAG, "fixClass, methods=null");
             return;
         }
-        // NoClassDefFoundError，这里会检查该方法中的所有参数、返回值能不能加载，这里不需要？？？？？？!!!!!!
-//        Method[] methods = clazz.getDeclaredMethods();
+        // NoClassDefFoundError，这里会检查该方法中的所有参数、返回值能不能加载
+        /*Method[] methods = clazz.getDeclaredMethods();*/ // NoClassDefFoundError
         Log.d(TAG, "fixClass, methods=" + methods.length);
 
         FixMethodAnno anno;
         String className1;
         String methodName1;
         boolean static1;
-
+        Class<?> rtype;
+        Class<?>[] ptypes;
         for (Method method : methods) {
             // 这里会拿到为null，因为这里需要patch中的DexClassLoader
             anno = method.getAnnotation(FixMethodAnno.class);
@@ -79,7 +80,7 @@ public final class IWatch {
             methodName1 = anno.method();
             if (!TextUtils.isEmpty(className1) && !TextUtils.isEmpty(methodName1)) {
                 if (fixMethod1(cl, className1, methodName1, method)) { // 方案1:
-                    Log.i(TAG, "fixMethod1 success !");
+                    Log.i(TAG, "fixMethod1-case, success:" + className1 + ", " + methodName1);
                     continue;
                 }
 
@@ -95,14 +96,11 @@ public final class IWatch {
                 // DexFile在Art中的实现对应：art/runtime/native/dalvik_system_DexFile.cc 中
                 // 的 DexFile_defineClassNative函数
                 static1 = Modifier.isStatic(method.getModifiers());
-                if (fixMethod2(cl, method,
-                        className1, methodName1, method.getParameterTypes(),
-                        method.getReturnType(), static1,
-                        clazz.getCanonicalName(),
-                        method.getName(), method.getParameterTypes(),
-                        method.getReturnType(), static1)) {
-
-                    Log.i(TAG, "fixMethod2 success !");
+                rtype = method.getReturnType();
+                ptypes = method.getParameterTypes();
+                if (fixMethod2(cl, method, className1, methodName1, ptypes, rtype,
+                        static1, clazz.getName(), method.getName(), ptypes, rtype, static1)) {
+                    Log.i(TAG, "fixMethod2-case, success:" + className1 + ", " + methodName1);
                 }
             }
         }
@@ -122,13 +120,10 @@ public final class IWatch {
                 mAccClassList.add(className1);
             }
         } catch (Exception e) {
-            Log.e(TAG, "fixMethod1 loadClass crash: " + e.getMessage());
+            Log.e(TAG, "fixMethod1 exception: " + className1 + "," + funcName1 + "," + e.getMessage());
             return false;
         }
-
         method2.setAccessible(true);
-        Log.d(TAG, "fixMethod1, oldClassName: " + className1 + ", " + funcName1);
-
         return MethodHook.hookMethod1(className1, funcName1, desc, method1, method2);
     }
 
@@ -156,15 +151,14 @@ public final class IWatch {
                 mAccClassList.add(className1);
             }
         } catch (Exception e) {
-            Log.e(TAG, "fixMethod2 loadClass crash: " + e.getMessage());
+            Log.e(TAG, "fixMethod2 exception: " + className1 + "," + funcName1 + "," + e.getMessage());
             return false;
         }
 
-        String decriptor1 = Type.getMethodDesc(returnType1, paramTypes1);
-        String decriptor2 = Type.getMethodDesc(returnType2, paramTypes2);
-        return MethodHook.hookMethod2(method1, method2,
-                className1, funcName1, decriptor1, isStatic1,
-                className2, funcName2, decriptor2, isStatic2);
+        String desc1 = Type.getMethodDesc(returnType1, paramTypes1);
+        String desc2 = Type.getMethodDesc(returnType2, paramTypes2);
+        return MethodHook.hookMethod2(method1, method2, className1, funcName1,
+                desc1, isStatic1, className2, funcName2, desc2, isStatic2);
     }
 
     public void reset() {
