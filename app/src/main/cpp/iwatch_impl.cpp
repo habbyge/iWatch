@@ -195,7 +195,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
 //                                                  IsIndexId1, IsIndexId2);
 
 //    void* context = dlopen_elf("libart.so", RTLD_NOW);
-    void* so_addr = elfOp->dlopen_elf("libart.so", RTLD_NOW);
+    const void* so_addr = elfOp->dlopen_elf("libart.so", RTLD_NOW);
     logi("dlopen_elf: %p", so_addr);
     if (so_addr == nullptr) {
       return;
@@ -203,7 +203,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
 
     runtime = std::make_shared<Runtime>();
     runtime->init(env, elfOp);
-    void* instance_ = runtime->getRuntime();
+    const void* instance_ = runtime->getRuntime();
     logi("init_impl, runtime=%p", instance_);
 
     // 注意 libart.so 中的符号都是加过密的

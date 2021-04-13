@@ -64,7 +64,7 @@ public:
   /**
    * 表示当前运行时Runtime对象地址，相当于
    */
-  void* getRuntime();
+  void* getRuntime() const noexcept;
   static void* currentThread() noexcept;
 
 private:

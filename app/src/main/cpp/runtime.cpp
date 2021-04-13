@@ -20,7 +20,7 @@ void Runtime::init(JNIEnv*, const std::shared_ptr<Elf>& elf_op) {
 /**
  * @return 代表art虚拟机中当前Runtime对象指针
  */
-void* Runtime::getRuntime() {
+void* Runtime::getRuntime() const noexcept {
   return instance_;
 }
 

@@ -83,9 +83,9 @@ void ArtMethodHook::initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_
 
     FromReflectedMethod = reinterpret_cast<FromReflectedMethod_t>(elf_op->dlsym_elf(FromReflectedMethod_Sym));
     logi("initArtMethod1, FromReflectedMethod=%p", FromReflectedMethod);
-    void* artMethod1 = getArtMethod(env, method1);
+    const void* artMethod1 = getArtMethod(env, method1);
     logi("initArtMethod1, method1=%p, %p", artMethod1, method1);
-    void* artMethod2 = getArtMethod(env, method2);
+    const void* artMethod2 = getArtMethod(env, method2);
     // jmethodID, jmethodID, ArtMethod*, ArtMethod*
     logi("initArtMethod1, method2=%p, %p", artMethod2, method2);
 
