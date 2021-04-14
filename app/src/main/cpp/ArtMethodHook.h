@@ -67,6 +67,9 @@ class ArtMethodHook final {
 public:
   ArtMethodHook() : artMethodSizeV1(-1), artMethodSizeV2(-1) {}
 
+  ArtMethodHook(const ArtMethodHook&) = delete;
+  ArtMethodHook& operator=(const ArtMethodHook&) = delete;
+
   virtual ~ArtMethodHook() {}
 
   void initArtMethodLessEqual10(JNIEnv* env);

@@ -45,6 +45,9 @@ class ArtHookField final {
 public:
   ArtHookField() : reference_(0u), access_flags_(0u), FindFieldJNI(nullptr) {}
 
+  ArtHookField(const ArtHookField&) = delete;
+  ArtHookField& operator=(const ArtHookField&) = delete;
+
   ~ArtHookField() {
     FindFieldJNI = nullptr;
 //    DecodeFieldId = nullptr;
