@@ -205,6 +205,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
     runtime->init(env, elfOp);
     const void* instance_ = runtime->getRuntime();
     logi("init_impl, runtime=%p", instance_);
+    bool useJitCompiler = runtime->useJit();
+    logi("init_impl, useJitCompiler=%d", useJitCompiler);
 
     // 注意 libart.so 中的符号都是加过密的
 //    const char* addWeakGloablRef_Sym =

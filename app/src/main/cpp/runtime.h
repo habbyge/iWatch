@@ -10,6 +10,7 @@
 
 #include "common/elf_op.h"
 #include "common/log.h"
+#include "common/constants.h"
 
 namespace iwatch {
 
@@ -50,6 +51,15 @@ static const char* CurrentFromGdb_Syn = "_ZN3art6Thread14CurrentFromGdbEv";
 // _ZN3art14OatFileManager19OpenDexFilesFromOatEPKcP8_jobjectP13_jobjectArrayPPKNS_7OatFileEPNSt3__16vectorINSB_12basic_stringIcNSB_11char_traitsIcEENSB_9allocatorIcEEEENSG_ISI_EEEE
 // _ZN3art14OatFileManager24OpenDexFilesFromOat_ImplEONSt3__16vectorINS_6MemMapENS1_9allocatorIS3_EEEEP8_jobjectP13_jobjectArrayPPKNS_7OatFileEPNS2_INS1_12basic_stringIcNS1_11char_traitsIcEENS4_IcEEEENS4_ISK_EEEE
 
+// android 5.0/5.1/6.0(interpreter + aot)
+// android 7.0/7.1及其以后的版本，ART移入了全新的Hybrid模式(interpreter + jit + aot)
+// bool UseJitCompilation() const;
+static const char* UseJitCompilation_Syn = "_ZNK3art7Runtime17UseJitCompilationEv"; // >= android-7.0
+using UseJitCompilation = bool (*)();
+// bool UseJit() const;
+static const char* UseJit_Syn = "_ZNK3art7Runtime6UseJitEv"; // android-6.x
+// android-5.0.5.1 没有这个选项，阅读了源码，5.x是直接采用AOT进程安装编译的
+
 class Runtime final {
 public:
   Runtime() : instance_(nullptr) {}
@@ -67,11 +77,15 @@ public:
   void* getRuntime() const noexcept;
   static void* currentThread() noexcept;
 
+  bool useJit() const noexcept;
+
 private:
   // 代表art虚拟机中当前Runtime对象指针 /art/runtime/runtime.h 中的 Current() 函数:
   // static Runtime* instance_; Runtime::instance_字段，是一个全局变量，使用readelf -s libart.so可以查看
   void* instance_;
   static void* self_; // 当前 Thread*
+
+  UseJitCompilation useJitCompilation;
 };
 
 } // namespace iwatch
