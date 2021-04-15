@@ -129,6 +129,20 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
   artHookField  = std::make_shared<ArtHookField>();
   artRestore    = std::make_shared<ArtRestore>();
 
+  /*void* context = dlopen_elf("libart.so", RTLD_NOW);*/
+  const void* so_addr = elfOp->dlopen_elf("libart.so", RTLD_NOW);
+  logi("dlopen_elf: %p", so_addr);
+  if (so_addr == nullptr) {
+    return;
+  }
+
+  runtime = std::make_shared<Runtime>();
+  runtime->init(env, elfOp);
+  const void* instance_ = runtime->getRuntime();
+  logi("init_impl, runtime=%p", instance_);
+  bool useJitCompiler = runtime->useJit();
+  logi("init_impl, useJitCompiler=%d", useJitCompiler);
+
   // art::mirror::ArtMethod
 //  auto artMethod11 = env->FromReflectedMethod(m1);
 //  auto artMethod22 = env->FromReflectedMethod(m2);
@@ -194,20 +208,6 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
 //                                                  reinterpret_cast<uintptr_t>(methodid2),
 //                                                  IsIndexId1, IsIndexId2);
 
-//    void* context = dlopen_elf("libart.so", RTLD_NOW);
-    const void* so_addr = elfOp->dlopen_elf("libart.so", RTLD_NOW);
-    logi("dlopen_elf: %p", so_addr);
-    if (so_addr == nullptr) {
-      return;
-    }
-
-    runtime = std::make_shared<Runtime>();
-    runtime->init(env, elfOp);
-    const void* instance_ = runtime->getRuntime();
-    logi("init_impl, runtime=%p", instance_);
-    bool useJitCompiler = runtime->useJit();
-    logi("init_impl, useJitCompiler=%d", useJitCompiler);
-
     // 注意 libart.so 中的符号都是加过密的
 //    const char* addWeakGloablRef_Sym =
 //        sdkVersionCode <= 25 ? "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE"
@@ -246,9 +246,6 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
 
     artHookField->initArtField(env, elfOp);
 
-//    dlclose_elf(context); // 释放
-    elfOp->dlclose_elf(); // 释放
-
     /*artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);*/
 //    artMethodSize = sizeof(art::mirror::ArtMethod_11); // 40-bytes
 
@@ -262,6 +259,9 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
 //    artMethodSize = sizeof(art::mirror::art_method_11);
 //    logi("artMethodSize = %zu", artMethodSize);
   }
+
+  /*dlclose_elf(context); // 释放*/
+  elfOp->dlclose_elf(); // 释放
 
   clear_exception(env);
 }
