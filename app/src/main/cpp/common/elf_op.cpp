@@ -29,16 +29,20 @@ void* Elf::dlsym_elf(const char* symbol_name) {
 
 int Elf::dlclose_elf() {
   if (get_sdk_level() >= 24) {
+    logi("dlclose_elf: _dlclose");
     return _dlclose();
   } else {
+    logi("dlclose_elf: dlclose");
     return dlclose(this->load_addr_ptr);
   }
 }
 
 const char* Elf::dlerror_elf() {
   if (get_sdk_level() >= 24) {
+    loge("dlerror_elf: _dlerror");
     return _dlerror();
   } else {
+    loge("dlerror_elf: dlerror");
     return dlerror();
   }
 }
