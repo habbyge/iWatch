@@ -31,8 +31,14 @@ static const char* kClassMethodHook = "com/habbyge/iwatch/MethodHook";
  */
 static inline void clear_exception(JNIEnv* env) {
   if (env->ExceptionCheck()) {
-    env->ExceptionClear(); // 清除异常，避免 jni 函数的异常抛到 Java 层
+    env->ExceptionDescribe(); // 打印异常堆栈信息
+    env->ExceptionClear();    // 清除异常，避免 jni 函数的异常抛到 Java 层
   }
+  // 如上代码进行处理后，App并不会直接崩溃了，并且在Logcat中会看到对应的异常日志，这里面到了做了哪些操作呢 ?
+  // Native 提供了 ExceptionOccurred 和 ExceptionCheck 方法来检测是否有异常发生:
+  // 前者返回的是 jthrowable 类型，后者返回的是 jboolean 类型。
+  // 如果有异常，会通过 ExceptionDescribe 方法来打印异常信息，方便我们在 LogCat 中看到对应的信息。
+  // 而 ExceptionClear 方法则是关键的不会让应用直接崩溃的方法，类似于 Java 的 catch 捕获异常处理，它会消除这次异常。
 }
 
 void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2);
