@@ -35,23 +35,7 @@ public class Patch {
         mBaseVerList.addAll(baseVerList);
         init();
     }
-
-    /**
-     * Patch 包解析构造成 Patch 类对象时，主要是解析 patch 包中的 META-INF/PATCH.MF 文件，将该文件中
-     * Patch-Classes 项对应的值解析出来，在前面 apkpatch 工具实现分析一文中有介绍，这个字段对应的值是将
-     * 修复的 Class 以英文逗号分隔组成。
-     *
-     * META-INF/PATCH.MF 中内容：
-     * Manifest-Version: 1.0
-     * Patch-Name: app-release-2
-     * Created-Time: 26 Feb 2021 07:10:21 GMT
-     * From-File: app-release-2.apk
-     * To-File: app-release-1.apk
-     * Patch-Classes: com.tencent.mm.iwatch.sample.MainActivity$4_CF,com.tencent.mm.iwatch.MainActivity$5_CF
-     * Created-By: 1.0 (ApkPatch)
-     *
-     * 其中: "From-File" 表示: 修复包名-补丁版本号.apk "To-File" 表示: 基础包名-版本号.apk
-     */
+    
     private void init() throws IOException {
         JarFile jarFile = null;
         InputStream is = null;
