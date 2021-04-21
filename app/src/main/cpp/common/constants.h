@@ -17,6 +17,7 @@ static constexpr int SDK_INT_ANDROID_5_0 = 21;
 static constexpr int SDK_INT_ANDROID_5_1 = 22;
 static constexpr int SDK_INT_ANDROID_6_0 = 23;
 static constexpr int SDK_INT_ANDROID_7_0 = 24;
+static constexpr int SDK_INT_ANDROID_9  = 28;
 static constexpr int SDK_INT_ANDROID_10  = 29;
 static constexpr int SDK_INT_ANDROID_11  = 30;
 
