@@ -342,6 +342,12 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
     }
   }
 
+  if (srcArtMethod == dstArtMethod) {
+    loge("method_hook, failure: srcArtMethod/dstArtMethod address equal !");
+    clear_exception(env);
+    return I_ERR; // 相同的函数地址，说明是同一个函数，不做替换，并报错
+  }
+
   int8_t* backupArtMethod{nullptr};
   const size_t _artMethodSizeV1 = artMethodHook->getArtMethodSizeV1();
   try {
