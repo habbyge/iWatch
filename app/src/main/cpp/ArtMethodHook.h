@@ -14,6 +14,7 @@
 #include <string>
 #include <algorithm>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "common/elf_op.h"
 

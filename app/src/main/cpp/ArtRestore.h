@@ -12,14 +12,15 @@
 #include <mutex>
 #include <chrono>
 #include <map>
+#include <stdint.h>
 
 #include "common/log.h"
 
 namespace iwatch {
 
 typedef struct {
-  long backupArtmethodAddr;
-  long artMethodAddr;
+  uintptr_t backupArtmethodAddr;
+  uintptr_t artMethodAddr;
 } ArtRestoreData;
 
 class ArtRestore final {
@@ -31,8 +32,8 @@ public:
   ArtRestore& operator=(const ArtRestore&) = delete;
 
   void save(const std::string& className, const std::string& funcName,
-            const std::string& desciptor, long backupArtmethodAddr,
-            long artMethodAddr);
+            const std::string& desciptor, uintptr_t backupArtmethodAddr,
+            uintptr_t artMethodAddr);
 
   void restoreArtMethod(const std::string& className,
                         const std::string& funcName,
@@ -51,7 +52,7 @@ private:
   std::recursive_mutex lock;
 
   void restoreArtMethod(std::string&& key);
-  static void doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, size_t artMethodSize);
+  static void doRestoreMethod(uintptr_t artMethodAddr, uintptr_t backupArtmethodAddr, size_t artMethodSize);
 
   inline std::string getKey(const std::string& className,
                             const std::string& funcName,

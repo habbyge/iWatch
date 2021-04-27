@@ -146,10 +146,10 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
   // art::mirror::ArtMethod
 //  auto artMethod11 = env->FromReflectedMethod(m1);
 //  auto artMethod22 = env->FromReflectedMethod(m2);
-//  artMethodSize = (size_t) artMethod22 - (size_t) artMethod11;
+//  artMethodSize = (uintptr_t) artMethod22 - (uintptr_t) artMethod11;
 //  logd("iwatch init artMethodSize, success=%zu, %zu, %zu", artMethodSize,
-//       (size_t) artMethod22,
-//       (size_t) artMethod11);
+//       (uintptr_t) artMethod22,
+//       (uintptr_t) artMethod11);
   logw("iwatch init, sdkVersion: %d", sdkVersionCode);
   if (sdkVersionCode <= SDK_INT_ANDROID_10) { // <= Android-10(api-29)
     artMethodHook->initArtMethodLessEqual10(env);
@@ -195,8 +195,8 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
     auto jmethodID1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
     auto jmethodID2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
 
-    logd("init_impl, jmethodID1=%zu, jmethodID2=%zu", reinterpret_cast<size_t>(jmethodID1),
-                                                      reinterpret_cast<size_t>(jmethodID2));
+    logd("init_impl, jmethodID1=%zu, jmethodID2=%zu", reinterpret_cast<uintptr_t>(jmethodID1),
+                                                      reinterpret_cast<uintptr_t>(jmethodID2));
 
     env->DeleteLocalRef(ArtMethodSizeClass);
 
@@ -246,14 +246,14 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
 
     artHookField->initArtField(env, elfOp);
 
-    /*artMethodSize = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);*/
+    /*artMethodSize = reinterpret_cast<uintptr_t>(artMethod2) - reinterpret_cast<uintptr_t>(artMethod1);*/
 //    artMethodSize = sizeof(art::mirror::ArtMethod_11); // 40-bytes
 
 //    void* artMethod1 = art::jni::DecodeArtMethod(methodid1);
 //    void* artMethod2 = art::jni::DecodeArtMethod(methodid2);
 //    logi("artMethodSize-2 = %zu, %zu, %zu", artMethodSize,
-//                                            reinterpret_cast<size_t>(artMethod1),
-//                                            reinterpret_cast<size_t>(artMethod2));
+//                                            reinterpret_cast<uintptr_t>(artMethod1),
+//                                            reinterpret_cast<uintptr_t>(artMethod2));
 
     // 方案2:
 //    artMethodSize = sizeof(art::mirror::art_method_11);
@@ -277,7 +277,7 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
  * 即：art/runtime/class_linker.cc 中的: ClassLinker::AllocArtMethodArray中按线性分配ArtMethod大小
  * 逻辑在 ClassLinker::LoadClass 中.
  */
-long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
+uintptr_t method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
                       jstring srcSig, jobject srcMethod, jobject dstMethod) {
 
   jboolean isCopy;
@@ -363,8 +363,8 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
     return I_ERR;
   }
 
-  auto backupArtMethodAddr = reinterpret_cast<long>(backupArtMethod);
-  auto srcArtMethodAddr = reinterpret_cast<long>(srcArtMethod);
+  auto backupArtMethodAddr = reinterpret_cast<uintptr_t>(backupArtMethod);
+  auto srcArtMethodAddr = reinterpret_cast<uintptr_t>(srcArtMethod);
   artRestore->save(_class, _func, _descriptor, backupArtMethodAddr, srcArtMethodAddr);
 
   logi("methodHook: method_hook Success !");
@@ -380,9 +380,9 @@ long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName,
  * 之前已经由自定义的DexClassLoader.loadClass加载过一次了，在art虚拟机中已经缓存了 class全路径名@classsLoader，
  * 所以这里可以直接从缓存中取到该class对应的classLoader加载.
  */
-long method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
-                        jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
-                        jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
+uintptr_t method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
+                             jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
+                             jstring java_class2, jstring name2, jstring sig2, jboolean is_static2) {
 
   if (sdkVersion <= SDK_INT_ANDROID_10) { // <= Android-10
     loge("method_hookv2 sdkVersion NOT >= 30: %d", sdkVersion);
@@ -520,8 +520,8 @@ long method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
     return I_ERR;
   }
 
-  auto backupArtMethodAddr = reinterpret_cast<long>(backupArtMethod);
-  auto srcArtMethodAddr = reinterpret_cast<long>(artMethod1);
+  auto backupArtMethodAddr = reinterpret_cast<uintptr_t>(backupArtMethod);
+  auto srcArtMethodAddr = reinterpret_cast<uintptr_t>(artMethod1);
   artRestore->save(_class1, _func1, _descriptor1, backupArtMethodAddr, srcArtMethodAddr);
 
   logi("method_hookv2: method_hook Success !");
@@ -644,7 +644,7 @@ long class_hook_impl(JNIEnv* env, jstring clazzName) {
   return reinterpret_cast<jlong>(kClass);
 }
 
-void set_cur_thread_impl(JNIEnv* env, long threadAddr) {
+void set_cur_thread_impl(JNIEnv* env, uintptr_t threadAddr) {
   cur_thread = reinterpret_cast<void*>(threadAddr);
   pid_t cur_pid = getpid();
   pid_t cur_tid = gettid();

@@ -43,12 +43,12 @@ static inline void clear_exception(JNIEnv* env) {
 
 void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2);
 
-long method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
-                      jobject srcMethod, jobject dstMethod);
+uintptr_t method_hook_impl(JNIEnv* env, jstring srcClass, jstring srcName, jstring srcSig,
+                           jobject srcMethod, jobject dstMethod);
 
-long method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
-                        jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
-                        jstring java_class2, jstring name2, jstring sig2, jboolean is_static2);
+uintptr_t method_hookv2_impl(JNIEnv* env, jobject method1, jobject method2,
+                             jstring java_class1, jstring name1, jstring sig1, jboolean is_static1,
+                             jstring java_class2, jstring name2, jstring sig2, jboolean is_static2);
 
 /**
  * 恢复原始方法: ArtMethod
@@ -62,7 +62,7 @@ void set_method_public(JNIEnv* env, jobject method);
 
 long class_hook_impl(JNIEnv* env, jstring clazzName);
 
-void set_cur_thread_impl(JNIEnv* env, long threadAddr);
+void set_cur_thread_impl(JNIEnv* env, uintptr_t threadAddr);
 
 size_t getArtMethodSize();
 

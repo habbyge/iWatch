@@ -68,12 +68,12 @@ void ArtMethodHook::initArtMethodLessEqual10(JNIEnv* env) {
   auto artMethod1 = env->GetStaticMethodID(ArtMethodSizeClass, "func1", "()V");
   auto artMethod2 = env->GetStaticMethodID(ArtMethodSizeClass, "func2", "()V");
   env->DeleteLocalRef(ArtMethodSizeClass); // 速度释放局部引用，避免阻碍Java层gc该对象
-  artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
+  artMethodSizeV1 = reinterpret_cast<uintptr_t>(artMethod2) - reinterpret_cast<uintptr_t>(artMethod1);
 
   // artMethodSize = sizeof(ArtMethod);
   logi("artMethodSize-1 = %zu, %p, %p", artMethodSizeV1,
-                                        reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod2)),
-                                        reinterpret_cast<void*>(reinterpret_cast<size_t>(artMethod1)));
+                                        reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(artMethod2)),
+                                        reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(artMethod1)));
 }
 
 void ArtMethodHook::initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_op, jobject method1, jobject method2) {
@@ -91,7 +91,7 @@ void ArtMethodHook::initArtMethod1(JNIEnv* env, const std::shared_ptr<Elf>& elf_
 
     // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的：
     // ArtMethod按照类中方法声明顺序依次紧密的排列在 methods_ 字段表示的内存中.
-    artMethodSizeV1 = reinterpret_cast<size_t>(artMethod2) - reinterpret_cast<size_t>(artMethod1);
+    artMethodSizeV1 = reinterpret_cast<uintptr_t>(artMethod2) - reinterpret_cast<uintptr_t>(artMethod1);
     logi("initArtMethod1, artMethodSizeV1 = %zu", artMethodSizeV1);
   } catch (std::exception& e) {
     loge("initArtMethod1, eception: %s", e.what());
@@ -129,7 +129,7 @@ void ArtMethodHook::initArtMethod2(JNIEnv* env, const std::shared_ptr<Elf>& elf_
     env->DeleteLocalRef(ArtMethodSizeClass);
 
     // 这里动态获取 ArtMethod 大小的原理是：在 Art 虚拟机中的 Class 类中的 methods_ 字段决定的
-    artMethodSizeV2 = reinterpret_cast<size_t>(artMethod12) - reinterpret_cast<size_t>(artMethod11);
+    artMethodSizeV2 = reinterpret_cast<uintptr_t>(artMethod12) - reinterpret_cast<uintptr_t>(artMethod11);
     logi("initArtMethod2, artMethodSizeV2 = %zu", artMethodSizeV2);
   } catch (std::exception& e) {
     loge("initArtMethod2, eception: %s", e.what());

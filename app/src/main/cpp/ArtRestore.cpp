@@ -27,8 +27,8 @@ ArtRestore::~ArtRestore() {
 }
 
 void ArtRestore::save(const std::string& className, const std::string& funcName,
-                      const std::string& desciptor, long backupArtmethodAddr,
-                      long artMethodAddr) {
+                      const std::string& desciptor, uintptr_t backupArtmethodAddr,
+                      uintptr_t artMethodAddr) {
 
   if (className.empty() || funcName.empty() || desciptor.empty()) {
     return;
@@ -80,8 +80,8 @@ void ArtRestore::restoreArtMethod(std::string&& key) {
     return;
   }
 
-  long artMethodAddr = 0L;
-  long backupArtmethodAddr = 0L;
+  uintptr_t artMethodAddr = 0L;
+  uintptr_t backupArtmethodAddr = 0L;
 
   { // 利用块作用域来及时释放锁，用以提高性能
     // Java 层可能存在多线程竞态，需要互斥访问
@@ -101,7 +101,7 @@ void ArtRestore::restoreArtMethod(std::string&& key) {
   doRestoreMethod(artMethodAddr, backupArtmethodAddr, artMethodSize);
 }
 
-void ArtRestore::doRestoreMethod(long artMethodAddr, long backupArtmethodAddr, size_t artMethodSize) {
+void ArtRestore::doRestoreMethod(uintptr_t artMethodAddr, uintptr_t backupArtmethodAddr, size_t artMethodSize) {
   if (artMethodAddr <= 0L || backupArtmethodAddr <= 0L) {
     return;
   }
