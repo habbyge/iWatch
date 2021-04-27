@@ -137,11 +137,11 @@ void init_impl(JNIEnv* env, int sdkVersionCode, jobject method1, jobject method2
   }
 
   runtime = std::make_shared<Runtime>();
-  runtime->init(env, elfOp);
+  runtime->init(env, elfOp, sdkVersionCode);
   const void* instance_ = runtime->getRuntime();
   logi("init_impl, runtime=%p", instance_);
-  bool useJitCompiler = runtime->useJit();
-  logi("init_impl, useJitCompiler=%d", useJitCompiler);
+//  bool useJitCompiler = runtime->useJit();
+//  logi("init_impl, useJitCompiler=%d", useJitCompiler);
 
   // art::mirror::ArtMethod
 //  auto artMethod11 = env->FromReflectedMethod(m1);
